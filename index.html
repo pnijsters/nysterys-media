@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Nysterys Media — Creator Talent Management</title>
+  <link href="//fonts.googleapis.com" rel="dns-prefetch"/>
+  <link crossorigin="" href="https://fonts.googleapis.com" rel="preconnect"/>
+  <meta content="#080808" name="theme-color"/>
+  <meta content="Nysterys Media is a private talent management company representing Kym and Mys — family creators with 1.6M+ combined followers across TikTok, YouTube, and Instagram." name="description"/>
+  <meta content="Nysterys Media" property="og:title"/>
+  <meta content="Private talent management representing Kym and Mys — 1.6M+ combined followers across TikTok, YouTube, and Instagram." property="og:description"/>
+  <meta content="https://nysterys.com/kym.jpg" property="og:image"/>
+  <meta content="https://nysterys.com" property="og:url"/>
+  <meta content="website" property="og:type"/>
+  <meta content="summary_large_image" name="twitter:card"/>
+  <meta content="Nysterys Media" name="twitter:title"/>
+  <meta content="Private talent management representing Kym and Mys — 1.6M+ combined followers across TikTok, YouTube, and Instagram." name="twitter:description"/>
+  <meta content="https://nysterys.com/kym.jpg" name="twitter:image"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&amp;display=swap" rel="stylesheet"/>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://nysterys.com/#website",
+        "url": "https://nysterys.com",
+        "name": "Nysterys Media",
+        "description": "Private creator talent management representing Kym and Mys.",
+        "publisher": { "@id": "https://nysterys.com/#organization" }
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://nysterys.com/#webpage",
+        "url": "https://nysterys.com",
+        "name": "Nysterys Media — Creator Talent Management",
+        "isPartOf": { "@id": "https://nysterys.com/#website" },
+        "about": { "@id": "https://nysterys.com/#organization" }
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://nysterys.com/#organization",
+        "name": "Nysterys Media LLC",
+        "url": "https://nysterys.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://nysterys.com/kym.jpg",
+          "width": 400,
+          "height": 400
+        },
+        "description": "Nysterys Media is a private talent management company representing Kym and Mys — family creators with 1.6M+ combined followers across TikTok, YouTube, and Instagram.",
+        "email": "inquiries@nysterys.com",
+        "sameAs": [
+          "https://www.tiktok.com/@Nysterys",
+          "https://www.instagram.com/nysterys/",
+          "https://www.youtube.com/@Nysterys"
+        ]
+      },
+      {
+        "@type": "Person",
+        "@id": "https://nysterys.com/#kym",
+        "name": "Kym",
+        "jobTitle": "Content Creator",
+        "description": "Lifestyle and fashion creator known for fit checks, authentic wasian perspective, and JROTC content. 224K followers, 17.6M likes.",
+        "affiliation": { "@id": "https://nysterys.com/#organization" },
+        "sameAs": [
+          "https://www.tiktok.com/@kymchi_n_crackers",
+          "https://www.instagram.com/glittery.unicorn.farts/",
+          "https://www.youtube.com/@ShimmieKymmie"
+        ]
+      },
+      {
+        "@type": "Person",
+        "@id": "https://nysterys.com/#mys",
+        "name": "Mys",
+        "jobTitle": "Content Creator",
+        "description": "Breakout lifestyle and trend creator with 1.4M followers and 54.7M likes on TikTok.",
+        "affiliation": { "@id": "https://nysterys.com/#organization" },
+        "sameAs": [
+          "https://www.tiktok.com/@mysthegreat",
+          "https://www.instagram.com/therealmysthegreat/",
+          "https://www.youtube.com/@Mys-The-Great"
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+.nav-cta {
+  font-size: .75rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--orange);
+  text-decoration: none;
+  border: 1px solid var(--orange);
+  padding: .5rem 1.25rem;
+  transition: background .2s, color .2s;
+}
+
+.nav-cta:hover {
+  background: var(--orange);
+  color: var(--black);
+}
+
+/* Team Portal link — muted, not competing with Work With Us CTA */
+.nav-portal {
+  font-size: .65rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color .2s;
+}
+
+.nav-portal:hover {
+  color: var(--orange);
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 8rem 3rem 4rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.logo-mark {
+  width: 320px;
+  height: 320px;
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .12;
+  animation: spin 40s linear infinite;
+}
+
+.logo-mark-inner {
+  width: 220px;
+  height: 220px;
+  position: absolute;
+  right: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .22;
+  animation: spin 25s linear infinite reverse;
+}
+
+@keyframes spin {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
+}
+
+.hero-eyebrow {
+  font-size: .7rem;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp .8s .2s forwards;
+}
+
+.hero-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(4.5rem, 12vw, 10rem);
+  line-height: .92;
+  letter-spacing: .03em;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp .8s .4s forwards;
+}
+
+.hero-title .accent {
+  color: var(--orange);
+}
+
+.hero-tagline {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--muted);
+  margin-bottom: 3rem;
+  max-width: 480px;
+  opacity: 0;
+  animation: fadeUp .8s .6s forwards;
+}
+
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  background: var(--orange);
+  color: var(--black);
+  font-size: .8rem;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 1rem 2rem;
+  opacity: 0;
+  animation: fadeUp .8s .8s forwards;
+  transition: background .2s, gap .2s;
+}
+
+.hero-cta:hover {
+  background: var(--orange2);
+  gap: 1.25rem;
+}
+
+.hero-cta svg {
+  width: 14px;
+  height: 14px;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 3rem;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  font-size: .65rem;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0;
+  animation: fadeUp .8s 1.2s forwards;
+}
+
+.scroll-line {
+  width: 40px;
+  height: 1px;
+  background: var(--orange);
+  animation: scrollPulse 2s infinite;
+}
+
+@keyframes scrollPulse {
+
+  0%,
+  100% {
+    width: 40px;
+  }
+
+  50% {
+    width: 60px;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.about {
+  padding: 7rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.about-label {
+  font-size: .65rem;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 1.5rem;
+}
+
+.about-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1;
+  letter-spacing: .04em;
+  margin-bottom: 2rem;
+}
+
+.about-heading span {
+  color: var(--orange);
+}
+
+.about-body {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #aaa;
+  margin-bottom: 1.5rem;
+}
+
+.about-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 0;
+  position: relative;
+  perspective: 700px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.stat:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(255, 92, 0, 0.12);
+  border-color: rgba(255, 92, 0, 0.3);
+}
+
+.stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.3s ease;
+  z-index: 1;
+}
+
+.stat:hover::before {
+  width: 5px;
+}
+
+.stat-inner {
+  position: relative;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.stat:hover .stat-inner {
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+}
+
+.stat-front,
+.stat-back {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.stat-front {
+  padding: 1.75rem;
+}
+
+.stat-back {
+  position: absolute;
+  inset: 0;
+  -webkit-transform: rotateY(180deg);
+  transform: rotateY(180deg);
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.stat-back-text {
+  font-size: 0.85rem;
+  color: var(--orange);
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  opacity: 0.9;
+}
+
+.stat-number {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  color: var(--orange);
+  line-height: 1;
+  margin-bottom: .25rem;
+}
+
+.stat-label {
+  font-size: .7rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.services {
+  padding: 5rem 3rem 7rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: .04em;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.service-card {
+  background: var(--black);
+  padding: 2.5rem 2rem;
+  transition: background .3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--orange);
+  transform: scaleX(0);
+  transition: transform .3s;
+  transform-origin: left;
+}
+
+.service-card:hover {
+  background: var(--surface);
+}
+
+.service-card:hover::after {
+  transform: scaleX(1);
+}
+
+.service-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 1.5rem;
+  color: var(--orange);
+}
+
+.service-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: .06em;
+  margin-bottom: .75rem;
+}
+
+.service-desc {
+  font-size: .85rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.contact {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 7rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.contact::before {
+  content: 'NYSTERYS';
+  position: absolute;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20vw;
+  color: rgba(255, 92, 0, .03);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: .1em;
+}
+
+.contact-label {
+  font-size: .65rem;
+  letter-spacing: .35em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 1.5rem;
+}
+
+.contact-heading {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  letter-spacing: .04em;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.contact-sub {
+  font-size: 1rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 3rem;
+  max-width: 440px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contact-email {
+  display: inline-flex;
+  align-items: center;
+  gap: .75rem;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.2rem, 3vw, 2rem);
+  letter-spacing: .15em;
+  color: var(--orange);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 92, 0, .3);
+  padding-bottom: .25rem;
+  transition: border-color .2s, gap .2s;
+  margin-bottom: 3.5rem;
+}
+
+.contact-email:hover {
+  border-color: var(--orange);
+  gap: 1.25rem;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  text-decoration: none;
+  transition: border-color .2s, color .2s, background .2s;
+}
+
+.social-link:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+  background: rgba(255, 92, 0, .06);
+}
+
+.social-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+.roster {
+  padding: 7rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.roster-grid {
+  display: flex;
+  gap: 2px;
+  margin-top: 3rem;
+  align-items: stretch;
+}
+
+/* Split-expand on hover */
+.roster-grid .talent-card,
+.roster-grid .talent-card-skel {
+  flex: 1;
+  min-width: 0;
+  transition: flex 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.5s ease;
+}
+.roster-grid:has(.talent-card:hover) .talent-card,
+.roster-grid:has(.talent-card:hover) .talent-card-skel {
+  flex: 0.45;
+  filter: brightness(0.55) saturate(0.7);
+}
+.roster-grid:has(.talent-card:hover) .talent-card:hover {
+  flex: 1.55;
+  filter: brightness(1) saturate(1);
+}
+
+.talent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+  transition: border-color .3s;
+  cursor: pointer;
+}
+
+.talent-card:hover {
+  border-color: var(--orange);
+}
+
+.talent-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(to right, var(--orange), var(--orange2));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .4s ease;
+  z-index: 2;
+}
+
+.talent-card:hover::before {
+  transform: scaleX(1);
+}
+
+.talent-photo {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: #161616;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.talent-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .5s ease;
+}
+
+.talent-card:hover .talent-photo img {
+  transform: scale(1.04);
+}
+
+.talent-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #141414 0, #1a1a1a 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.talent-placeholder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0, rgba(255, 92, 0, .08) 0, transparent 70%);
+}
+
+.placeholder-initial {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 8rem;
+  color: rgba(255, 92, 0, .15);
+  letter-spacing: .05em;
+  position: relative;
+  z-index: 1;
+  user-select: none;
+}
+
+.placeholder-ring {
+  position: absolute;
+  border: 1px solid rgba(255, 92, 0, .1);
+  border-radius: 50%;
+}
+
+.placeholder-ring:nth-child(1) {
+  width: 200px;
+  height: 200px;
+}
+
+.placeholder-ring:nth-child(2) {
+  width: 280px;
+  height: 280px;
+  border-style: dashed;
+}
+
+.placeholder-ring:nth-child(3) {
+  width: 360px;
+  height: 360px;
+}
+
+.talent-body {
+  padding: 2rem;
+}
+
+.talent-tag {
+  font-size: .6rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: .75rem;
+}
+
+.talent-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.5rem;
+  letter-spacing: .06em;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+
+.talent-bio {
+  font-size: .9rem;
+  line-height: 1.75;
+  color: #aaa;
+  margin-bottom: 1.75rem;
+}
+
+.talent-socials {
+  display: flex;
+  gap: .75rem;
+}
+
+.talent-social {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .7rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: .4rem .9rem;
+  transition: border-color .2s, color .2s;
+}
+
+.talent-social:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.talent-social svg {
+  width: 13px;
+  height: 13px;
+}
+
+@media(max-width:768px) {
+
+  .hero {
+    padding: 7rem 1.5rem 4rem;
+  }
+
+  .logo-mark,
+  .logo-mark-inner {
+    display: none;
+  }
+
+  .about {
+    grid-template-columns: 1fr;
+    padding: 4rem 1.5rem;
+  }
+
+  .services {
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .roster {
+    padding: 4rem 1.5rem;
+  }
+
+  .roster-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact {
+    padding: 5rem 1.5rem;
+  }
+
+  .hero-scroll {
+    left: 1.5rem;
+  }
+
+}
+
+    .footer-copy a {
+      color: #444444;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-copy a:hover {
+      color: var(--orange);
+    }
+
+    .talent-handle {
+      font-size: 0.4em;
+      color: var(--orange);
+      letter-spacing: 0.05em;
+    }
+
+.talent-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.stat-lbl {
+  font-size: .6rem;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: .1rem;
+}
+
+.partner {
+  padding: 7rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.partner-intro {
+  max-width: 680px;
+  margin: 0 auto 4rem;
+  text-align: center;
+}
+
+.partner-intro .section-label {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.partner-intro .section-title {
+  margin-bottom: 1.5rem;
+}
+
+.partner-intro p {
+  font-size: 1rem;
+  line-height: 1.85;
+  color: #aaa;
+}
+
+.partner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.partner-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .3s;
+}
+
+.partner-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--orange);
+  transform: scaleY(0);
+  transition: transform .3s;
+  transform-origin: top;
+}
+
+.partner-card:hover {
+  border-color: var(--orange);
+}
+
+.partner-card:hover::before {
+  transform: scaleY(1);
+}
+
+.partner-card-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--orange);
+  margin-bottom: 1.25rem;
+}
+
+.partner-card-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: .06em;
+  margin-bottom: .6rem;
+}
+
+.partner-card-text {
+  font-size: .85rem;
+  line-height: 1.75;
+  color: var(--muted);
+}
+
+.partner-nope {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid #333;
+  padding: 1.75rem 2rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.partner-nope-icon {
+  flex-shrink: 0;
+  margin-top: .1rem;
+  color: #444;
+}
+
+.partner-nope-text {
+  font-size: .85rem;
+  line-height: 1.75;
+  color: #555;
+}
+
+@media(max-width:768px) {
+  .partner {
+    padding: 4rem 1.5rem;
+  }
+
+  .partner-grid {
+    grid-template-columns: 1fr;
+  }
+}
+  </style>
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+  <link rel="canonical" href="https://nysterys.com/" />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&amp;display=swap" as="style" />
+  <link rel="stylesheet" href="site/global.css" />
+  <script src="site/config.js"></script>
+  <script src="site/supabase-data.js"></script>
+  <script src="site/icons.js" defer></script>
+  <script src="site/utils.js"></script>
+</head>
+ <body>
+  <nav>
+   <a class="nav-logo" href="/">
+    NYS<span>T</span>ERYS
+   </a>
+   <div class="nav-right">
+    <a class="nav-portal" href="/hub/" aria-label="Team Portal">
+     Team Portal
+    </a>
+    <a class="nav-cta" href="#contact">
+     Work With Us
+    </a>
+   </div>
+  </nav>
+  <section class="hero">
+   <svg class="logo-mark" fill="none" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="100" cy="100" r="90" stroke="#FF5C00" stroke-width="1">
+    </circle>
+    <circle cx="100" cy="100" r="70" stroke="#FF5C00" stroke-dasharray="6 4" stroke-width=".5">
+    </circle>
+    <circle cx="100" cy="100" r="50" stroke="#FF5C00" stroke-width="1">
+    </circle>
+    <path d="M100 10 L190 100 L100 190 L10 100 Z" stroke="#FF5C00" stroke-width=".5">
+    </path>
+    <path d="M100 30 L170 100 L100 170 L30 100 Z" stroke="#FF5C00" stroke-dasharray="3 5" stroke-width=".5">
+    </path>
+    <circle cx="100" cy="10" fill="#FF5C00" r="3">
+    </circle>
+    <circle cx="190" cy="100" fill="#FF5C00" r="3">
+    </circle>
+    <circle cx="100" cy="190" fill="#FF5C00" r="3">
+    </circle>
+    <circle cx="10" cy="100" fill="#FF5C00" r="3">
+    </circle>
+   </svg>
+   <svg class="logo-mark-inner" fill="none" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <path d="M100 20 L180 100 L100 180 L20 100 Z" stroke="#FF5C00" stroke-width="1">
+    </path>
+    <path d="M100 50 C130 50 150 70 150 100 C150 130 130 150 100 150 C70 150 50 130 50 100 C50 70 70 50 100 50Z" stroke="#FF5C00" stroke-dasharray="4 3" stroke-width=".75">
+    </path>
+    <line stroke="#FF5C00" stroke-dasharray="3 6" stroke-width=".4" x1="100" x2="100" y1="20" y2="180">
+    </line>
+    <line stroke="#FF5C00" stroke-dasharray="3 6" stroke-width=".4" x1="20" x2="180" y1="100" y2="100">
+    </line>
+   </svg>
+   <p class="hero-eyebrow">
+    Talent Management &amp; Creator Representation
+   </p>
+   <h1 class="hero-title">
+    Talent
+    <br/>
+    <span class="accent">Without</span>
+    <br/>
+    Limits
+   </h1>
+   <p class="hero-tagline">
+    Private management for creators who move culture.
+   </p>
+   <a class="hero-cta" href="#contact">
+    Get in Touch
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+     <path d="M5 12h14M12 5l7 7-7 7">
+     </path>
+    </svg>
+   </a>
+   <div class="hero-scroll">
+    <span class="scroll-line">
+    </span>
+    Scroll
+   </div>
+  </section>
+
+  <!-- Marquee ticker — static fallback replaced by live data on load -->
+  <div class="marquee-wrap" aria-hidden="true" id="marquee-wrap">
+    <div class="marquee-track" id="marquee-track"><span class="marquee-item">1.6M+ Combined Followers<span class="marquee-dot">·</span></span><span class="marquee-item">TikTok · YouTube · Instagram<span class="marquee-dot">·</span></span><span class="marquee-item">Family &amp; Lifestyle Content<span class="marquee-dot">·</span></span><span class="marquee-item">Brand Partnerships<span class="marquee-dot">·</span></span><span class="marquee-item">Authentic Storytelling<span class="marquee-dot">·</span></span><span class="marquee-item">1.6M+ Combined Followers<span class="marquee-dot">·</span></span><span class="marquee-item">TikTok · YouTube · Instagram<span class="marquee-dot">·</span></span><span class="marquee-item">Family &amp; Lifestyle Content<span class="marquee-dot">·</span></span><span class="marquee-item">Brand Partnerships<span class="marquee-dot">·</span></span><span class="marquee-item">Authentic Storytelling<span class="marquee-dot">·</span></span></div>
+  </div>
+
+  <div class="divider"></div>
+  <section class="about" id="about">
+   <div>
+    <p class="about-label">
+     Who We Are
+    </p>
+    <h2 class="about-heading">
+     The Business
+     <br/>
+     Behind the
+     <span>
+      Creators
+     </span>
+    </h2>
+    <p class="about-body">
+     Nysterys Media is a private, family-run management company. We exist solely to represent our own family's creators, handling every aspect of the business so they can focus entirely on what they do best: making content.
+    </p>
+    <p class="about-body">
+     We manage brand partnerships, deal negotiations, rate-setting, and label communications on behalf of our talent. Every inquiry is handled directly and personally, because this is family business.
+    </p>
+   </div>
+   <div class="about-stats">
+    <div class="stat">
+     <div class="stat-inner">
+      <div class="stat-front">
+       <div class="stat-number" id="about-stat-val-0"></div>
+       <div class="stat-label" id="about-stat-lbl-0"></div>
+      </div>
+      <div class="stat-back">
+       <p class="stat-back-text">Across TikTok, YouTube &amp; Instagram</p>
+      </div>
+     </div>
+    </div>
+    <div class="stat">
+     <div class="stat-inner">
+      <div class="stat-front">
+       <div class="stat-number" id="about-stat-val-1"></div>
+       <div class="stat-label" id="about-stat-lbl-1"></div>
+      </div>
+      <div class="stat-back">
+       <p class="stat-back-text">Views, likes, and shares from real fans</p>
+      </div>
+     </div>
+    </div>
+    <div class="stat">
+     <div class="stat-inner">
+      <div class="stat-front">
+       <div class="stat-number" id="about-stat-val-2"></div>
+       <div class="stat-label" id="about-stat-lbl-2"></div>
+      </div>
+      <div class="stat-back">
+       <p class="stat-back-text">TikTok · YouTube · Instagram</p>
+      </div>
+     </div>
+    </div>
+    <div class="stat">
+     <div class="stat-inner">
+      <div class="stat-front">
+       <div class="stat-number" id="about-stat-val-3"></div>
+       <div class="stat-label" id="about-stat-lbl-3"></div>
+      </div>
+      <div class="stat-back">
+       <p class="stat-back-text">Kym &amp; Mys — a family act</p>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section>
+  <div class="divider">
+  </div>
+  <section class="services" id="services">
+   <div class="section-header">
+    <span class="section-label">
+     What We Do
+    </span>
+    <h2 class="section-title">
+     Full-Service Representation
+    </h2>
+   </div>
+   <div class="services-grid">
+    <div class="service-card">
+     <svg class="service-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2">
+      </path>
+      <circle cx="9" cy="7" r="4">
+      </circle>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75">
+      </path>
+     </svg>
+     <div class="service-name">
+      Talent Representation
+     </div>
+     <p class="service-desc">
+      Full management and representation for our roster of digital creators across TikTok, YouTube, Instagram, and beyond.
+     </p>
+    </div>
+    <div class="service-card">
+     <svg class="service-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <rect height="14" rx="2" width="20" x="2" y="7">
+      </rect>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16">
+      </path>
+     </svg>
+     <div class="service-name">
+      Brand Partnerships
+     </div>
+     <p class="service-desc">
+      Deal negotiation, rate management, and campaign execution for brand collaborations. We protect our creators' value and brand integrity.
+     </p>
+    </div>
+    <div class="service-card">
+     <svg class="service-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M9 18V5l12-2v13">
+      </path>
+      <circle cx="6" cy="18" r="3">
+      </circle>
+      <circle cx="18" cy="16" r="3">
+      </circle>
+     </svg>
+     <div class="service-name">
+      Music &amp; Label Comms
+     </div>
+     <p class="service-desc">
+      Label outreach, music promotion coordination, and industry communications handled with professionalism and precision.
+     </p>
+    </div>
+   </div>
+  </section>
+  <div class="divider">
+  </div>
+  <section class="roster" id="roster">
+   <div class="section-header">
+    <span class="section-label">
+     Our Talent
+    </span>
+    <h2 class="section-title">
+     Meet the Creators
+    </h2>
+   </div>
+   <div class="roster-grid" id="roster-grid">
+     <div class="talent-card-skel" aria-hidden="true">
+       <div class="skel skel-photo"></div>
+       <div class="skel-body">
+         <div class="skel skel-tag"></div>
+         <div class="skel skel-name"></div>
+         <div class="skel-stats">
+           <div><div class="skel skel-stat-val"></div><div class="skel skel-stat-lbl"></div></div>
+           <div><div class="skel skel-stat-val"></div><div class="skel skel-stat-lbl"></div></div>
+           <div><div class="skel skel-stat-val"></div><div class="skel skel-stat-lbl"></div></div>
+         </div>
+         <div class="skel skel-line w80"></div>
+         <div class="skel skel-line w60"></div>
+         <div class="skel skel-line w40"></div>
+       </div>
+     </div>
+     <div class="talent-card-skel" aria-hidden="true">
+       <div class="skel skel-photo"></div>
+       <div class="skel-body">
+         <div class="skel skel-tag"></div>
+         <div class="skel skel-name"></div>
+         <div class="skel-stats">
+           <div><div class="skel skel-stat-val"></div><div class="skel skel-stat-lbl"></div></div>
+           <div><div class="skel skel-stat-val"></div><div class="skel skel-stat-lbl"></div></div>
+           <div><div class="skel skel-stat-val"></div><div class="skel skel-stat-lbl"></div></div>
+         </div>
+         <div class="skel skel-line w80"></div>
+         <div class="skel skel-line w60"></div>
+         <div class="skel skel-line w40"></div>
+       </div>
+     </div>
+   </div>
+  </section>
+  <div class="divider">
+  </div>
+  <section class="partner" id="partner">
+   <div class="partner-intro">
+    <span class="section-label">
+     Work With Our Talent
+    </span>
+    <h2 class="section-title">
+     How We Collaborate
+    </h2>
+    <p>
+     We believe the best partnerships feel invisible. Our talent creates content that is authentic by default, and any collaboration has to fit naturally into that. We do not do hard sales pitches, scripted deliverables, or restrictive briefs. If it looks like an ad, it is not a fit.
+    </p>
+   </div>
+   <div class="partner-grid">
+    <div class="partner-card">
+     <svg class="partner-card-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M9 18V5l12-2v13">
+      </path>
+      <circle cx="6" cy="18" r="3">
+      </circle>
+      <circle cx="18" cy="16" r="3">
+      </circle>
+     </svg>
+     <div class="partner-card-title">
+      Music &amp; Labels
+     </div>
+     <p class="partner-card-text">
+      Our preferred partners. We work directly with record labels, independent artists, and bands looking for genuine fan-first promotion. If the music is good, the content writes itself.
+     </p>
+    </div>
+    <div class="partner-card">
+     <svg class="partner-card-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+      </path>
+     </svg>
+     <div class="partner-card-title">
+      Beauty &amp; Cosmetics
+     </div>
+     <p class="partner-card-text">
+      Products our talent actually uses and loves. We partner with beauty and cosmetic brands where the fit is organic, giving audiences real recommendations they can trust.
+     </p>
+    </div>
+    <div class="partner-card">
+     <svg class="partner-card-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z">
+      </path>
+      <line x1="3" x2="21" y1="6" y2="6">
+      </line>
+      <path d="M16 10a4 4 0 0 1-8 0">
+      </path>
+     </svg>
+     <div class="partner-card-title">
+      Fashion &amp; Clothing
+     </div>
+     <p class="partner-card-text">
+      Style is already part of our creators' content DNA. Clothing and fashion collaborations work when the brand matches the aesthetic, not the other way around.
+     </p>
+    </div>
+    <div class="partner-card">
+     <svg class="partner-card-icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10">
+      </circle>
+      <path d="M12 8v4l3 3">
+      </path>
+     </svg>
+     <div class="partner-card-title">
+      Authentic Content Only
+     </div>
+     <p class="partner-card-text">
+      Every engagement, sponsored or otherwise, follows the same rule: if it does not feel natural in our creators' feed, we pass. Our audience's trust is not for sale.
+     </p>
+    </div>
+   </div>
+   <div class="partner-nope">
+    <svg class="partner-nope-icon" fill="none" height="20" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" width="20">
+     <circle cx="12" cy="12" r="10">
+     </circle>
+     <line x1="4.93" x2="19.07" y1="4.93" y2="19.07">
+     </line>
+    </svg>
+    <p class="partner-nope-text">
+     We do not work with AI app promotions, low-quality or counterfeit brands, dropship operations, or any partner whose products do not meet a genuine quality bar. We also pass on anything that feels inauthentic, off-brand, or misaligned with our values. We keep our roster's credibility intact by being selective about who we say yes to.
+    </p>
+   </div>
+  </section>
+  <div class="divider">
+  </div>
+  <section class="contact" id="contact">
+   <p class="contact-label">
+    Work With Us
+   </p>
+   <h2 class="contact-heading">
+    Let's Build
+    <br/>
+    Something
+   </h2>
+   <p class="contact-sub">
+    Brand deals, collaboration inquiries, and booking requests welcome.
+   </p>
+   <a class="contact-email" href="#" id="contact-email-link"></a>
+   <div class="social-links">
+    <a aria-label="TikTok" class="social-link" href="https://www.tiktok.com/@Nysterys" rel="noopener" target="_blank">
+     <svg fill="currentColor" viewBox="0 0 24 24">
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z">
+      </path>
+     </svg>
+    </a>
+    <a aria-label="Instagram" class="social-link" href="https://www.instagram.com/nysterys/" rel="noopener" target="_blank">
+     <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+      <rect height="20" rx="5" width="20" x="2" y="2">
+      </rect>
+      <circle cx="12" cy="12" r="4">
+      </circle>
+      <circle cx="17.5" cy="6.5" fill="currentColor" r=".5">
+      </circle>
+     </svg>
+    </a>
+    <a aria-label="YouTube" class="social-link" href="https://www.youtube.com/@Nysterys" rel="noopener" target="_blank">
+     <svg fill="currentColor" viewBox="0 0 24 24">
+      <path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.6 2.8 12 2.8 12 2.8s-4.6 0-6.8.2c-.6 0-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.2.7 11.5v2.1C.7 16 1 18 1 18s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.6 22.2 12 22.2 12 22.2s4.6 0 6.8-.3c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.2.3-4.4v-2.1C23.3 9.2 23 7 23 7zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z">
+      </path>
+     </svg>
+    </a>
+   </div>
+  </section>
+  <footer>
+   <div class="footer-logo">
+    NYS<span>T</span>ERYS MEDIA LLC
+   </div>
+   <div class="footer-copy">
+    © 2026 Nysterys Media LLC. All rights reserved.  ·
+    <a href="/privacy.html">Privacy Policy</a>
+   </div>
+  </footer>
+  <script>
+  /* ── Fade-in on scroll ── */
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+        var delay = parseFloat(e.target.style.transitionDelay) || 0;
+        setTimeout(function() {
+          e.target.style.transition = '';
+          e.target.style.transitionDelay = '';
+        }, 750 + delay);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+  document.querySelectorAll('.about, .services, .stat, .service-card, .partner-card, .partner-nope').forEach(function(el) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(32px)';
+    el.style.transition = 'opacity .7s ease, transform .7s ease';
+    observer.observe(el);
+  });
+
+  // Stagger stat tile entry — each tile slides in 110ms after the previous
+  document.querySelectorAll('.about-stats .stat').forEach(function(el, i) {
+    el.style.transitionDelay = (i * 110) + 'ms';
+  });
+
+  /* ── Stat counter animation ── */
+  function animateCounter(el, targetStr, duration) {
+    var m = String(targetStr).match(/^([\d.]+)([^0-9.]*)$/);
+    if (!m) { el.textContent = targetStr; return; }
+    var target   = parseFloat(m[1]);
+    var suffix   = m[2];
+    var decimals = m[1].indexOf('.') >= 0 ? m[1].split('.')[1].length : 0;
+    var start    = null;
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / duration, 1);
+      var ease = 1 - Math.pow(1 - p, 3);
+      el.textContent = (target * ease).toFixed(decimals) + suffix;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* Trigger counter when stat tile scrolls into view */
+  var counterObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        var numEl = e.target.querySelector('.stat-number[data-target]');
+        if (numEl && !numEl.dataset.done) {
+          numEl.dataset.done = '1';
+          animateCounter(numEl, numEl.dataset.target, 1200);
+        }
+      }
+    });
+  }, { threshold: 0.5 });
+  </script>
+  <script>
+   const ICONS = {
+  tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>',
+  youtube: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.6 2.8 12 2.8 12 2.8s-4.6 0-6.8.2c-.6 0-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.2.7 11.5v2.1C.7 16 1 18 1 18s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.6 22.2 12 22.2 12 22.2s4.6 0 6.8-.3c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.2.3-4.4v-2.1C23.3 9.2 23 7 23 7zM9.7 15.5V8.4l8.1 3.6-8.1 3.5z"/></svg>'
+};
+
+function buildSocialLink(platform, url) {
+  return '<a href="' + url + '" target="_blank" rel="noopener" class="talent-social" aria-label="' + platform + '">' +
+    ICONS[platform] + ' ' + platform.toUpperCase() + '</a>';
+}
+
+function buildTalentCard(creator) {
+  var socials = Object.entries(creator.socials)
+    .map(function(entry) { return buildSocialLink(entry[0], entry[1]); })
+    .join('');
+  return '<div class="talent-card" onclick="window.location=\'creator.html?id=' + creator.id + '\'">' +
+    '<div class="talent-photo">' +
+      '<img src="' + creator.photo + '" loading="lazy" decoding="async" alt="' + creator.name + '" />' +
+    '</div>' +
+    '<div class="talent-body">' +
+      '<p class="talent-tag">' + creator.tag + '</p>' +
+      '<h3 class="talent-name">' + creator.name + ' <span class="talent-handle">@' + creator.socials.tiktok.split('@').pop() + '</span></h3>' +
+      '<div class="talent-stats">' +
+        '<div class="talent-stat"><span class="stat-val">' + creator.followers + '</span><span class="stat-lbl">Followers</span></div>' +
+        '<div class="talent-stat"><span class="stat-val">' + creator.likes + '</span><span class="stat-lbl">Likes</span></div>' +
+        '<div class="talent-stat"><span class="stat-val">' + creator.engagementRate + '</span><span class="stat-lbl">Eng. Rate</span></div>' +
+      '</div>' +
+      '<p class="talent-bio">' + creator.bio + '</p>' +
+      '<div class="talent-socials">' + socials + '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+loadSiteData()
+  .then(function(data) {
+
+    // Populate about stats — store target on el, fire counter via observer
+    data.about.stats.forEach(function(s, i) {
+      var val  = document.getElementById('about-stat-val-' + i);
+      var lbl  = document.getElementById('about-stat-lbl-' + i);
+      var tile = val && val.closest('.stat');
+      if (val) val.dataset.target = s.value;
+      if (lbl) lbl.textContent = s.label;
+      if (tile) counterObserver.observe(tile);
+    });
+
+    // Build and inject talent cards (replaces skeleton)
+    var grid = document.getElementById('roster-grid');
+    if (grid) {
+      grid.innerHTML = data.roster.map(buildTalentCard).join('');
+      grid.querySelectorAll('.talent-card').forEach(function(el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(32px)';
+        el.style.transition = 'opacity .7s ease, transform .7s ease';
+        observer.observe(el);
+      });
+    }
+
+    // Build marquee with live data (doubled for seamless loop)
+    var kym = data.roster.find(function(c) { return c.id === 'kym'; }) || {};
+    var mys = data.roster.find(function(c) { return c.id === 'mys'; }) || {};
+    var items = [
+      mys.followers + ' Followers',
+      mys.likes + ' Likes',
+      mys.engagementRate + ' Eng. Rate',
+      '@mysthegreat',
+      kym.followers + ' Followers',
+      kym.likes + ' Likes',
+      kym.engagementRate + ' Eng. Rate',
+      '@kymchi_n_crackers',
+      'Music · Fashion · Lifestyle',
+      'TikTok · YouTube · Instagram',
+    ];
+    var html = items.map(function(t) {
+      return '<span class="marquee-item">' + t + '<span class="marquee-dot">·</span></span>';
+    }).join('');
+    var track = document.getElementById('marquee-track');
+    if (track) track.innerHTML = html + html; // doubled for seamless loop
+  })
+  .catch(function(err) { console.error('Could not load site data:', err); });
+  </script>
+
+   <script>
+    initEmail('#contact-email-link');
+  </script>
+</body>
+</html>

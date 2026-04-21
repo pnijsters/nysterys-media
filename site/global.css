@@ -1,0 +1,256 @@
+/* =============================================================
+   global.css — Nysterys Media
+   Shared reset, tokens, nav, footer, and typography utilities
+   loaded by every page on the site.
+   ============================================================= */
+
+/* ─── Reset ─────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── Design tokens ──────────────────────────────────────────── */
+
+:root {
+  --black:    #080808;
+  --surface:  #111111;
+  --surface2: #161616;
+  --border:   #1e1e1e;
+  --orange:   #ff5c00;
+  --orange2:  #ff8c42;
+  --white:    #f5f5f5;
+  --muted:    #888888;
+}
+
+/* ─── Base ───────────────────────────────────────────────────── */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+}
+
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.35;
+}
+
+/* ─── Navigation ─────────────────────────────────────────────── */
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+  z-index: 100;
+  background: linear-gradient(to bottom, rgba(8, 8, 8, 0.95), transparent);
+}
+
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.15em;
+  color: var(--white);
+  text-decoration: none;
+}
+
+.nav-logo span {
+  color: var(--orange);
+}
+
+/* Right-side nav group — holds portal link + CTA together */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Team Portal link — subtle, doesn't compete with Work With Us */
+.nav-portal {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-portal:hover {
+  color: var(--orange);
+}
+
+/* ─── Layout utilities ───────────────────────────────────────── */
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--orange), transparent);
+  margin: 0 3rem;
+  opacity: 0.3;
+}
+
+.section-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+/* ─── Footer ─────────────────────────────────────────────────── */
+
+footer {
+  padding: 2rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+}
+
+.footer-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+.footer-logo span {
+  color: var(--orange);
+}
+
+.footer-copy {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #444444;
+}
+
+/* ─── Marquee ticker ─────────────────────────────────────────── */
+
+.marquee-wrap {
+  overflow: hidden;
+  background: var(--surface2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 0.6rem 0;
+  position: relative;
+  z-index: 10;
+}
+.marquee-wrap:hover .marquee-track {
+  animation-play-state: paused;
+}
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 35s linear infinite;
+  will-change: transform;
+  width: max-content;
+}
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 2.5rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--orange);
+  opacity: 0.7;
+  gap: 1rem;
+}
+.marquee-dot {
+  opacity: 0.4;
+  font-size: 1rem;
+  font-weight: 300;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── Skeleton loader ─────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.skel {
+  background: linear-gradient(90deg, var(--surface) 25%, #1c1c1c 50%, var(--surface) 75%);
+  background-size: 300% 100%;
+  animation: shimmer 1.8s ease infinite;
+  border-radius: 2px;
+}
+.talent-card-skel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+.skel-photo  { width: 100%; aspect-ratio: 4/3; }
+.skel-body   { padding: 2rem; }
+.skel-tag    { height: 9px;  width: 40%; margin-bottom: 14px; }
+.skel-name   { height: 36px; width: 55%; margin-bottom: 18px; }
+.skel-line   { height: 10px; margin-bottom: 10px; }
+.skel-line.w80 { width: 80%; }
+.skel-line.w60 { width: 60%; }
+.skel-line.w40 { width: 40%; }
+.skel-stats  { display: flex; gap: 2rem; margin-bottom: 20px; }
+.skel-stat-val { height: 26px; width: 40px; margin-bottom: 6px; }
+.skel-stat-lbl { height: 8px;  width: 50px; }
+
+/* ─── Divider (angled accent) ────────────────────────────────── */
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--orange), transparent);
+  margin: 0 3rem;
+  opacity: 0.25;
+  transform: skewY(-0.5deg);
+}
+
+/* ─── Stat counter ────────────────────────────────────────────── */
+
+.stat-number[data-counting],
+.hero-stat-val[data-counting] {
+  display: inline-block;
+  min-width: 1ch;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  nav {
+    padding: 1.25rem 1.5rem;
+  }
+
+  footer {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    padding: 1.5rem;
+  }
+}

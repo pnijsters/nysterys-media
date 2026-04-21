@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080808" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Agency Dashboard — Nysterys</title>
+
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'none';
+      script-src 'self';
+      style-src 'self' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https:;
+      connect-src 'self' https://rnntuxabccnphfvvvaks.supabase.co;
+      frame-ancestors 'none';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'none';
+    " />
+
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="agency.css" />
+  </head>
+  <body>
+    <div id="root">
+
+      <!-- Loading -->
+      <div id="loading-state" class="fullpage-state">
+        <div class="loading-logo">NYS<span>T</span>ERYS</div>
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Loading dashboard</p>
+      </div>
+
+      <!-- Error -->
+      <div id="error-state" class="fullpage-state" hidden>
+        <div class="loading-logo">NYS<span>T</span>ERYS</div>
+        <div id="error-icon" class="error-icon"></div>
+        <h2 id="error-title" class="error-title"></h2>
+        <p id="error-body" class="error-body"></p>
+        <a href="https://nysterys.com" class="back-home-link" target="_blank" rel="noopener noreferrer">Visit nysterys.com ↗</a>
+      </div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" hidden>
+
+        <!-- Top nav bar -->
+        <header class="agency-header">
+          <div class="container">
+            <a href="https://nysterys.com" class="header-logo" target="_blank" rel="noopener noreferrer">NYS<span>T</span>ERYS</a>
+            <a href="https://nysterys.com" class="header-site-link" target="_blank" rel="noopener noreferrer">Visit nysterys.com ↗</a>
+          </div>
+        </header>
+
+        <!-- Creator hero -->
+        <div class="creator-hero">
+          <div class="container">
+            <div class="hero-inner">
+              <div class="hero-avatar-wrap">
+                <img id="hero-avatar" class="hero-avatar" src="" alt="" />
+              </div>
+              <div class="hero-info">
+                <div id="hero-handle" class="hero-handle"></div>
+                <h1 id="hero-name" class="hero-name"></h1>
+                <p id="hero-bio" class="hero-bio"></p>
+                <div id="hero-stats" class="hero-stats"></div>
+              </div>
+              <div class="hero-for-badge">
+                <div class="hero-for-label">PREPARED FOR</div>
+                <div id="hero-agency-name" class="hero-for-agency"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="container main-content">
+
+          <!-- Performance charts (conditional) -->
+          <div id="perf-chart-section" class="perf-charts-grid" hidden>
+            <div class="chart-panel">
+              <div class="chart-heading">Avg Views Per Post</div>
+              <div class="chart-subheading">Normalized — fairer comparison across campaigns with different post counts</div>
+              <div id="perf-chart-bars" class="perf-chart-bars"></div>
+            </div>
+            <div class="chart-panel" id="top-posts-panel" hidden>
+              <div class="chart-heading">Top Individual Posts</div>
+              <div class="chart-subheading">Best performing content across all campaigns</div>
+              <div id="top-posts-bars" class="perf-chart-bars"></div>
+            </div>
+          </div>
+
+          <!-- Tab nav (campaigns_and_payments scope only) -->
+          <nav id="tabs" class="tab-bar" hidden>
+            <button id="tab-campaigns" class="tab tab-active">Campaigns &amp; Deliverables</button>
+            <button id="tab-payments" class="tab">Payment Status</button>
+          </nav>
+
+          <div id="campaigns-panel" hidden></div>
+          <div id="payments-panel" hidden></div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="agency-footer">
+          <div class="container">
+            <a href="https://nysterys.com" class="footer-brand" target="_blank" rel="noopener noreferrer">NYS<span>T</span>ERYS</a>
+            <span class="footer-sep">·</span>
+            <span class="footer-tagline">Creator Partnership Platform</span>
+            <span class="footer-sep">·</span>
+            <a href="https://nysterys.com" class="footer-link" target="_blank" rel="noopener noreferrer">nysterys.com ↗</a>
+          </div>
+        </footer>
+
+      </div><!-- #dashboard -->
+    </div><!-- #root -->
+    <script src="agency.js"></script>
+  </body>
+</html>

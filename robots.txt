@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /hub/
+Disallow: /media-kit.html
+Disallow: /rate-card.html
+
+Sitemap: https://nysterys.com/sitemap.xml
