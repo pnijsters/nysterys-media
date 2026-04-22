@@ -174,14 +174,14 @@ body::before {
     linear-gradient(135deg, rgba(255,92,0,0.07) 0%, rgba(255,92,0,0.02) 40%, transparent 65%),
     var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 44px 0 40px;
+  padding: 28px 0 24px;
   animation: fadeIn 0.5s ease;
 }
 
 /* "Prepared for" — agency name leads the hero */
 .hero-prepared {
-  margin-bottom: 28px;
-  padding-bottom: 22px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -196,7 +196,7 @@ body::before {
 
 .hero-prepared-agency {
   font-family: var(--font-display);
-  font-size: 64px;
+  font-size: 52px;
   letter-spacing: 0.03em;
   color: var(--white);
   line-height: 0.9;
@@ -266,9 +266,9 @@ body::before {
 .hero-bio {
   font-size: 13px;
   color: var(--muted);
-  line-height: 1.65;
+  line-height: 1.6;
   max-width: 560px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .hero-stats {
@@ -313,15 +313,16 @@ body::before {
 /* ── Main content area ────────────────────────────────────── */
 
 .main-content {
-  padding-top: 32px;
-  padding-bottom: 72px;
+  padding-top: 24px;
+  padding-bottom: 56px;
   animation: fadeIn 0.4s ease;
 }
 
 /* ── KPI strip — campaign-scoped performance numbers ──────── */
 
 .kpi-strip {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -331,11 +332,10 @@ body::before {
 }
 
 .kpi-cell {
-  flex: 1;
-  padding: 20px 24px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   border-right: 1px solid var(--border);
 }
 
@@ -343,7 +343,7 @@ body::before {
 
 .kpi-value {
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: 30px;
   letter-spacing: 0.02em;
   color: var(--white);
   line-height: 1;
@@ -905,13 +905,9 @@ tbody tr:hover td { background: var(--surface2); }
 
   .main-content { padding-top: 20px; padding-bottom: 48px; }
 
-  .kpi-strip { flex-wrap: wrap; }
-  .kpi-cell  {
-    flex: 1 1 calc(50% - 1px);
-    min-width: 0;
-    padding: 14px 16px;
-  }
-  .kpi-value { font-size: 28px; }
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+  .kpi-cell  { padding: 14px 16px; }
+  .kpi-value { font-size: 26px; }
 
   .campaign-head { flex-direction: column; align-items: flex-start; }
 
