@@ -252,6 +252,23 @@ body::before {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hero-handle-sep {
+  color: var(--dim);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.hero-handle-followers {
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .hero-name {

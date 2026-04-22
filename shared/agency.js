@@ -211,19 +211,20 @@
     document.getElementById('hero-bio').textContent        = (profile && profile.bio) ? profile.bio : '';
     document.getElementById('hero-agency-name').textContent = dash.agency_name || '';
 
-    // Followers — the one global credential stat shown in the hero
-    var statsEl  = document.getElementById('hero-stats');
+    // Followers — append inline to the handle line rather than a standalone stat
+    var handleEl  = document.getElementById('hero-handle');
     var followers = profile ? profile.followers : null;
-
-    if (followers) {
-      var pill  = el('div', 'hero-stat');
-      var valEl = el('div', 'hero-stat-value');
-      valEl.textContent = fmtNum(followers);
-      var lblEl = el('div', 'hero-stat-label');
-      lblEl.textContent = 'Followers';
-      append(pill, valEl, lblEl);
-      statsEl.appendChild(pill);
+    if (followers && handleEl) {
+      var sep = el('span', 'hero-handle-sep');
+      sep.textContent = '·';
+      var fol = el('span', 'hero-handle-followers');
+      fol.textContent = fmtNum(followers) + ' followers';
+      append(handleEl, sep, fol);
     }
+
+    // Clear unused stats container
+    var statsEl = document.getElementById('hero-stats');
+    if (statsEl) statsEl.style.display = 'none';
   }
 
   // ── KPI strip — campaign-scoped performance numbers ───────────────────────────
@@ -515,30 +516,32 @@
         var thumbTd = el('td', 'thumb-col');
         var imgUrl  = safeLink(d.cover_image_url);
         var postUrl = safeLink(d.post_url);
-        var thumbWrap = postUrl ? el('a', 'row-thumb') : el('div', 'row-thumb');
-        if (postUrl) {
-          thumbWrap.href   = postUrl;
-          thumbWrap.target = '_blank';
-          thumbWrap.rel    = 'noopener noreferrer';
+        if (imgUrl || postUrl) {
+          var thumbWrap = postUrl ? el('a', 'row-thumb') : el('div', 'row-thumb');
+          if (postUrl) {
+            thumbWrap.href   = postUrl;
+            thumbWrap.target = '_blank';
+            thumbWrap.rel    = 'noopener noreferrer';
+          }
+          if (imgUrl) {
+            var img = el('img');
+            img.src     = imgUrl;
+            img.alt     = '';
+            img.loading = 'lazy';
+            img.onerror = function () {
+              var ph = el('div', 'row-thumb-ph');
+              ph.textContent = '▶';
+              thumbWrap.innerHTML = '';
+              thumbWrap.appendChild(ph);
+            };
+            thumbWrap.appendChild(img);
+          } else {
+            var ph2 = el('div', 'row-thumb-ph');
+            ph2.textContent = '▶';
+            thumbWrap.appendChild(ph2);
+          }
+          thumbTd.appendChild(thumbWrap);
         }
-        if (imgUrl) {
-          var img = el('img');
-          img.src     = imgUrl;
-          img.alt     = '';
-          img.loading = 'lazy';
-          img.onerror = function () {
-            var ph = el('div', 'row-thumb-ph');
-            ph.textContent = '▶';
-            thumbWrap.innerHTML = '';
-            thumbWrap.appendChild(ph);
-          };
-          thumbWrap.appendChild(img);
-        } else {
-          var ph = el('div', 'row-thumb-ph');
-          ph.textContent = d.post_url ? '▶' : '·';
-          thumbWrap.appendChild(ph);
-        }
-        thumbTd.appendChild(thumbWrap);
         row.appendChild(thumbTd);
 
         row.appendChild(tdTxt(d.platform));
