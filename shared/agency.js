@@ -422,16 +422,21 @@
   // ── Campaign stats aggregate ───────────────────────────────────────────────────
 
   function sumStats(deliverables) {
-    var totals = { views: 0, likes: 0, comments: 0, shares: 0, hasStats: false };
+    var totals = { views: 0, likes: 0, comments: 0, shares: 0, erSum: 0, erCount: 0, hasStats: false };
     deliverables.forEach(function (d) {
       if (d.stats) {
         totals.views    += d.stats.views    || 0;
         totals.likes    += d.stats.likes    || 0;
         totals.comments += d.stats.comments || 0;
         totals.shares   += d.stats.shares   || 0;
+        if (d.stats.engagement_rate > 0) {
+          totals.erSum   += d.stats.engagement_rate;
+          totals.erCount += 1;
+        }
         totals.hasStats = true;
       }
     });
+    totals.avgER = totals.erCount > 0 ? totals.erSum / totals.erCount : null;
     return totals;
   }
 
@@ -590,9 +595,10 @@
           { label: 'Total Likes',    value: fmtNum(totals.likes) },
           { label: 'Total Comments', value: fmtNum(totals.comments) },
           { label: 'Total Shares',   value: fmtNum(totals.shares) },
+          { label: 'Engagement Rate', value: totals.avgER !== null ? totals.avgER.toFixed(1) + '%' : '—', highlight: true },
         ];
         metrics.forEach(function (m) {
-          var pill  = el('div', 'stat-pill');
+          var pill  = el('div', m.highlight ? 'stat-pill stat-pill-er' : 'stat-pill');
           var valEl = el('div', 'stat-pill-value');
           valEl.textContent = m.value;
           var lblEl = el('div', 'stat-pill-label');

@@ -681,6 +681,8 @@ tbody tr:hover td { background: var(--surface2); }
   padding-right: 0;
 }
 
+.stat-pill-er .stat-pill-value { color: var(--orange); }
+
 .stat-pill-value {
   font-size: 17px;
   font-weight: 700;
