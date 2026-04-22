@@ -470,32 +470,36 @@ body::before {
 
 .tab-bar {
   display: flex;
-  gap: 4px;
+  gap: 0;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  width: fit-content;
 }
 
 .tab {
   background: none;
   border: none;
-  border-bottom: 2px solid transparent;
+  border-radius: 5px;
   color: var(--muted);
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  padding: 8px 16px 10px;
-  margin-bottom: -1px;
-  transition: color var(--transition), border-color var(--transition);
+  padding: 9px 20px;
+  transition: color var(--transition), background var(--transition);
   white-space: nowrap;
 }
 
 .tab:hover { color: var(--white); }
 
 .tab-active {
+  background: var(--surface3);
   color: var(--white);
-  border-bottom-color: var(--orange);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
 /* ── Campaign cards ───────────────────────────────────────── */
