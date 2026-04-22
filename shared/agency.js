@@ -247,7 +247,7 @@
       },
       {
         val:   summary.avgER > 0 ? summary.avgER.toFixed(1) + '%' : '—',
-        label: 'Avg Engagement',
+        label: 'Average Engagement',
       },
       {
         val:   postsLabel,
