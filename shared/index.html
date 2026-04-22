@@ -63,6 +63,14 @@
         <!-- Creator hero -->
         <div class="creator-hero">
           <div class="container">
+
+            <!-- "Prepared for" leads — agency name is the headline -->
+            <div class="hero-prepared">
+              <div class="hero-prepared-label">Prepared for</div>
+              <div id="hero-agency-name" class="hero-prepared-agency"></div>
+            </div>
+
+            <!-- Creator credential -->
             <div class="hero-inner">
               <div class="hero-avatar-wrap">
                 <img id="hero-avatar" class="hero-avatar" src="" alt="" />
@@ -73,16 +81,16 @@
                 <p id="hero-bio" class="hero-bio"></p>
                 <div id="hero-stats" class="hero-stats"></div>
               </div>
-              <div class="hero-for-badge">
-                <div class="hero-for-label">PREPARED FOR</div>
-                <div id="hero-agency-name" class="hero-for-agency"></div>
-              </div>
             </div>
+
           </div>
         </div>
 
         <!-- Main content -->
         <div class="container main-content">
+
+          <!-- KPI strip — campaign-scoped numbers, filled by JS -->
+          <div id="kpi-strip" hidden></div>
 
           <!-- Performance charts (conditional) -->
           <div id="perf-chart-section" class="perf-charts-grid" hidden>

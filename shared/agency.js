@@ -137,8 +137,11 @@
 
   function computeSummary(campaigns) {
     var totalViews = 0, totalLikes = 0, totalER = 0, erCount = 0;
+    var postsDelivered = 0, totalPosts = 0;
     campaigns.forEach(function (c) {
       c.deliverables.forEach(function (d) {
+        totalPosts++;
+        if (d.status === 'Posted') postsDelivered++;
         if (d.stats) {
           totalViews += d.stats.views    || 0;
           totalLikes += d.stats.likes    || 0;
@@ -148,10 +151,12 @@
       });
     });
     return {
-      totalViews:    totalViews,
-      totalLikes:    totalLikes,
-      avgER:         erCount > 0 ? (totalER / erCount) : 0,
-      campaignCount: campaigns.length,
+      totalViews:     totalViews,
+      totalLikes:     totalLikes,
+      avgER:          erCount > 0 ? (totalER / erCount) : 0,
+      campaignCount:  campaigns.length,
+      postsDelivered: postsDelivered,
+      totalPosts:     totalPosts,
     };
   }
 
@@ -175,13 +180,17 @@
   }
 
   // ── Creator hero ──────────────────────────────────────────────────────────────
+  // Hero now shows only the creator's global credential (followers).
+  // Campaign-scoped numbers (views, engagement, posts) live in the KPI strip.
 
-  function renderCreatorHero(dash, summary) {
-    var profile = CREATORS[dash.creator_name] || null;
+  function renderCreatorHero(dash) {
+    var profile  = CREATORS[dash.creator_name] || null;
     var avatarEl = document.getElementById('hero-avatar');
 
-    if (profile && profile.avatar) {
-      avatarEl.src = profile.avatar;
+    // Avatar — src set directly; mitigated by CSP img-src restricting to https: + data:
+    var avatarSrc = dash.avatar_url || (profile && profile.avatar ? profile.avatar : null);
+    if (avatarSrc) {
+      avatarEl.src = avatarSrc;
       avatarEl.alt = dash.creator_name || '';
       avatarEl.onerror = function () {
         this.style.display = 'none';
@@ -196,75 +205,76 @@
       avatarEl.parentNode.insertBefore(init, avatarEl);
     }
 
-    document.getElementById('hero-handle').textContent = (profile && profile.handle) ? profile.handle : '';
-    document.getElementById('hero-name').textContent   = dash.creator_name || '';
-    document.getElementById('hero-bio').textContent    = (profile && profile.bio) ? profile.bio : '';
+    // All text via textContent — no innerHTML
+    document.getElementById('hero-handle').textContent     = (profile && profile.handle) ? profile.handle : '';
+    document.getElementById('hero-name').textContent       = dash.creator_name || '';
+    document.getElementById('hero-bio').textContent        = (profile && profile.bio) ? profile.bio : '';
     document.getElementById('hero-agency-name').textContent = dash.agency_name || '';
 
-    // Stat pills — two labeled groups: global creator stats vs this-dashboard stats
-    var statsEl = document.getElementById('hero-stats');
+    // Followers — the one global credential stat shown in the hero
+    var statsEl  = document.getElementById('hero-stats');
     var followers = profile ? profile.followers : null;
 
-    var groups = [
+    if (followers) {
+      var pill  = el('div', 'hero-stat');
+      var valEl = el('div', 'hero-stat-value');
+      valEl.textContent = fmtNum(followers);
+      var lblEl = el('div', 'hero-stat-label');
+      lblEl.textContent = 'Followers';
+      append(pill, valEl, lblEl);
+      statsEl.appendChild(pill);
+    }
+  }
+
+  // ── KPI strip — campaign-scoped performance numbers ───────────────────────────
+
+  function renderKpiStrip(campaigns, summary) {
+    var kpiEl = document.getElementById('kpi-strip');
+    if (!kpiEl) return;
+    if (summary.campaignCount === 0) return;
+
+    var postsLabel = summary.totalPosts > 0
+      ? summary.postsDelivered + '/' + summary.totalPosts
+      : (summary.postsDelivered > 0 ? String(summary.postsDelivered) : '—');
+
+    var items = [
       {
-        groupLabel: 'Creator',
-        stats: [
-          { label: 'Followers', rawVal: followers, isFlt: false, hasAnim: false },
-        ],
+        val:   summary.totalViews > 0 ? fmtNum(summary.totalViews) : '—',
+        label: 'Total Views',
+        raw:   summary.totalViews,
+        anim:  summary.totalViews > 0,
       },
       {
-        groupLabel: 'This Dashboard',
-        stats: [
-          { label: 'Total Views',    rawVal: summary.totalViews,    isFlt: false, hasAnim: summary.totalViews > 0 },
-          { label: 'Avg Engagement', rawVal: summary.avgER,         isFlt: true,  hasAnim: summary.avgER > 0, suffix: '%', decimals: 1 },
-          { label: 'Campaigns',      rawVal: summary.campaignCount, isFlt: false, hasAnim: false },
-        ],
+        val:   summary.avgER > 0 ? summary.avgER.toFixed(1) + '%' : '—',
+        label: 'Avg Engagement',
+      },
+      {
+        val:   postsLabel,
+        label: 'Posts Delivered',
+      },
+      {
+        val:   String(summary.campaignCount),
+        label: summary.campaignCount === 1 ? 'Campaign' : 'Campaigns',
       },
     ];
 
-    var animIdx = 0;
-    groups.forEach(function (group) {
-      var groupEl = el('div', 'hero-stat-group');
+    items.forEach(function (item) {
+      var cell  = el('div', 'kpi-cell');
+      var valEl = el('div', 'kpi-value');
+      valEl.textContent = item.val;
+      var lblEl = el('div', 'kpi-label');
+      lblEl.textContent = item.label;
+      append(cell, valEl, lblEl);
+      kpiEl.appendChild(cell);
 
-      var groupLbl = el('div', 'hero-stat-group-label');
-      groupLbl.textContent = group.groupLabel;
-      groupEl.appendChild(groupLbl);
-
-      var pillsEl = el('div', 'hero-stat-group-pills');
-
-      group.stats.forEach(function (s) {
-        var i = animIdx++;
-        var pill = el('div', 'hero-stat');
-        pill.style.animationDelay = (i * 0.09) + 's';
-
-        var valEl = el('div', 'hero-stat-value');
-        if (s.rawVal == null || (s.rawVal === 0 && s.label === 'Followers')) {
-          valEl.textContent = '—';
-        } else if (s.isFlt) {
-          valEl.textContent = s.rawVal > 0 ? s.rawVal.toFixed(1) + (s.suffix || '') : '—';
-        } else {
-          valEl.textContent = fmtNum(s.rawVal);
-        }
-
-        var lblEl = el('div', 'hero-stat-label');
-        lblEl.textContent = s.label;
-        append(pill, valEl, lblEl);
-        pillsEl.appendChild(pill);
-
-        if (s.hasAnim) {
-          setTimeout(function () {
-            if (s.isFlt) {
-              countUpFloat(valEl, s.rawVal, s.decimals || 1, s.suffix || '', 1500);
-            } else {
-              countUp(valEl, s.rawVal, fmtNum, 1500);
-            }
-          }, 500 + i * 100);
-        }
-      });
-
-      append(groupEl, pillsEl);
-      statsEl.appendChild(groupEl);
+      if (item.anim) {
+        setTimeout(function () {
+          countUp(valEl, item.raw, fmtNum, 1500);
+        }, 600);
+      }
     });
+
+    kpiEl.removeAttribute('hidden');
   }
 
   // ── Performance charts ────────────────────────────────────────────────────────
@@ -335,9 +345,8 @@
     // ── Chart 2: top individual posts ──
     var allPosts = [];
     campaigns.forEach(function (c) {
-      // Extract agency name from campaign name format: yyyymmdd-NN-Creator-Agency
-      var parts   = (c.name || '').split('-');
-      var agency  = parts.length >= 4 ? parts.slice(3).join('-') : (c.name || '');
+      var parts  = (c.name || '').split('-');
+      var agency = parts.length >= 4 ? parts.slice(3).join('-') : (c.name || '');
 
       c.deliverables.forEach(function (d) {
         if (d.stats && d.stats.views > 0) {
@@ -372,8 +381,8 @@
     var strip = el('div', 'thumb-strip');
 
     withMedia.forEach(function (d) {
-      var link    = safeLink(d.post_url);
-      var imgUrl  = safeLink(d.cover_image_url);
+      var link   = safeLink(d.post_url);
+      var imgUrl = safeLink(d.cover_image_url);
 
       var item = link ? el('a', 'thumb-item') : el('div', 'thumb-item');
       if (link) {
@@ -440,9 +449,9 @@
       card.style.animationDelay = (cardIdx * 0.07) + 's';
 
       // Card header
-      var head = el('div', 'campaign-head');
+      var head      = el('div', 'campaign-head');
       var nameGroup = el('div', 'campaign-name-group');
-      var nameEl = el('div', 'campaign-name');
+      var nameEl    = el('div', 'campaign-name');
       nameEl.textContent = campaign.name || '';
       var datesEl = el('div', 'campaign-dates');
       var startStr = fmtDate(campaign.start_date);
@@ -479,11 +488,11 @@
       card.appendChild(sectionLabel);
 
       var tableWrap = el('div', 'table-wrap');
-      var table = el('table');
+      var table     = el('table');
 
       var thead = el('thead');
-      var hr = el('tr');
-      var cols = ['Platform', 'Type', 'Status', 'Due Date', 'Posted', 'Link', 'Views', 'Likes', 'Comments', 'Shares', 'ER%'];
+      var hr    = el('tr');
+      var cols  = ['Platform', 'Type', 'Status', 'Due Date', 'Posted', 'Link', 'Views', 'Likes', 'Comments', 'Shares', 'ER%'];
       cols.forEach(function (c) {
         var th = el('th');
         if (['Views','Likes','Comments','Shares','ER%'].indexOf(c) !== -1) th.className = 'num-cell';
@@ -514,7 +523,7 @@
         row.appendChild(tdTxt(fmtDate(d.posted_date), 'muted-cell'));
 
         var linkTd = el('td');
-        var href = safeLink(d.post_url);
+        var href   = safeLink(d.post_url);
         if (href) {
           var a = el('a', 'post-link');
           a.href   = href;
@@ -544,17 +553,17 @@
       var totals = sumStats(delivs);
       if (totals.hasStats) {
         var statsRow = el('div', 'campaign-stats-row');
-        var metrics = [
+        var metrics  = [
           { label: 'Total Views',    value: fmtNum(totals.views) },
           { label: 'Total Likes',    value: fmtNum(totals.likes) },
           { label: 'Total Comments', value: fmtNum(totals.comments) },
           { label: 'Total Shares',   value: fmtNum(totals.shares) },
         ];
         metrics.forEach(function (m) {
-          var pill   = el('div', 'stat-pill');
-          var valEl  = el('div', 'stat-pill-value');
+          var pill  = el('div', 'stat-pill');
+          var valEl = el('div', 'stat-pill-value');
           valEl.textContent = m.value;
-          var lblEl  = el('div', 'stat-pill-label');
+          var lblEl = el('div', 'stat-pill-label');
           lblEl.textContent = m.label;
           append(pill, valEl, lblEl);
           statsRow.appendChild(pill);
@@ -582,7 +591,7 @@
     paymentAddresses.forEach(function (acct) {
       var card = el('div', 'payment-address-card');
 
-      var header = el('div', 'pay-addr-header');
+      var header     = el('div', 'pay-addr-header');
       var platformEl = el('span', 'pay-addr-platform');
       platformEl.textContent = acct.platform.charAt(0).toUpperCase() + acct.platform.slice(1);
       var usernameEl = el('span', 'pay-addr-username');
@@ -600,7 +609,7 @@
         var addr    = m.address || '';
         var href    = null;
 
-        // Detect link type
+        // Detect link type — all URLs go through safeLink(); mailto: only on valid email pattern
         if (/^https?:\/\//i.test(addr)) {
           href = safeLink(addr);
         } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
@@ -609,7 +618,7 @@
 
         if (href) {
           var a = el('a', 'pay-addr-link');
-          a.href   = href;
+          a.href = href;
           if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
           a.textContent = addr;
           valueEl.appendChild(a);
@@ -636,18 +645,17 @@
   // ── Render: payments panel ─────────────────────────────────────────────────────
 
   function renderPayments(campaigns, container, paymentAddresses) {
-    renderPaymentAddresses(paymentAddresses, container);
-
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
     if (withPayment.length === 0) {
+      renderPaymentAddresses(paymentAddresses, container);
       var empty = el('div', 'empty-msg');
       empty.textContent = 'No payment information available for these campaigns.';
       container.appendChild(empty);
       return;
     }
 
-    // Payment summary row
+    // Compute totals
     var total = 0, paid = 0, pendingAmt = 0, notInvoiced = 0;
     withPayment.forEach(function (c) {
       var p = c.payment;
@@ -655,31 +663,69 @@
       var amt = Number(p.amount) || 0;
       total += amt;
       var st = (p.status || '').toLowerCase();
-      if (st === 'paid')                          paid        += amt;
-      else if (st === 'pending' || st === 'invoiced') pendingAmt  += amt;
-      else                                        notInvoiced += amt;
+      if (st === 'paid')                               paid        += amt;
+      else if (st === 'pending' || st === 'invoiced')  pendingAmt  += amt;
+      else                                             notInvoiced += amt;
     });
 
-    var summaryEl = el('div', 'payment-summary');
-    var summaryItems = [
-      { label: 'Total Value',        value: fmtMoney(total),      color: null },
-      { label: 'Paid',               value: fmtMoney(paid),       color: paid        > 0 ? 'var(--green)'   : null },
-      { label: 'Pending / Invoiced', value: fmtMoney(pendingAmt), color: pendingAmt  > 0 ? 'var(--orange2)' : null },
-      { label: 'Not Yet Invoiced',   value: fmtMoney(notInvoiced),color: null },
+    var outstanding = pendingAmt + notInvoiced;
+
+    // ── Payment status hero — outstanding amount leads ──────────────────────────
+    // All values set via textContent; style.color uses hardcoded CSS variable strings only
+    var heroEl = el('div', 'payment-status-hero');
+
+    var statusLbl = el('div', 'payment-status-label');
+    statusLbl.textContent = outstanding > 0 ? 'Amount Outstanding' : 'Payment Status';
+    heroEl.appendChild(statusLbl);
+
+    var amountEl = el('div', 'payment-status-amount');
+    if (outstanding > 0) {
+      amountEl.className = 'payment-status-amount amount-outstanding';
+      amountEl.textContent = fmtMoney(outstanding);
+    } else if (paid > 0) {
+      amountEl.className = 'payment-status-amount amount-clear';
+      amountEl.textContent = 'Paid in Full';
+    } else {
+      amountEl.textContent = '—';
+    }
+    heroEl.appendChild(amountEl);
+
+    // Secondary breakdown: Total | Paid | Pending/Outstanding
+    var breakdownEl = el('div', 'payment-breakdown');
+    var breakdownItems = [
+      {
+        label: 'Total Contracted',
+        value: fmtMoney(total),
+        color: null,
+      },
+      {
+        label: 'Paid',
+        value: fmtMoney(paid),
+        color: paid > 0 ? 'var(--green)' : null,
+      },
+      {
+        label: outstanding > 0 ? 'Still Outstanding' : 'Remaining',
+        value: fmtMoney(outstanding),
+        color: outstanding > 0 ? 'var(--orange2)' : null,
+      },
     ];
-    summaryItems.forEach(function (item) {
-      var cell  = el('div', 'psum-cell');
-      var valEl = el('div', 'psum-value');
+    breakdownItems.forEach(function (item) {
+      var cell  = el('div', 'payment-breakdown-cell');
+      var valEl = el('div', 'payment-breakdown-value');
       valEl.textContent = item.value;
       if (item.color) valEl.style.color = item.color;
-      var lblEl = el('div', 'psum-label');
+      var lblEl = el('div', 'payment-breakdown-label');
       lblEl.textContent = item.label;
       append(cell, valEl, lblEl);
-      summaryEl.appendChild(cell);
+      breakdownEl.appendChild(cell);
     });
-    container.appendChild(summaryEl);
+    heroEl.appendChild(breakdownEl);
+    container.appendChild(heroEl);
 
-    // Payments table
+    // Payment addresses (where to send it)
+    renderPaymentAddresses(paymentAddresses, container);
+
+    // Per-campaign payments table
     var wrap      = el('div', 'payments-section');
     var tableWrap = el('div', 'table-wrap');
     var table     = el('table');
@@ -743,7 +789,8 @@
 
     document.getElementById('loading-state').hidden = true;
 
-    renderCreatorHero(dash, summary);
+    renderCreatorHero(dash);
+    renderKpiStrip(campaigns, summary);
 
     var tabsEl    = document.getElementById('tabs');
     var campPanel = document.getElementById('campaigns-panel');

@@ -36,6 +36,18 @@ body {
   font-family: var(--font-body);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Grain texture — matches nysterys.com brand identity */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.35;
 }
 
 /* ── Layout ───────────────────────────────────────────────── */
@@ -159,44 +171,69 @@ body {
 
 .creator-hero {
   background:
-    linear-gradient(135deg, rgba(255,92,0,0.09) 0%, rgba(255,92,0,0.03) 35%, transparent 65%),
+    linear-gradient(135deg, rgba(255,92,0,0.07) 0%, rgba(255,92,0,0.02) 40%, transparent 65%),
     var(--surface);
   border-bottom: 1px solid var(--border);
   padding: 44px 0 40px;
   animation: fadeIn 0.5s ease;
 }
 
+/* "Prepared for" — agency name leads the hero */
+.hero-prepared {
+  margin-bottom: 28px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-prepared-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.hero-prepared-agency {
+  font-family: var(--font-display);
+  font-size: 64px;
+  letter-spacing: 0.03em;
+  color: var(--white);
+  line-height: 0.9;
+  word-break: break-word;
+}
+
+/* Creator credential below the prepared-for line */
 .hero-inner {
   display: flex;
   align-items: flex-start;
-  gap: 36px;
-  position: relative;
+  gap: 32px;
 }
 
 .hero-avatar-wrap { flex-shrink: 0; }
 
 .hero-avatar {
-  width: 116px;
-  height: 116px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   object-fit: cover;
   object-position: top center;
-  border: 2.5px solid var(--orange);
+  border: 2px solid var(--orange);
   box-shadow: 0 0 0 4px rgba(255,92,0,0.1), 0 8px 32px rgba(0,0,0,0.5);
   display: block;
 }
 
 .hero-avatar-initial {
-  width: 116px;
-  height: 116px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: var(--surface3);
-  border: 2.5px solid var(--orange);
+  border: 2px solid var(--orange);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: 48px;
+  font-size: 42px;
   color: var(--orange);
   letter-spacing: 0;
   flex-shrink: 0;
@@ -214,38 +251,38 @@ body {
   color: var(--orange);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .hero-name {
   font-family: var(--font-display);
-  font-size: 52px;
+  font-size: 44px;
   letter-spacing: 0.03em;
   color: var(--white);
   line-height: 0.95;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .hero-bio {
   font-size: 13px;
   color: var(--muted);
   line-height: 1.65;
-  max-width: 540px;
-  margin-bottom: 24px;
+  max-width: 560px;
+  margin-bottom: 20px;
 }
 
 .hero-stats {
   display: flex;
   flex-wrap: wrap;
   gap: 0;
-  row-gap: 12px;
+  row-gap: 10px;
 }
 
 .hero-stat {
   display: flex;
   flex-direction: column;
-  padding-right: 28px;
-  margin-right: 28px;
+  padding-right: 24px;
+  margin-right: 24px;
   border-right: 1px solid var(--border);
   animation: slideUp 0.4s ease both;
 }
@@ -257,12 +294,11 @@ body {
 }
 
 .hero-stat-value {
-  font-size: 24px;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 28px;
   color: var(--white);
   line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.02em;
 }
 
 .hero-stat-label {
@@ -271,62 +307,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--muted);
-  margin-top: 5px;
-}
-
-.hero-stat-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-right: 28px;
-  margin-right: 28px;
-  border-right: 1px solid var(--border);
-}
-
-.hero-stat-group:last-child {
-  border-right: none;
-  margin-right: 0;
-  padding-right: 0;
-}
-
-.hero-stat-group-label {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--dim);
-}
-
-.hero-stat-group-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-}
-
-/* "Prepared for" badge — top-right of hero */
-.hero-for-badge {
-  flex-shrink: 0;
-  text-align: right;
-  padding-top: 4px;
-}
-
-.hero-for-label {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--dim);
-}
-
-.hero-for-agency {
-  font-family: var(--font-display);
-  font-size: 22px;
-  letter-spacing: 0.06em;
-  color: var(--white);
-  margin-top: 3px;
-  max-width: 220px;
-  line-height: 1.1;
-  text-align: right;
+  margin-top: 4px;
 }
 
 /* ── Main content area ────────────────────────────────────── */
@@ -335,6 +316,45 @@ body {
   padding-top: 32px;
   padding-bottom: 72px;
   animation: fadeIn 0.4s ease;
+}
+
+/* ── KPI strip — campaign-scoped performance numbers ──────── */
+
+.kpi-strip {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 28px;
+  background: var(--surface);
+  animation: slideUp 0.35s ease both;
+}
+
+.kpi-cell {
+  flex: 1;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-right: 1px solid var(--border);
+}
+
+.kpi-cell:last-child { border-right: none; }
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: 36px;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  line-height: 1;
+}
+
+.kpi-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
 }
 
 /* ── Performance chart section ────────────────────────────── */
@@ -354,21 +374,23 @@ body {
 }
 
 .chart-heading {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  line-height: 1;
   margin-bottom: 4px;
 }
 
 .chart-subheading {
-  font-size: 12px;
-  color: var(--dim);
+  font-size: 11px;
+  color: var(--muted);
   margin-bottom: 20px;
+  line-height: 1.4;
+  max-width: 340px;
 }
 
-.perf-chart-bars { display: flex; flex-direction: column; gap: 7px; }
+.perf-chart-bars { display: flex; flex-direction: column; gap: 6px; }
 
 .chart-row {
   display: flex;
@@ -390,31 +412,19 @@ body {
 
 .chart-track {
   flex: 1;
-  height: 24px;
+  height: 20px;
   background: var(--surface2);
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
   position: relative;
 }
 
 .chart-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--orange), var(--orange2));
-  border-radius: 3px;
+  background: var(--orange);
+  border-radius: 2px;
   width: 0;
   transition: width 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  position: relative;
-}
-
-.chart-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
-  pointer-events: none;
 }
 
 .chart-value-wrap {
@@ -502,9 +512,11 @@ body {
 }
 
 .campaign-name {
-  font-weight: 700;
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: 0.04em;
   color: var(--white);
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -513,7 +525,7 @@ body {
 .campaign-dates {
   font-size: 11px;
   color: var(--muted);
-  margin-top: 3px;
+  margin-top: 4px;
 }
 
 /* ── Thumbnail strip ──────────────────────────────────────── */
@@ -534,8 +546,8 @@ body {
 .thumb-item {
   flex-shrink: 0;
   display: block;
-  width: 54px;
-  height: 72px;
+  width: 90px;
+  height: 120px;
   border-radius: 4px;
   overflow: hidden;
   border: 1.5px solid var(--border);
@@ -546,8 +558,8 @@ body {
 
 .thumb-item:hover {
   border-color: var(--orange);
-  transform: scale(1.06);
-  box-shadow: 0 4px 12px rgba(255,92,0,0.3);
+  transform: scale(1.04);
+  box-shadow: 0 4px 16px rgba(255,92,0,0.3);
   z-index: 1;
 }
 
@@ -565,8 +577,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  color: rgba(255,255,255,0.7);
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
   opacity: 0;
   transition: opacity var(--transition);
 }
@@ -580,7 +592,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 18px;
   color: var(--dim);
 }
 
@@ -696,48 +708,75 @@ tbody tr:hover td { background: var(--surface2); }
   color: var(--muted);
 }
 
-/* ── Payment summary row ──────────────────────────────────── */
+/* ── Payment status hero — outstanding amount leads ───────── */
 
-.payment-summary {
-  display: flex;
-  gap: 1px;
-  background: var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  margin-bottom: 20px;
-  border: 1px solid var(--border);
-}
-
-.psum-cell {
-  flex: 1;
+.payment-status-hero {
   background: var(--surface);
-  padding: 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 24px;
+  margin-bottom: 20px;
 }
 
-.psum-cell:first-child { background: var(--surface2); }
+.payment-status-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
 
-.psum-value {
-  font-size: 20px;
+.payment-status-amount {
+  font-family: var(--font-display);
+  font-size: 52px;
+  letter-spacing: 0.02em;
+  line-height: 0.9;
+  color: var(--white);
+}
+
+.payment-status-amount.amount-outstanding { color: var(--orange); }
+.payment-status-amount.amount-clear       { color: var(--green); }
+
+.payment-breakdown {
+  display: flex;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  gap: 0;
+  flex-wrap: wrap;
+  row-gap: 14px;
+}
+
+.payment-breakdown-cell {
+  flex: 1;
+  min-width: 100px;
+  padding-right: 24px;
+  margin-right: 24px;
+  border-right: 1px solid var(--border);
+}
+
+.payment-breakdown-cell:last-child {
+  padding-right: 0;
+  margin-right: 0;
+  border-right: none;
+}
+
+.payment-breakdown-value {
+  font-size: 18px;
   font-weight: 700;
   color: var(--white);
   font-variant-numeric: tabular-nums;
   line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.psum-label {
+.payment-breakdown-label {
   font-size: 9px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--muted);
-  white-space: nowrap;
+  margin-top: 5px;
 }
 
 /* ── Payments section container ───────────────────────────── */
@@ -850,35 +889,33 @@ tbody tr:hover td { background: var(--surface2); }
   .agency-header { padding: 12px 0; }
   .header-site-link { font-size: 11px; }
 
-  .creator-hero { padding: 28px 0 24px; }
+  .creator-hero { padding: 24px 0 20px; }
 
-  .hero-inner {
-    flex-wrap: wrap;
-    gap: 20px;
-  }
+  .hero-prepared { margin-bottom: 18px; padding-bottom: 16px; }
+  .hero-prepared-agency { font-size: 40px; }
 
-  .hero-avatar { width: 88px; height: 88px; }
-  .hero-avatar-initial { width: 88px; height: 88px; font-size: 36px; }
+  .hero-inner { gap: 16px; }
 
-  .hero-name  { font-size: 36px; }
-  .hero-bio   { font-size: 12px; margin-bottom: 16px; }
+  .hero-avatar  { width: 80px; height: 80px; }
+  .hero-avatar-initial { width: 80px; height: 80px; font-size: 32px; }
 
-  .hero-stat-value { font-size: 20px; }
-
-  .hero-for-badge {
-    position: static;
-    text-align: left;
-    width: 100%;
-    padding-top: 0;
-    padding-left: 108px;
-    margin-top: -12px;
-  }
-
-  .hero-for-agency { font-size: 18px; text-align: left; }
+  .hero-name    { font-size: 32px; }
+  .hero-bio     { font-size: 12px; margin-bottom: 14px; }
+  .hero-stat-value { font-size: 22px; }
 
   .main-content { padding-top: 20px; padding-bottom: 48px; }
 
+  .kpi-strip { flex-wrap: wrap; }
+  .kpi-cell  {
+    flex: 1 1 calc(50% - 1px);
+    min-width: 0;
+    padding: 14px 16px;
+  }
+  .kpi-value { font-size: 28px; }
+
   .campaign-head { flex-direction: column; align-items: flex-start; }
+
+  .campaign-name { font-size: 16px; }
 
   .tab-bar { overflow-x: auto; }
 
@@ -887,13 +924,23 @@ tbody tr:hover td { background: var(--surface2); }
   .stat-pill { padding-right: 14px; margin-right: 14px; }
   .campaign-stats-row { padding: 12px 16px; }
 
-  .payment-summary { flex-wrap: wrap; }
-  .psum-cell { flex: 1 1 calc(50% - 1px); min-width: 0; }
+  .payment-status-hero { padding: 20px; }
+  .payment-status-amount { font-size: 40px; }
+  .payment-breakdown { gap: 0; }
+  .payment-breakdown-cell {
+    flex: 1 1 calc(50% - 12px);
+    min-width: 0;
+    padding-right: 16px;
+    margin-right: 16px;
+  }
 
   .perf-charts-grid { grid-template-columns: 1fr; }
 
   .chart-label { min-width: 52px; font-size: 10px; }
   .chart-value { font-size: 10px; }
+  .chart-heading { font-size: 18px; }
+
+  .thumb-item { width: 72px; height: 96px; }
 
   .agency-footer .container { gap: 6px; }
   .footer-tagline { display: none; }
@@ -904,7 +951,7 @@ tbody tr:hover td { background: var(--surface2); }
 /* ── Payment addresses ────────────────────────────────────── */
 
 .payment-addresses-section {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .payment-addresses-heading {
