@@ -241,7 +241,7 @@
     var items = [
       {
         val:   summary.totalViews > 0 ? fmtNum(summary.totalViews) : '—',
-        label: 'Total Views',
+        label: 'Total Views Delivered',
         raw:   summary.totalViews,
         anim:  summary.totalViews > 0,
       },
