@@ -478,11 +478,7 @@
         return;
       }
 
-      // Thumbnail strip (posted content only)
-      var strip = renderThumbStrip(delivs);
-      if (strip) card.appendChild(strip);
-
-      // Deliverables table
+      // Deliverables table — thumbnail inlined as first column
       var sectionLabel = el('div', 'section-label');
       sectionLabel.textContent = 'Deliverables';
       card.appendChild(sectionLabel);
@@ -492,6 +488,9 @@
 
       var thead = el('thead');
       var hr    = el('tr');
+      // Empty header for thumb column
+      var thThumb = el('th', 'thumb-col');
+      hr.appendChild(thThumb);
       var cols  = ['Platform', 'Type', 'Status', 'Due Date', 'Posted', 'Link', 'Views', 'Likes', 'Comments', 'Shares', 'ER%'];
       cols.forEach(function (c) {
         var th = el('th');
@@ -512,6 +511,36 @@
           return td;
         }
 
+        // Thumbnail cell
+        var thumbTd = el('td', 'thumb-col');
+        var imgUrl  = safeLink(d.cover_image_url);
+        var postUrl = safeLink(d.post_url);
+        var thumbWrap = postUrl ? el('a', 'row-thumb') : el('div', 'row-thumb');
+        if (postUrl) {
+          thumbWrap.href   = postUrl;
+          thumbWrap.target = '_blank';
+          thumbWrap.rel    = 'noopener noreferrer';
+        }
+        if (imgUrl) {
+          var img = el('img');
+          img.src     = imgUrl;
+          img.alt     = '';
+          img.loading = 'lazy';
+          img.onerror = function () {
+            var ph = el('div', 'row-thumb-ph');
+            ph.textContent = '▶';
+            thumbWrap.innerHTML = '';
+            thumbWrap.appendChild(ph);
+          };
+          thumbWrap.appendChild(img);
+        } else {
+          var ph = el('div', 'row-thumb-ph');
+          ph.textContent = d.post_url ? '▶' : '·';
+          thumbWrap.appendChild(ph);
+        }
+        thumbTd.appendChild(thumbWrap);
+        row.appendChild(thumbTd);
+
         row.appendChild(tdTxt(d.platform));
         row.appendChild(tdTxt(d.type));
 
@@ -523,7 +552,7 @@
         row.appendChild(tdTxt(fmtDate(d.posted_date), 'muted-cell'));
 
         var linkTd = el('td');
-        var href   = safeLink(d.post_url);
+        var href   = postUrl;
         if (href) {
           var a = el('a', 'post-link');
           a.href   = href;

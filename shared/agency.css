@@ -528,71 +528,44 @@ body::before {
   margin-top: 4px;
 }
 
-/* ── Thumbnail strip ──────────────────────────────────────── */
+/* ── Inline row thumbnail ─────────────────────────────────── */
 
-.thumb-strip {
-  display: flex;
-  gap: 8px;
-  padding: 14px 20px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface2);
-  scrollbar-width: none;
+td.thumb-col, th.thumb-col {
+  width: 52px;
+  min-width: 52px;
+  padding: 6px 8px 6px 20px !important;
 }
 
-.thumb-strip::-webkit-scrollbar { display: none; }
-
-.thumb-item {
-  flex-shrink: 0;
+.row-thumb {
   display: block;
-  width: 90px;
-  height: 120px;
-  border-radius: 4px;
+  width: 40px;
+  height: 54px;
+  border-radius: 3px;
   overflow: hidden;
-  border: 1.5px solid var(--border);
-  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
-  text-decoration: none;
+  border: 1px solid var(--border);
   position: relative;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: border-color var(--transition);
 }
 
-.thumb-item:hover {
-  border-color: var(--orange);
-  transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(255,92,0,0.3);
-  z-index: 1;
-}
+a.row-thumb:hover { border-color: var(--orange); }
 
-.thumb-item img {
+.row-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.thumb-item-play {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: rgba(255,255,255,0.8);
-  opacity: 0;
-  transition: opacity var(--transition);
-}
-
-.thumb-item:hover .thumb-item-play { opacity: 1; }
-
-.thumb-placeholder {
+.row-thumb-ph {
   width: 100%;
   height: 100%;
   background: var(--surface3);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 11px;
   color: var(--dim);
 }
 
@@ -936,7 +909,7 @@ tbody tr:hover td { background: var(--surface2); }
   .chart-value { font-size: 10px; }
   .chart-heading { font-size: 18px; }
 
-  .thumb-item { width: 72px; height: 96px; }
+  td.thumb-col, th.thumb-col { width: 40px; min-width: 40px; padding-left: 12px !important; }
 
   .agency-footer .container { gap: 6px; }
   .footer-tagline { display: none; }
