@@ -1196,6 +1196,21 @@ tbody tr:hover td { background: var(--surface2); }
   table-layout: fixed;
 }
 
+.sc-campaign-row td {
+  padding: 10px 0 4px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: oklch(1 0 0 / 0.35);
+  border-top: 1px solid oklch(1 0 0 / 0.08);
+}
+
+.sc-campaign-row:first-child td {
+  border-top: none;
+  padding-top: 0;
+}
+
 .sc-row {
   border-bottom: 1px solid oklch(1 0 0 / 0.04);
 }

@@ -454,8 +454,9 @@
   function renderSoundCheck(campaigns, agencyType, container) {
     if (!agencyType || agencyType.toLowerCase().indexOf('music') === -1) return;
 
-    var items = [];
+    var groups = [];
     campaigns.forEach(function(c) {
+      var items = [];
       (c.deliverables || []).forEach(function(d) {
         var mu = d.music;
         if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
@@ -475,9 +476,12 @@
           status:      !hasActual ? 'pending' : matched ? 'match' : 'diff',
         });
       });
+      if (items.length > 0) groups.push({ campaign: c, items: items });
     });
 
-    if (items.length === 0) return;
+    if (groups.length === 0) return;
+
+    var multiCampaign = groups.length > 1;
 
     var wrap = el('div', 'sound-check');
 
@@ -492,8 +496,20 @@
     var table = el('table', 'sc-table');
     var tbody = el('tbody');
 
-    items.forEach(function(item) {
-      var row = el('tr', 'sc-row');
+    groups.forEach(function(group) {
+      if (multiCampaign) {
+        var campRow = el('tr', 'sc-campaign-row');
+        var campTd  = el('td', 'sc-campaign-cell');
+        campTd.colSpan = 4;
+        var startStr = fmtDate(group.campaign.start_date);
+        var endStr   = fmtDate(group.campaign.end_date);
+        campTd.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : (group.campaign.name || '');
+        campRow.appendChild(campTd);
+        tbody.appendChild(campRow);
+      }
+
+      group.items.forEach(function(item) {
+        var row = el('tr', 'sc-row');
 
       // Column 1: thumbnail + post date
       var thumbTd = el('td', 'sc-thumb-cell');
@@ -580,7 +596,8 @@
       statusTd.textContent = item.status === 'match' ? '✓ Used' : item.status === 'diff' ? '≠ Different' : 'Pending';
       row.appendChild(statusTd);
 
-      tbody.appendChild(row);
+        tbody.appendChild(row);
+      });
     });
 
     table.appendChild(tbody);
