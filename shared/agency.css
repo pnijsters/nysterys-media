@@ -527,6 +527,41 @@ body::before {
   flex-shrink: 0;
 }
 
+/* ── Copy URLs buttons ────────────────────────────────────── */
+
+.copy-global-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.copy-urls-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.copy-urls-btn:hover {
+  color: var(--orange);
+  border-color: var(--orange);
+}
+
+.copy-urls-btn--done {
+  color: var(--green);
+  border-color: var(--green);
+}
+
 .campaign-name {
   font-family: var(--font-display);
   font-size: 20px;
