@@ -312,7 +312,7 @@
           scVal   = scConfirmed + '/' + scTotal + ' Confirmed';
           scColor = null;
         }
-        items.push({ val: scVal, label: 'Sound Compliance', color: scColor });
+        items.push({ val: scVal, label: 'Music Compliance', color: scColor });
       }
     }
 
@@ -538,7 +538,7 @@
     var icon = el('span', 'sc-icon');
     icon.textContent = '♬';
     var lbl = el('span', 'sc-hdr-label');
-    lbl.textContent = 'Music Compliance';
+    lbl.textContent = 'Sound Check';
     append(hdr, icon, lbl);
     wrap.appendChild(hdr);
 
