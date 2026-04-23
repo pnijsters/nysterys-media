@@ -590,12 +590,46 @@
 
   // ── Render: campaigns panel ────────────────────────────────────────────────────
 
+  // Creates a copy-URLs button. urls = string[]. Returns null if no urls.
+  function makeCopyBtn(urls, label) {
+    if (!urls || urls.length === 0) return null;
+    var text = label || ('⎘ Copy ' + urls.length + ' URL' + (urls.length === 1 ? '' : 's'));
+    var btn = el('button', 'copy-urls-btn');
+    btn.type = 'button';
+    btn.textContent = text;
+    btn.addEventListener('click', function () {
+      navigator.clipboard.writeText(urls.join('\n')).then(function () {
+        btn.textContent = '✓ Copied';
+        btn.classList.add('copy-urls-btn--done');
+        setTimeout(function () {
+          btn.textContent = text;
+          btn.classList.remove('copy-urls-btn--done');
+        }, 2000);
+      });
+    });
+    return btn;
+  }
+
   function renderCampaigns(campaigns, container) {
     if (!campaigns || campaigns.length === 0) {
       var empty = el('div', 'empty-msg');
       empty.textContent = 'No campaigns found for this dashboard.';
       container.appendChild(empty);
       return;
+    }
+
+    // Global copy button — all posted URLs across all campaigns
+    var allUrls = [];
+    campaigns.forEach(function (c) {
+      (c.deliverables || []).forEach(function (d) {
+        if (d.post_url) allUrls.push(d.post_url);
+      });
+    });
+    if (allUrls.length > 0) {
+      var globalRow = el('div', 'copy-global-row');
+      var globalBtn = makeCopyBtn(allUrls, '⎘ Copy all ' + allUrls.length + ' post URL' + (allUrls.length === 1 ? '' : 's'));
+      globalRow.appendChild(globalBtn);
+      container.appendChild(globalRow);
     }
 
     campaigns.forEach(function (campaign, cardIdx) {
@@ -617,6 +651,10 @@
         var payStatus = campaign.payment.is_in_kind ? 'In-Kind' : (campaign.payment.status || 'Not-Invoiced');
         badgesWrap.appendChild(badge(payStatus));
       }
+      // Per-campaign copy button
+      var campUrls = (campaign.deliverables || []).filter(function (d) { return d.post_url; }).map(function (d) { return d.post_url; });
+      var campCopyBtn = makeCopyBtn(campUrls, null);
+      if (campCopyBtn) badgesWrap.appendChild(campCopyBtn);
       append(head, nameGroup, badgesWrap);
       card.appendChild(head);
 
