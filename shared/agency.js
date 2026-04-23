@@ -582,11 +582,16 @@
 
         tbody.appendChild(row);
 
-        // Music sub-row — only when music data exists
+        // Music sub-row — only when there's a mismatch or unverified brief (not yet posted)
         var m = d.music;
         var hasBrief  = m && (m.contracted_url || m.contracted_track);
         var hasActual = m && (m.actual_url     || m.actual_track);
-        if (hasBrief || hasActual) {
+        var urlMatch   = hasBrief && hasActual && m.contracted_url && m.actual_url && m.contracted_url === m.actual_url;
+        var trackMatch = hasBrief && hasActual && m.contracted_track && m.actual_track &&
+          m.contracted_track.toLowerCase().replace(/-/g, ' ').trim() === m.actual_track.toLowerCase().replace(/-/g, ' ').trim();
+        var isMatch = urlMatch || trackMatch;
+        // Show when: brief exists but not yet verified (no actual data), or there's a confirmed mismatch
+        if ((hasBrief || hasActual) && !(hasBrief && hasActual && isMatch)) {
           var musicRow = el('tr', 'music-row');
           var musicTd  = el('td');
           musicTd.colSpan = 12;
@@ -650,13 +655,9 @@
           }
 
           if (hasBrief && hasActual) {
-            // URL match is most reliable; fall back to normalised track name comparison
-            var urlMatch   = m.contracted_url && m.actual_url && m.contracted_url === m.actual_url;
-            var trackMatch = m.contracted_track && m.actual_track &&
-              normTrack(m.contracted_track) === normTrack(m.actual_track);
-            var match = urlMatch || trackMatch;
-            var indicator = el('span', match ? 'music-match' : 'music-diff');
-            indicator.textContent = match ? '✓ Match' : '≠ Different';
+            // Always a mismatch at this point (matches are filtered out above)
+            var indicator = el('span', 'music-diff');
+            indicator.textContent = '≠ Different';
             detail.appendChild(indicator);
           }
 
