@@ -238,7 +238,7 @@
 
   // ── KPI strip — campaign-scoped performance numbers ───────────────────────────
 
-  function renderKpiStrip(campaigns, summary) {
+  function renderKpiStrip(campaigns, summary, dash) {
     var kpiEl = document.getElementById('kpi-strip');
     if (!kpiEl) return;
     if (summary.campaignCount === 0) return;
@@ -268,10 +268,59 @@
       },
     ];
 
+    // CPM — only when invoice data exists and views are known
+    var totalInvoiced = 0;
+    campaigns.forEach(function (c) {
+      if (c.payment && !c.payment.is_in_kind && c.payment.amount) {
+        totalInvoiced += Number(c.payment.amount) || 0;
+      }
+    });
+    if (totalInvoiced > 0 && summary.totalViews > 0) {
+      var cpm = (totalInvoiced / summary.totalViews) * 1000;
+      items.push({
+        val:   '$' + cpm.toFixed(2),
+        label: 'Cost Per 1K Views',
+      });
+    }
+
+    // Sound compliance — music agencies only
+    var agencyType = dash && dash.agency_type ? dash.agency_type : '';
+    if (agencyType.toLowerCase().indexOf('music') !== -1) {
+      var scConfirmed = 0, scMismatched = 0, scTotal = 0;
+      campaigns.forEach(function (c) {
+        (c.deliverables || []).forEach(function (d) {
+          var mu = d.music;
+          if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
+          scTotal++;
+          var hasActual  = !!(mu.actual_url || mu.actual_track);
+          var urlMatch   = mu.contracted_url && mu.actual_url && mu.contracted_url === mu.actual_url;
+          var trackMatch = mu.contracted_track && mu.actual_track &&
+            normTrack(mu.contracted_track) === normTrack(mu.actual_track);
+          if (hasActual && (urlMatch || trackMatch)) scConfirmed++;
+          else if (hasActual) scMismatched++;
+        });
+      });
+      if (scTotal > 0) {
+        var scVal, scColor;
+        if (scMismatched > 0) {
+          scVal   = scMismatched + (scMismatched === 1 ? ' Mismatch' : ' Mismatches');
+          scColor = 'var(--orange2)';
+        } else if (scConfirmed === scTotal) {
+          scVal   = 'All Confirmed';
+          scColor = 'var(--green)';
+        } else {
+          scVal   = scConfirmed + '/' + scTotal + ' Confirmed';
+          scColor = null;
+        }
+        items.push({ val: scVal, label: 'Sound Compliance', color: scColor });
+      }
+    }
+
     items.forEach(function (item) {
       var cell  = el('div', 'kpi-cell');
       var valEl = el('div', 'kpi-value');
       valEl.textContent = item.val;
+      if (item.color) valEl.style.color = item.color;
       var lblEl = el('div', 'kpi-label');
       lblEl.textContent = item.label;
       append(cell, valEl, lblEl);
@@ -1088,7 +1137,7 @@
     document.getElementById('loading-state').hidden = true;
 
     renderCreatorHero(dash);
-    renderKpiStrip(campaigns, summary);
+    renderKpiStrip(campaigns, summary, dash);
 
     var tabsEl    = document.getElementById('tabs');
     var campPanel = document.getElementById('campaigns-panel');
