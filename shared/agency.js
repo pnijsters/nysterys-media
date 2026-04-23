@@ -465,12 +465,14 @@
           normTrack(mu.contracted_track) === normTrack(mu.actual_track);
         var matched = urlMatch || trackMatch;
         items.push({
-          campaign: c.name,
-          type:     d.type,
-          track:    mu.contracted_track || null,
-          artist:   mu.contracted_artist || null,
-          url:      mu.contracted_url || null,
-          status:   !hasActual ? 'pending' : matched ? 'match' : 'diff',
+          thumb:       d.cover_image_url || null,
+          post_url:    d.post_url || null,
+          posted_date: d.posted_date || null,
+          caption:     d.caption || null,
+          track:       mu.contracted_track || null,
+          artist:      mu.contracted_artist || null,
+          url:         mu.contracted_url || null,
+          status:      !hasActual ? 'pending' : matched ? 'match' : 'diff',
         });
       });
     });
@@ -493,14 +495,51 @@
     items.forEach(function(item) {
       var row = el('tr', 'sc-row');
 
-      var campTd = el('td', 'sc-campaign');
-      campTd.textContent = item.campaign;
-      row.appendChild(campTd);
+      // Column 1: thumbnail + post date
+      var thumbTd = el('td', 'sc-thumb-cell');
+      var thumbInner = el('div', 'sc-thumb-inner');
+      var safeThumb = item.thumb ? safeLink(item.thumb) : null;
+      if (safeThumb) {
+        var img = document.createElement('img');
+        img.className = 'sc-thumb';
+        img.src = safeThumb;
+        img.alt = '';
+        thumbInner.appendChild(img);
+      } else {
+        var placeholder = el('div', 'sc-thumb sc-thumb-empty');
+        thumbInner.appendChild(placeholder);
+      }
+      var dateEl = el('div', 'sc-date');
+      dateEl.textContent = fmtDateShort(item.posted_date) || '—';
+      thumbInner.appendChild(dateEl);
+      thumbTd.appendChild(thumbInner);
+      row.appendChild(thumbTd);
 
-      var typeTd = el('td', 'sc-type');
-      typeTd.textContent = item.type;
-      row.appendChild(typeTd);
+      // Column 2: caption
+      var captionTd = el('td', 'sc-caption-cell');
+      if (item.caption) {
+        var raw = item.caption.trim();
+        // strip hashtags for display, truncate at 90 chars
+        var stripped = raw.replace(/#\S+/g, '').replace(/\s+/g, ' ').trim();
+        var display = stripped.length > 90 ? stripped.slice(0, 90) + '…' : stripped;
+        var capEl = el('span', 'sc-caption');
+        capEl.textContent = display || raw.slice(0, 90);
+        captionTd.appendChild(capEl);
+        var safePost = item.post_url ? safeLink(item.post_url) : null;
+        if (safePost) {
+          var postLnk = el('a', 'sc-link');
+          postLnk.href = safePost;
+          postLnk.target = '_blank';
+          postLnk.rel = 'noopener noreferrer';
+          postLnk.textContent = ' ↗';
+          captionTd.appendChild(postLnk);
+        }
+      } else {
+        captionTd.textContent = '—';
+      }
+      row.appendChild(captionTd);
 
+      // Column 3: contracted track
       var trackTd = el('td', 'sc-track-cell');
       if (item.track) {
         var trackEl = el('span', 'sc-track');
@@ -512,20 +551,21 @@
           artistEl.textContent = item.artist;
           trackTd.appendChild(artistEl);
         }
-        var safeHref = item.url ? safeLink(item.url) : null;
-        if (safeHref) {
-          var lnk = el('a', 'sc-link');
-          lnk.href = safeHref;
-          lnk.target = '_blank';
-          lnk.rel = 'noopener noreferrer';
-          lnk.textContent = ' ↗';
-          trackTd.appendChild(lnk);
+        var musicHref = item.url ? safeLink(item.url) : null;
+        if (musicHref) {
+          var musicLnk = el('a', 'sc-link');
+          musicLnk.href = musicHref;
+          musicLnk.target = '_blank';
+          musicLnk.rel = 'noopener noreferrer';
+          musicLnk.textContent = ' ↗';
+          trackTd.appendChild(musicLnk);
         }
       } else {
         trackTd.textContent = '—';
       }
       row.appendChild(trackTd);
 
+      // Column 4: status
       var statusTd = el('td', 'sc-status sc-' + item.status);
       statusTd.textContent = item.status === 'match' ? '✓ Used' : item.status === 'diff' ? '≠ Different' : 'Pending';
       row.appendChild(statusTd);
