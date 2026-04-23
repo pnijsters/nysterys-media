@@ -498,7 +498,7 @@
     return totals;
   }
 
-  // ── Render: sound check strip (music-promo agencies only) ─────────────────────
+  // ── Render: music compliance strip (music-promo agencies only) ────────────────
 
   function renderSoundCheck(campaigns, agencyType, container) {
     if (!agencyType || agencyType.toLowerCase().indexOf('music') === -1) return;
@@ -538,7 +538,7 @@
     var icon = el('span', 'sc-icon');
     icon.textContent = '♬';
     var lbl = el('span', 'sc-hdr-label');
-    lbl.textContent = 'Sound Check';
+    lbl.textContent = 'Music Compliance';
     append(hdr, icon, lbl);
     wrap.appendChild(hdr);
 
