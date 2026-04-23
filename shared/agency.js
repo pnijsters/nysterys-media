@@ -645,7 +645,7 @@
       // Empty header for thumb column
       var thThumb = el('th', 'thumb-col');
       hr.appendChild(thThumb);
-      var cols  = ['Platform', 'Type', 'Status', 'Due Date', 'Posted', 'Link', 'Views', 'Likes', 'Comments', 'Shares', 'ER%'];
+      var cols  = ['Platform', 'Status', 'Due', 'Views', 'Likes', 'Comments', 'Shares', 'ER%'];
       cols.forEach(function (c) {
         var th = el('th');
         if (['Views','Likes','Comments','Shares','ER%'].indexOf(c) !== -1) th.className = 'num-cell';
@@ -665,61 +665,48 @@
           return td;
         }
 
-        // Thumbnail cell
+        // Thumbnail cell — clickable, with posted date inline to the right
         var thumbTd = el('td', 'thumb-col');
         var imgUrl  = safeLink(d.cover_image_url);
         var postUrl = safeLink(d.post_url);
-        if (imgUrl || postUrl) {
-          var thumbWrap = postUrl ? el('a', 'row-thumb') : el('div', 'row-thumb');
-          if (postUrl) {
-            thumbWrap.href   = postUrl;
-            thumbWrap.target = '_blank';
-            thumbWrap.rel    = 'noopener noreferrer';
-          }
-          if (imgUrl) {
-            var img = el('img');
-            img.src     = imgUrl;
-            img.alt     = '';
-            img.loading = 'lazy';
-            img.onerror = function () {
-              var ph = el('div', 'row-thumb-ph');
-              ph.textContent = '▶';
-              thumbWrap.innerHTML = '';
-              thumbWrap.appendChild(ph);
-            };
-            thumbWrap.appendChild(img);
-          } else {
-            var ph2 = el('div', 'row-thumb-ph');
-            ph2.textContent = '▶';
-            thumbWrap.appendChild(ph2);
-          }
-          thumbTd.appendChild(thumbWrap);
+        var thumbInner = el('div', 'row-thumb-inner');
+        var thumbWrap = postUrl ? el('a', 'row-thumb') : el('div', 'row-thumb');
+        if (postUrl) {
+          thumbWrap.href   = postUrl;
+          thumbWrap.target = '_blank';
+          thumbWrap.rel    = 'noopener noreferrer';
         }
+        if (imgUrl) {
+          var img = el('img');
+          img.src     = imgUrl;
+          img.alt     = '';
+          img.loading = 'lazy';
+          img.onerror = function () {
+            var ph = el('div', 'row-thumb-ph');
+            ph.textContent = '▶';
+            thumbWrap.innerHTML = '';
+            thumbWrap.appendChild(ph);
+          };
+          thumbWrap.appendChild(img);
+        } else {
+          var ph2 = el('div', 'row-thumb-ph');
+          ph2.textContent = '▶';
+          thumbWrap.appendChild(ph2);
+        }
+        thumbInner.appendChild(thumbWrap);
+        var rowDate = el('span', 'row-posted-date');
+        rowDate.textContent = fmtDateShort(d.posted_date) || '—';
+        thumbInner.appendChild(rowDate);
+        thumbTd.appendChild(thumbInner);
         row.appendChild(thumbTd);
 
         row.appendChild(tdTxt(d.platform));
-        row.appendChild(tdTxt(d.type));
 
         var statusTd = el('td');
         statusTd.appendChild(badge(d.status));
         row.appendChild(statusTd);
 
         row.appendChild(tdTxt(fmtDate(d.due_date), 'muted-cell'));
-        row.appendChild(tdTxt(fmtDate(d.posted_date), 'muted-cell'));
-
-        var linkTd = el('td');
-        var href   = postUrl;
-        if (href) {
-          var a = el('a', 'post-link');
-          a.href   = href;
-          a.target = '_blank';
-          a.rel    = 'noopener noreferrer';
-          a.textContent = '↗ View';
-          linkTd.appendChild(a);
-        } else {
-          linkTd.textContent = '—';
-        }
-        row.appendChild(linkTd);
 
         var s = d.stats;
         row.appendChild(tdTxt(s ? fmtNum(s.views)            : '—', 'num-cell'));

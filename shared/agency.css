@@ -547,9 +547,21 @@ body::before {
 /* ── Inline row thumbnail ─────────────────────────────────── */
 
 td.thumb-col, th.thumb-col {
-  width: 52px;
-  min-width: 52px;
-  padding: 6px 8px 6px 20px !important;
+  width: 110px;
+  min-width: 110px;
+  padding: 6px 12px 6px 20px !important;
+}
+
+.row-thumb-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-posted-date {
+  font-size: 13px;
+  color: var(--white);
+  white-space: nowrap;
 }
 
 .row-thumb {
