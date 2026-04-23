@@ -93,6 +93,15 @@
     return Number(r).toFixed(1) + '%';
   }
 
+  function fmtTrack(t) {
+    if (!t) return t;
+    return t.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+  }
+
+  function normTrack(t) {
+    return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
+  }
+
   // ── Badge ────────────────────────────────────────────────────────────────────
 
   function badge(status) {
@@ -440,6 +449,95 @@
     return totals;
   }
 
+  // ── Render: sound check strip (music-promo agencies only) ─────────────────────
+
+  function renderSoundCheck(campaigns, agencyType, container) {
+    if (!agencyType || agencyType.toLowerCase().indexOf('music') === -1) return;
+
+    var items = [];
+    campaigns.forEach(function(c) {
+      (c.deliverables || []).forEach(function(d) {
+        var mu = d.music;
+        if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
+        var hasActual = !!(mu.actual_url || mu.actual_track);
+        var urlMatch   = mu.contracted_url && mu.actual_url && mu.contracted_url === mu.actual_url;
+        var trackMatch = mu.contracted_track && mu.actual_track &&
+          normTrack(mu.contracted_track) === normTrack(mu.actual_track);
+        var matched = urlMatch || trackMatch;
+        items.push({
+          campaign: c.name,
+          type:     d.type,
+          track:    mu.contracted_track || null,
+          artist:   mu.contracted_artist || null,
+          url:      mu.contracted_url || null,
+          status:   !hasActual ? 'pending' : matched ? 'match' : 'diff',
+        });
+      });
+    });
+
+    if (items.length === 0) return;
+
+    var wrap = el('div', 'sound-check');
+
+    var hdr = el('div', 'sound-check-hdr');
+    var icon = el('span', 'sc-icon');
+    icon.textContent = '♬';
+    var lbl = el('span', 'sc-hdr-label');
+    lbl.textContent = 'Sound Check';
+    append(hdr, icon, lbl);
+    wrap.appendChild(hdr);
+
+    var table = el('table', 'sc-table');
+    var tbody = el('tbody');
+
+    items.forEach(function(item) {
+      var row = el('tr', 'sc-row');
+
+      var campTd = el('td', 'sc-campaign');
+      campTd.textContent = item.campaign;
+      row.appendChild(campTd);
+
+      var typeTd = el('td', 'sc-type');
+      typeTd.textContent = item.type;
+      row.appendChild(typeTd);
+
+      var trackTd = el('td', 'sc-track-cell');
+      if (item.track) {
+        var trackEl = el('span', 'sc-track');
+        trackEl.textContent = fmtTrack(item.track);
+        trackTd.appendChild(trackEl);
+        if (item.artist) {
+          trackTd.appendChild(document.createTextNode(' — '));
+          var artistEl = el('span', 'sc-artist');
+          artistEl.textContent = item.artist;
+          trackTd.appendChild(artistEl);
+        }
+        var safeHref = item.url ? safeLink(item.url) : null;
+        if (safeHref) {
+          var lnk = el('a', 'sc-link');
+          lnk.href = safeHref;
+          lnk.target = '_blank';
+          lnk.rel = 'noopener noreferrer';
+          lnk.textContent = ' ↗';
+          trackTd.appendChild(lnk);
+        }
+      } else {
+        trackTd.textContent = '—';
+      }
+      row.appendChild(trackTd);
+
+      var statusTd = el('td', 'sc-status sc-' + item.status);
+      statusTd.textContent = item.status === 'match' ? '✓ Used' : item.status === 'diff' ? '≠ Different' : 'Pending';
+      row.appendChild(statusTd);
+
+      tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    container.appendChild(wrap);
+  }
+
   // ── Render: campaigns panel ────────────────────────────────────────────────────
 
   function renderCampaigns(campaigns, container) {
@@ -601,16 +699,6 @@
           var note = el('span', 'music-note');
           note.textContent = '♬';
           detail.appendChild(note);
-
-          function fmtTrack(t) {
-            if (!t) return t;
-            // Normalise URL slugs: "why-am-i-like-this" → "Why Am I Like This"
-            return t.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-          }
-
-          function normTrack(t) {
-            return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
-          }
 
           function musicBlock(roleLabel, track, artist, url) {
             var block = el('div', 'music-block');
@@ -929,6 +1017,7 @@
 
     if (scope === 'campaigns_only') {
       campPanel.removeAttribute('hidden');
+      renderSoundCheck(campaigns, dash.agency_type, campPanel);
       renderCampaigns(campaigns, campPanel);
 
     } else if (scope === 'payments_only') {
@@ -939,6 +1028,7 @@
       // campaigns_and_payments — tab switcher
       tabsEl.removeAttribute('hidden');
       campPanel.removeAttribute('hidden');
+      renderSoundCheck(campaigns, dash.agency_type, campPanel);
       renderCampaigns(campaigns, campPanel);
       renderPayments(campaigns, payPanel, payAddrs);
 
