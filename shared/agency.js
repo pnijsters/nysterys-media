@@ -499,12 +499,22 @@
       var thumbTd = el('td', 'sc-thumb-cell');
       var thumbInner = el('div', 'sc-thumb-inner');
       var safeThumb = item.thumb ? safeLink(item.thumb) : null;
+      var safePostHref = item.post_url ? safeLink(item.post_url) : null;
       if (safeThumb) {
         var img = document.createElement('img');
         img.className = 'sc-thumb';
         img.src = safeThumb;
         img.alt = '';
-        thumbInner.appendChild(img);
+        if (safePostHref) {
+          var thumbLink = el('a', 'sc-thumb-link');
+          thumbLink.href = safePostHref;
+          thumbLink.target = '_blank';
+          thumbLink.rel = 'noopener noreferrer';
+          thumbLink.appendChild(img);
+          thumbInner.appendChild(thumbLink);
+        } else {
+          thumbInner.appendChild(img);
+        }
       } else {
         var placeholder = el('div', 'sc-thumb sc-thumb-empty');
         thumbInner.appendChild(placeholder);
