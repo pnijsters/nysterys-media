@@ -836,16 +836,20 @@
         row.appendChild(tdTxt(fmtDate(d.due_date), 'muted-cell'));
 
         var s = d.stats;
-        row.appendChild(tdTxt(s ? fmtNum(s.views)            : '—', 'num-cell'));
 
-        var compTd = el('td', 'num-cell');
-        if (s && s.completion_pct != null) {
-          compTd.textContent  = s.completion_pct.toFixed(1) + '%';
-          compTd.style.color  = completionColor(s.completion_pct);
-          compTd.style.fontWeight = '600';
-        } else {
-          compTd.textContent = '—';
+        // Views cell — complete views shown as a muted sub-note when available
+        var viewsTd = el('td', 'num-cell');
+        viewsTd.textContent = s ? fmtNum(s.views) : '—';
+        if (s && s.complete_views != null) {
+          var cvNote = el('div', 'sub-note');
+          cvNote.textContent = '~' + fmtNum(s.complete_views) + ' complete';
+          viewsTd.appendChild(cvNote);
         }
+        row.appendChild(viewsTd);
+
+        // Completion — neutral, no color coding (agency lacks context to interpret thresholds)
+        var compTd = el('td', 'num-cell');
+        compTd.textContent = s && s.completion_pct != null ? s.completion_pct.toFixed(1) + '%' : '—';
         row.appendChild(compTd);
 
         row.appendChild(tdTxt(s ? fmtNum(s.likes)            : '—', 'num-cell'));

@@ -688,6 +688,13 @@ tbody tr:hover td { background: var(--surface2); }
 
 .muted-cell { color: var(--muted); }
 
+.sub-note {
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
 /* ── Post link ────────────────────────────────────────────── */
 
 .post-link {
