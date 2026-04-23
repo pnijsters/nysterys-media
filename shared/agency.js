@@ -597,6 +597,16 @@
           note.textContent = '♬';
           detail.appendChild(note);
 
+          function fmtTrack(t) {
+            if (!t) return t;
+            // Normalise URL slugs: "why-am-i-like-this" → "Why Am I Like This"
+            return t.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+          }
+
+          function normTrack(t) {
+            return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
+          }
+
           function musicBlock(roleLabel, track, artist, url) {
             var block = el('div', 'music-block');
             var role  = el('span', 'music-role');
@@ -604,7 +614,7 @@
             block.appendChild(role);
             if (track) {
               var trackEl = el('span', 'music-track');
-              trackEl.textContent = track;
+              trackEl.textContent = fmtTrack(track);
               block.appendChild(trackEl);
             }
             if (artist) {
@@ -639,8 +649,12 @@
             detail.appendChild(musicBlock('Used', m.actual_track, m.actual_artist, m.actual_url));
           }
 
-          if (hasBrief && hasActual && m.contracted_track && m.actual_track) {
-            var match = m.contracted_track.toLowerCase() === m.actual_track.toLowerCase();
+          if (hasBrief && hasActual) {
+            // URL match is most reliable; fall back to normalised track name comparison
+            var urlMatch   = m.contracted_url && m.actual_url && m.contracted_url === m.actual_url;
+            var trackMatch = m.contracted_track && m.actual_track &&
+              normTrack(m.contracted_track) === normTrack(m.actual_track);
+            var match = urlMatch || trackMatch;
             var indicator = el('span', match ? 'music-match' : 'music-diff');
             indicator.textContent = match ? '✓ Match' : '≠ Different';
             detail.appendChild(indicator);
