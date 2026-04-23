@@ -581,6 +581,75 @@
         row.appendChild(tdTxt(s ? fmtRate(s.engagement_rate) : '—', 'num-cell'));
 
         tbody.appendChild(row);
+
+        // Music sub-row — only when music data exists
+        var m = d.music;
+        var hasBrief  = m && (m.contracted_url || m.contracted_track);
+        var hasActual = m && (m.actual_url     || m.actual_track);
+        if (hasBrief || hasActual) {
+          var musicRow = el('tr', 'music-row');
+          var musicTd  = el('td');
+          musicTd.colSpan = 12;
+
+          var detail = el('div', 'music-detail');
+
+          var note = el('span', 'music-note');
+          note.textContent = '♬';
+          detail.appendChild(note);
+
+          function musicBlock(roleLabel, track, artist, url) {
+            var block = el('div', 'music-block');
+            var role  = el('span', 'music-role');
+            role.textContent = roleLabel;
+            block.appendChild(role);
+            if (track) {
+              var trackEl = el('span', 'music-track');
+              trackEl.textContent = track;
+              block.appendChild(trackEl);
+            }
+            if (artist) {
+              var dash2 = document.createTextNode(' — ');
+              block.appendChild(dash2);
+              var artistEl = el('span', 'music-artist');
+              artistEl.textContent = artist;
+              block.appendChild(artistEl);
+            }
+            if (url) {
+              var link = el('a', 'music-link');
+              link.href   = url;
+              link.target = '_blank';
+              link.rel    = 'noopener noreferrer';
+              link.textContent = '↗';
+              block.appendChild(link);
+            }
+            return block;
+          }
+
+          if (hasBrief) {
+            detail.appendChild(musicBlock('Brief', m.contracted_track, m.contracted_artist, m.contracted_url));
+          }
+
+          if (hasBrief && hasActual) {
+            var sep = el('span', 'music-sep');
+            sep.textContent = '·';
+            detail.appendChild(sep);
+          }
+
+          if (hasActual) {
+            detail.appendChild(musicBlock('Used', m.actual_track, m.actual_artist, m.actual_url));
+          }
+
+          if (hasBrief && hasActual && m.contracted_track && m.actual_track) {
+            var match = m.contracted_track.toLowerCase() === m.actual_track.toLowerCase();
+            var indicator = el('span', match ? 'music-match' : 'music-diff');
+            indicator.textContent = match ? '✓ Match' : '≠ Different';
+            detail.appendChild(indicator);
+          }
+
+          musicTd.appendChild(detail);
+          musicRow.appendChild(musicTd);
+          tbody.appendChild(musicRow);
+        }
       });
       table.appendChild(tbody);
       tableWrap.appendChild(table);

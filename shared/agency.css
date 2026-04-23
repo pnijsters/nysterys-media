@@ -810,6 +810,95 @@ tbody tr:hover td { background: var(--surface2); }
 .badge-In-Kind              { background: rgba(155,89,245,.15);  color: var(--purple); }
 .badge-default              { background: rgba(136,136,136,.12); color: var(--muted); }
 
+/* ── Music sub-rows ───────────────────────────────────────── */
+
+.music-row td {
+  background: var(--black) !important;
+  padding: 6px 20px 10px 20px !important;
+  white-space: normal;
+}
+
+.music-row:hover td { background: var(--black) !important; }
+
+.music-detail {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 7px 0 1px;
+}
+
+.music-note {
+  color: var(--orange);
+  font-size: 12px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+.music-block {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.music-role {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--dim);
+  flex-shrink: 0;
+}
+
+.music-track {
+  font-size: 12px;
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 280px;
+}
+
+.music-artist {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.music-link {
+  font-size: 11px;
+  color: var(--dim);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: color var(--transition);
+}
+
+.music-link:hover { color: var(--orange); }
+
+.music-sep {
+  color: var(--dim);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+.music-match {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--green);
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+.music-diff {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dim);
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
 /* ── Empty / no-data states ───────────────────────────────── */
 
 .empty-msg {
