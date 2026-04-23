@@ -605,13 +605,11 @@
       // Card header
       var head      = el('div', 'campaign-head');
       var nameGroup = el('div', 'campaign-name-group');
-      var nameEl    = el('div', 'campaign-name');
-      nameEl.textContent = campaign.name || '';
-      var datesEl = el('div', 'campaign-dates');
+      var datesEl = el('div', 'campaign-name');
       var startStr = fmtDate(campaign.start_date);
       var endStr   = fmtDate(campaign.end_date);
       datesEl.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '';
-      append(nameGroup, nameEl, datesEl);
+      nameGroup.appendChild(datesEl);
 
       var badgesWrap = el('div', 'campaign-badges');
       badgesWrap.appendChild(badge(campaign.status));
