@@ -216,7 +216,7 @@
 
     // All text via textContent — no innerHTML
     document.getElementById('hero-handle').textContent     = (profile && profile.handle) ? profile.handle : '';
-    document.getElementById('hero-name').textContent       = dash.creator_name || '';
+    document.getElementById('hero-name').textContent       = (dash.creator_name || '').split(' ')[0];
     document.getElementById('hero-bio').textContent        = (profile && profile.bio) ? profile.bio : '';
     document.getElementById('hero-agency-name').textContent = dash.agency_name || '';
 
