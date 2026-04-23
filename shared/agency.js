@@ -1032,7 +1032,7 @@
 
     var thead = el('thead');
     var hr    = el('tr');
-    ['Campaign', 'Status', 'Amount', 'Invoice Date', 'Paid Date'].forEach(function (c) {
+    ['Period', 'Status', 'Amount', 'Date'].forEach(function (c) {
       var th = el('th');
       th.textContent = c;
       hr.appendChild(th);
@@ -1045,9 +1045,11 @@
       var p   = c.payment;
       var row = el('tr');
 
-      var nameTd = el('td');
-      nameTd.textContent = c.name || '';
-      row.appendChild(nameTd);
+      var periodTd = el('td');
+      var startStr = fmtDate(c.start_date);
+      var endStr   = fmtDate(c.end_date);
+      periodTd.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '—';
+      row.appendChild(periodTd);
 
       var statusTd = el('td');
       statusTd.appendChild(badge(p.status));
@@ -1062,13 +1064,9 @@
       }
       row.appendChild(amountTd);
 
-      var invTd  = el('td', 'muted-cell');
-      invTd.textContent  = fmtDate(p.invoice_date);
-      row.appendChild(invTd);
-
-      var paidTd = el('td', 'muted-cell');
-      paidTd.textContent = fmtDate(p.paid_date);
-      row.appendChild(paidTd);
+      var dateTd = el('td', 'muted-cell');
+      dateTd.textContent = fmtDate(p.paid_date || p.invoice_date);
+      row.appendChild(dateTd);
 
       tbody.appendChild(row);
     });
