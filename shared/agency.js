@@ -593,7 +593,7 @@
 
       // Column 4: status
       var statusTd = el('td', 'sc-status sc-' + item.status);
-      statusTd.textContent = item.status === 'match' ? '✓ Used' : item.status === 'diff' ? '≠ Different' : 'Pending';
+      statusTd.textContent = item.status === 'match' ? '✓ Confirmed' : item.status === 'diff' ? '≠ Different' : 'Pending';
       row.appendChild(statusTd);
 
         tbody.appendChild(row);
