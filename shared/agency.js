@@ -102,6 +102,17 @@
     return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
   }
 
+  // ── Completion color scale ────────────────────────────────────────────────────
+  // completion_pct is 0-100. Thresholds align with TikTok algo benchmarks.
+
+  function completionColor(pct) {
+    if (pct == null) return '';
+    if (pct >= 75) return 'var(--accent)';
+    if (pct >= 50) return 'var(--green)';
+    if (pct >= 25) return 'var(--orange2)';
+    return 'var(--red)';
+  }
+
   // ── Badge ────────────────────────────────────────────────────────────────────
 
   function badge(status) {
@@ -146,6 +157,7 @@
 
   function computeSummary(campaigns) {
     var totalViews = 0, totalLikes = 0, totalER = 0, erCount = 0;
+    var totalCompletion = 0, completionCount = 0;
     var postsDelivered = 0, totalPosts = 0;
     campaigns.forEach(function (c) {
       c.deliverables.forEach(function (d) {
@@ -156,6 +168,10 @@
           totalLikes += d.stats.likes    || 0;
           totalER    += d.stats.engagement_rate || 0;
           erCount++;
+          if (d.stats.completion_pct != null) {
+            totalCompletion += d.stats.completion_pct;
+            completionCount++;
+          }
         }
       });
     });
@@ -163,6 +179,7 @@
       totalViews:     totalViews,
       totalLikes:     totalLikes,
       avgER:          erCount > 0 ? (totalER / erCount) : 0,
+      avgCompletion:  completionCount > 0 ? (totalCompletion / completionCount) : null,
       campaignCount:  campaigns.length,
       postsDelivered: postsDelivered,
       totalPosts:     totalPosts,
@@ -267,6 +284,14 @@
         label: summary.campaignCount === 1 ? 'Campaign' : 'Campaigns',
       },
     ];
+
+    // Avg Completion — only when watch time data is available
+    if (summary.avgCompletion != null) {
+      items.push({
+        val:   summary.avgCompletion.toFixed(1) + '%',
+        label: 'Avg Video Completion',
+      });
+    }
 
     // CPM — only when invoice data exists and views are known
     var totalInvoiced = 0;
@@ -747,10 +772,10 @@
       // Empty header for thumb column
       var thThumb = el('th', 'thumb-col');
       hr.appendChild(thThumb);
-      var cols  = ['Platform', 'Status', 'Due', 'Views', 'Likes', 'Comments', 'Shares', 'ER%'];
+      var cols  = ['Platform', 'Status', 'Due', 'Views', 'Completion', 'Likes', 'Comments', 'Shares', 'ER%'];
       cols.forEach(function (c) {
         var th = el('th');
-        if (['Views','Likes','Comments','Shares','ER%'].indexOf(c) !== -1) th.className = 'num-cell';
+        if (['Views','Completion','Likes','Comments','Shares','ER%'].indexOf(c) !== -1) th.className = 'num-cell';
         th.textContent = c;
         hr.appendChild(th);
       });
@@ -812,6 +837,17 @@
 
         var s = d.stats;
         row.appendChild(tdTxt(s ? fmtNum(s.views)            : '—', 'num-cell'));
+
+        var compTd = el('td', 'num-cell');
+        if (s && s.completion_pct != null) {
+          compTd.textContent  = s.completion_pct.toFixed(1) + '%';
+          compTd.style.color  = completionColor(s.completion_pct);
+          compTd.style.fontWeight = '600';
+        } else {
+          compTd.textContent = '—';
+        }
+        row.appendChild(compTd);
+
         row.appendChild(tdTxt(s ? fmtNum(s.likes)            : '—', 'num-cell'));
         row.appendChild(tdTxt(s ? fmtNum(s.comments)         : '—', 'num-cell'));
         row.appendChild(tdTxt(s ? fmtNum(s.shares)           : '—', 'num-cell'));
