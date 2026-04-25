@@ -1,12 +1,12 @@
 {
   "files": {
     "main.css": "/hub/static/css/main.a7969823.css",
-    "main.js": "/hub/static/js/main.50ea4db7.js",
+    "main.js": "/hub/static/js/main.e3b9014d.js",
     "static/media/bebas-neue-latin-400-normal.woff": "/hub/static/media/bebas-neue-latin-400-normal.e07bf68c2e56920dd40b.woff",
     "index.html": "/hub/index.html"
   },
   "entrypoints": [
     "static/css/main.a7969823.css",
-    "static/js/main.50ea4db7.js"
+    "static/js/main.e3b9014d.js"
   ]
 }
