@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /hub/
+Disallow: /shared/
 Disallow: /media-kit.html
 Disallow: /rate-card.html
 
