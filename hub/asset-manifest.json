@@ -1,19 +1,19 @@
 {
   "files": {
     "main.css": "/hub/static/css/main.6c6dc34a.css",
-    "main.js": "/hub/static/js/main.7bb66d70.js",
-    "static/js/27.0e7dd2ba.chunk.js": "/hub/static/js/27.0e7dd2ba.chunk.js",
-    "static/js/913.b82ed8d1.chunk.js": "/hub/static/js/913.b82ed8d1.chunk.js",
+    "main.js": "/hub/static/js/main.e14e188d.js",
+    "static/js/27.d917bcb5.chunk.js": "/hub/static/js/27.d917bcb5.chunk.js",
+    "static/js/913.31c86fda.chunk.js": "/hub/static/js/913.31c86fda.chunk.js",
     "static/js/510.6b2c855a.chunk.js": "/hub/static/js/510.6b2c855a.chunk.js",
     "static/js/695.afc0321e.chunk.js": "/hub/static/js/695.afc0321e.chunk.js",
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/177.f9d599f8.chunk.js": "/hub/static/js/177.f9d599f8.chunk.js",
-    "static/js/42.73eab73e.chunk.js": "/hub/static/js/42.73eab73e.chunk.js",
+    "static/js/922.22f6882b.chunk.js": "/hub/static/js/922.22f6882b.chunk.js",
     "static/media/bebas-neue-latin-400-normal.woff": "/hub/static/media/bebas-neue-latin-400-normal.e07bf68c2e56920dd40b.woff",
     "index.html": "/hub/index.html"
   },
   "entrypoints": [
     "static/css/main.6c6dc34a.css",
-    "static/js/main.7bb66d70.js"
+    "static/js/main.e14e188d.js"
   ]
 }
