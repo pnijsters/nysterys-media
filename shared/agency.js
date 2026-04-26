@@ -1231,7 +1231,12 @@
   // ── Entry point ────────────────────────────────────────────────────────────────
 
   function init() {
-    var token = new URLSearchParams(window.location.search).get('t') || '';
+    // Token lives in the URL fragment (#t=...) so it is never sent to any
+    // server in access logs or Referer headers. Fall back to query param for
+    // backwards compatibility with previously shared links (?t=...).
+    var hash  = new URLSearchParams(window.location.hash.slice(1)).get('t') || '';
+    var query = new URLSearchParams(window.location.search).get('t') || '';
+    var token = hash || query;
 
     if (!token) {
       showError('no-token');
@@ -1241,9 +1246,9 @@
     var ac    = new AbortController();
     var timer = setTimeout(function () { ac.abort(); }, 12000);
 
-    fetch(EDGE + '?token=' + encodeURIComponent(token), {
+    fetch(EDGE, {
       method:  'GET',
-      headers: { 'Accept': 'application/json' },
+      headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token },
       signal:  ac.signal,
     })
       .then(function (res) {
