@@ -93,6 +93,17 @@
     return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
   }
 
+  function extractTikTokMusicId(url) {
+    var m = String(url || '').match(/\/music\/[^/?#]*-(\d{15,20})(?:[/?#]|$)/);
+    return m ? m[1] : null;
+  }
+
+  function musicUrlMatch(contractedUrl, contractedId, actualUrl, actualId) {
+    if (!contractedUrl || !actualUrl) return false;
+    if (contractedId && actualId) return contractedId === actualId;
+    return contractedUrl === actualUrl;
+  }
+
   // ── Completion color scale ────────────────────────────────────────────────────
   // completion_pct is 0-100. Thresholds align with TikTok algo benchmarks.
 
@@ -307,7 +318,7 @@
           if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
           scTotal++;
           var hasActual  = !!(mu.actual_url || mu.actual_track);
-          var urlMatch   = mu.contracted_url && mu.actual_url && mu.contracted_url === mu.actual_url;
+          var urlMatch   = musicUrlMatch(mu.contracted_url, mu.contracted_music_id, mu.actual_url, mu.actual_music_id);
           var trackMatch = mu.contracted_track && mu.actual_track &&
             normTrack(mu.contracted_track) === normTrack(mu.actual_track);
           if (hasActual && (urlMatch || trackMatch)) scConfirmed++;
@@ -524,7 +535,7 @@
         var mu = d.music;
         if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
         var hasActual = !!(mu.actual_url || mu.actual_track);
-        var urlMatch   = mu.contracted_url && mu.actual_url && mu.contracted_url === mu.actual_url;
+        var urlMatch   = musicUrlMatch(mu.contracted_url, mu.contracted_music_id, mu.actual_url, mu.actual_music_id);
         var trackMatch = mu.contracted_track && mu.actual_track &&
           normTrack(mu.contracted_track) === normTrack(mu.actual_track);
         var matched = urlMatch || trackMatch;
@@ -852,7 +863,7 @@
         var m = d.music;
         var hasBrief  = m && (m.contracted_url || m.contracted_track);
         var hasActual = m && (m.actual_url     || m.actual_track);
-        var urlMatch   = hasBrief && hasActual && m.contracted_url && m.actual_url && m.contracted_url === m.actual_url;
+        var urlMatch   = hasBrief && hasActual && musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id);
         var trackMatch = hasBrief && hasActual && m.contracted_track && m.actual_track &&
           m.contracted_track.toLowerCase().replace(/-/g, ' ').trim() === m.actual_track.toLowerCase().replace(/-/g, ' ').trim();
         var isMatch = urlMatch || trackMatch;
