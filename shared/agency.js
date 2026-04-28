@@ -6,21 +6,12 @@
 
   var EDGE = 'https://rnntuxabccnphfvvvaks.supabase.co/functions/v1/agency-dashboard';
 
-  // ── Creator profiles (static, keyed by creator_name from API) ──────────────
+  // ── Creator bios (static — no bio column in DB; update manually when copy changes) ──
+  // handle, follower_count, and avatar_url now come from the API payload.
 
-  var CREATORS = {
-    'Mys Nijsters': {
-      handle:    '@mysthegreat',
-      bio:       'Breakout lifestyle and trend creator with over 1.4 million TikTok followers and 54 million likes. Known for her magnetic energy, swag-forward content, and deeply personal storytelling — she has built one of the most engaged young audiences on the platform.',
-      followers: 1385831,
-      avatar:    'mys.jpg',
-    },
-    'Kym Nijsters': {
-      handle:    '@kymchi_n_crackers',
-      bio:       'Lifestyle and fashion creator known for her fit checks, authentic storytelling, and relatable everyday content. With a natural presence on camera and a growing, engaged community, she consistently connects with her audience on a personal level.',
-      followers: 224600,
-      avatar:    'kym.jpg',
-    },
+  var CREATOR_BIOS = {
+    'Mys Nijsters': 'Breakout lifestyle and trend creator. Known for her magnetic energy, swag-forward content, and deeply personal storytelling — she has built one of the most engaged young audiences on the platform.',
+    'Kym Nijsters': 'Lifestyle and fashion creator known for her fit checks, authentic storytelling, and relatable everyday content. With a natural presence on camera and a growing, engaged community, she consistently connects with her audience on a personal level.',
   };
 
   // ── DOM helpers ─────────────────────────────────────────────────────────────
@@ -210,13 +201,11 @@
   // Campaign-scoped numbers (views, engagement, posts) live in the KPI strip.
 
   function renderCreatorHero(dash) {
-    var profile  = CREATORS[dash.creator_name] || null;
     var avatarEl = document.getElementById('hero-avatar');
 
     // Avatar — src set directly; mitigated by CSP img-src restricting to https: + data:
-    var avatarSrc = dash.avatar_url || (profile && profile.avatar ? profile.avatar : null);
-    if (avatarSrc) {
-      avatarEl.src = avatarSrc;
+    if (dash.avatar_url) {
+      avatarEl.src = dash.avatar_url;
       avatarEl.alt = dash.creator_name || '';
       avatarEl.onerror = function () {
         this.style.display = 'none';
@@ -232,14 +221,14 @@
     }
 
     // All text via textContent — no innerHTML
-    document.getElementById('hero-handle').textContent     = (profile && profile.handle) ? profile.handle : '';
-    document.getElementById('hero-name').textContent       = (dash.creator_name || '').split(' ')[0];
-    document.getElementById('hero-bio').textContent        = (profile && profile.bio) ? profile.bio : '';
+    document.getElementById('hero-handle').textContent      = dash.handle || '';
+    document.getElementById('hero-name').textContent        = (dash.creator_name || '').split(' ')[0];
+    document.getElementById('hero-bio').textContent         = CREATOR_BIOS[dash.creator_name] || '';
     document.getElementById('hero-agency-name').textContent = dash.agency_name || '';
 
-    // Followers — append inline to the handle line rather than a standalone stat
+    // Followers — from live DB value via API, shown inline on the handle line
     var handleEl  = document.getElementById('hero-handle');
-    var followers = profile ? profile.followers : null;
+    var followers = dash.follower_count || null;
     if (followers && handleEl) {
       var sep = el('span', 'hero-handle-sep');
       sep.textContent = '·';
