@@ -1072,6 +1072,19 @@ tbody tr:hover td { background: var(--surface2); }
 
   td.thumb-col, th.thumb-col { width: 40px; min-width: 40px; padding-left: 12px !important; }
 
+  /* Sound Check: swap 4-column desktop layout for 3-column stacked mobile layout */
+  .sc-table         { table-layout: auto; }
+  .sc-thumb-cell    { width: 90px; }
+  .sc-caption-cell,
+  .sc-track-cell    { display: none; }
+  .sc-content-cell  {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 10px 8px 10px 0 !important;
+    min-width: 0;
+  }
+  .sc-status        { width: 80px; font-size: 10px; }
+
   .agency-footer .container { gap: 6px; }
   .footer-tagline { display: none; }
 
@@ -1317,3 +1330,25 @@ tbody tr:hover td { background: var(--surface2); }
 .sc-match   { color: var(--green); }
 .sc-diff    { color: var(--orange2); }
 .sc-pending { color: var(--dim); }
+
+/* Mobile merged column — hidden on desktop */
+.sc-content-cell { display: none; }
+
+.sc-content-caption {
+  font-size: 12px;
+  color: var(--white);
+  line-height: 1.4;
+  margin-bottom: 5px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.sc-content-track {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

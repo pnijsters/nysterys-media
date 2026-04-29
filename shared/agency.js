@@ -523,6 +523,55 @@
     return totals;
   }
 
+  // ── Sound Check DOM builders (shared by desktop cells and mobile merged cell) ──
+
+  function buildCaptionContent(item, container) {
+    if (item.caption) {
+      var raw = item.caption.trim();
+      var stripped = raw.replace(/#\S+/g, '').replace(/\s+/g, ' ').trim();
+      var display = stripped.length > 90 ? stripped.slice(0, 90) + '…' : stripped;
+      var capEl = el('span', 'sc-caption');
+      capEl.textContent = display || raw.slice(0, 90);
+      container.appendChild(capEl);
+      var safePost = item.post_url ? safeLink(item.post_url) : null;
+      if (safePost) {
+        var lnk = el('a', 'sc-link');
+        lnk.href = safePost;
+        lnk.target = '_blank';
+        lnk.rel = 'noopener noreferrer';
+        lnk.textContent = ' ↗';
+        container.appendChild(lnk);
+      }
+    } else {
+      container.textContent = '—';
+    }
+  }
+
+  function buildTrackContent(item, container) {
+    if (item.track) {
+      var trackEl = el('span', 'sc-track');
+      trackEl.textContent = fmtTrack(item.track);
+      container.appendChild(trackEl);
+      if (item.artist) {
+        container.appendChild(document.createTextNode(' — '));
+        var artistEl = el('span', 'sc-artist');
+        artistEl.textContent = item.artist;
+        container.appendChild(artistEl);
+      }
+      var musicHref = item.url ? safeLink(item.url) : null;
+      if (musicHref) {
+        var lnk = el('a', 'sc-link');
+        lnk.href = musicHref;
+        lnk.target = '_blank';
+        lnk.rel = 'noopener noreferrer';
+        lnk.textContent = ' ↗';
+        container.appendChild(lnk);
+      }
+    } else {
+      container.textContent = '—';
+    }
+  }
+
   // ── Render: music compliance strip (music-promo agencies only) ────────────────
 
   function renderSoundCheck(campaigns, agencyType, container) {
@@ -574,7 +623,7 @@
       if (multiCampaign) {
         var campRow = el('tr', 'sc-campaign-row');
         var campTd  = el('td', 'sc-campaign-cell');
-        campTd.colSpan = 4;
+        campTd.colSpan = 5;
         var startStr = fmtDate(group.campaign.start_date);
         var endStr   = fmtDate(group.campaign.end_date);
         campTd.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : (group.campaign.name || '');
@@ -615,57 +664,27 @@
       thumbTd.appendChild(thumbInner);
       row.appendChild(thumbTd);
 
-      // Column 2: caption
+      // Column 2: caption (desktop only — hidden on mobile via CSS)
       var captionTd = el('td', 'sc-caption-cell');
-      if (item.caption) {
-        var raw = item.caption.trim();
-        // strip hashtags for display, truncate at 90 chars
-        var stripped = raw.replace(/#\S+/g, '').replace(/\s+/g, ' ').trim();
-        var display = stripped.length > 90 ? stripped.slice(0, 90) + '…' : stripped;
-        var capEl = el('span', 'sc-caption');
-        capEl.textContent = display || raw.slice(0, 90);
-        captionTd.appendChild(capEl);
-        var safePost = item.post_url ? safeLink(item.post_url) : null;
-        if (safePost) {
-          var postLnk = el('a', 'sc-link');
-          postLnk.href = safePost;
-          postLnk.target = '_blank';
-          postLnk.rel = 'noopener noreferrer';
-          postLnk.textContent = ' ↗';
-          captionTd.appendChild(postLnk);
-        }
-      } else {
-        captionTd.textContent = '—';
-      }
+      buildCaptionContent(item, captionTd);
       row.appendChild(captionTd);
 
-      // Column 3: contracted track
+      // Column 3: contracted track (desktop only — hidden on mobile via CSS)
       var trackTd = el('td', 'sc-track-cell');
-      if (item.track) {
-        var trackEl = el('span', 'sc-track');
-        trackEl.textContent = fmtTrack(item.track);
-        trackTd.appendChild(trackEl);
-        if (item.artist) {
-          trackTd.appendChild(document.createTextNode(' — '));
-          var artistEl = el('span', 'sc-artist');
-          artistEl.textContent = item.artist;
-          trackTd.appendChild(artistEl);
-        }
-        var musicHref = item.url ? safeLink(item.url) : null;
-        if (musicHref) {
-          var musicLnk = el('a', 'sc-link');
-          musicLnk.href = musicHref;
-          musicLnk.target = '_blank';
-          musicLnk.rel = 'noopener noreferrer';
-          musicLnk.textContent = ' ↗';
-          trackTd.appendChild(musicLnk);
-        }
-      } else {
-        trackTd.textContent = '—';
-      }
+      buildTrackContent(item, trackTd);
       row.appendChild(trackTd);
 
-      // Column 4: status
+      // Column 4: caption + track stacked (mobile only — hidden on desktop via CSS)
+      var contentTd = el('td', 'sc-content-cell');
+      var capDiv = el('div', 'sc-content-caption');
+      buildCaptionContent(item, capDiv);
+      contentTd.appendChild(capDiv);
+      var trackDiv = el('div', 'sc-content-track');
+      buildTrackContent(item, trackDiv);
+      contentTd.appendChild(trackDiv);
+      row.appendChild(contentTd);
+
+      // Column 5: status
       var statusTd = el('td', 'sc-status sc-' + item.status);
       statusTd.textContent = item.status === 'match' ? '✓ Confirmed' : item.status === 'diff' ? '≠ Different' : 'Pending';
       row.appendChild(statusTd);
