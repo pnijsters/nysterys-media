@@ -1072,18 +1072,6 @@ tbody tr:hover td { background: var(--surface2); }
 
   td.thumb-col, th.thumb-col { width: 40px; min-width: 40px; padding-left: 12px !important; }
 
-  /* Sound Check: swap 4-column desktop layout for 3-column stacked mobile layout */
-  .sc-table         { table-layout: auto; }
-  .sc-thumb-cell    { width: 90px; }
-  .sc-caption-cell,
-  .sc-track-cell    { display: none; }
-  .sc-content-cell  {
-    display: table-cell;
-    vertical-align: middle;
-    padding: 10px 8px 10px 0 !important;
-  }
-  .sc-status        { width: 80px; font-size: 10px; }
-
   .agency-footer .container { gap: 6px; }
   .footer-tagline { display: none; }
 
@@ -1347,4 +1335,19 @@ tbody tr:hover td { background: var(--surface2); }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Sound Check mobile overrides — must follow .sc-content-cell { display: none }
+   so the cascade order is correct and table-cell wins on narrow viewports. */
+@media (max-width: 768px) {
+  .sc-table      { table-layout: auto; }
+  .sc-thumb-cell { width: 90px; }
+  .sc-caption-cell,
+  .sc-track-cell { display: none; }
+  .sc-content-cell {
+    display: table-cell;
+    vertical-align: middle;
+    padding: 10px 8px 10px 0 !important;
+  }
+  .sc-status { width: 80px; font-size: 10px; }
 }
