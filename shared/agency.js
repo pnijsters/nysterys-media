@@ -1036,7 +1036,10 @@
             valueEl.appendChild(arrow);
           }
         } else {
-          valueEl.textContent = addr;
+          addr.split('\n').forEach(function (line, i) {
+            if (i > 0) valueEl.appendChild(document.createElement('br'));
+            valueEl.appendChild(document.createTextNode(line));
+          });
         }
 
         append(row, methodEl, valueEl);
