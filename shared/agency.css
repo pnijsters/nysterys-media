@@ -1153,6 +1153,7 @@ tbody tr:hover td { background: var(--surface2); }
   color: var(--white);
   overflow-wrap: break-word;
   word-break: break-word;
+  white-space: pre-line;
   min-width: 0;
 }
 
