@@ -1095,7 +1095,7 @@ tbody tr:hover td { background: var(--surface2); }
 
 .payment-addresses-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 12px;
 }
 
@@ -1151,7 +1151,8 @@ tbody tr:hover td { background: var(--surface2); }
 .pay-addr-value {
   font-size: 12px;
   color: var(--white);
-  word-break: break-all;
+  overflow-wrap: break-word;
+  word-break: break-word;
   min-width: 0;
 }
 
