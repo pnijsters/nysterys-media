@@ -1076,7 +1076,125 @@ tbody tr:hover td { background: var(--surface2); }
   .footer-tagline { display: none; }
 
   .payment-addresses-cards { grid-template-columns: 1fr; }
+
+  .campaign-name { white-space: normal; }
+
+  .stat-pill { border-right: none; padding-right: 0; margin-right: 0; }
+
+  .kpi-strip > *:last-child:nth-child(odd) { grid-column: span 2; }
 }
+
+/* ── Mobile deliverable cards (rendered by JS only on ≤768px) ─ */
+
+.mobile-deliv-card {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-deliv-card:last-child { border-bottom: none; }
+
+.mobile-deliv-top {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.mobile-deliv-thumb {
+  display: block;
+  width: 44px;
+  height: 60px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  text-decoration: none;
+  transition: border-color var(--transition);
+}
+
+a.mobile-deliv-thumb:hover { border-color: var(--orange); }
+
+.mobile-deliv-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.mobile-deliv-thumb-ph {
+  width: 100%;
+  height: 100%;
+  background: var(--surface3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.mobile-deliv-info { flex: 1; min-width: 0; }
+
+.mobile-deliv-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.mobile-deliv-platform {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.mobile-deliv-date {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.mobile-deliv-stats {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.mobile-deliv-postlink {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--orange);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: color var(--transition);
+}
+
+.mobile-deliv-postlink:hover { color: var(--orange2); }
+
+.mobile-deliv-music {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+}
+
+.mobile-deliv-music-note { color: var(--orange); font-size: 11px; flex-shrink: 0; }
+
+.mobile-deliv-music-track {
+  color: var(--white);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.mobile-deliv-music-pending { color: var(--dim); }
 
 /* ── Payment addresses ────────────────────────────────────── */
 

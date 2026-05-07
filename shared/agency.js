@@ -698,6 +698,100 @@
     container.appendChild(wrap);
   }
 
+  // ── Mobile deliverable card ───────────────────────────────────────────────────
+
+  function renderDeliverableMobileCard(d) {
+    var card = el('div', 'mobile-deliv-card');
+    var top  = el('div', 'mobile-deliv-top');
+
+    // Thumbnail
+    var imgUrl   = safeLink(d.cover_image_url);
+    var postHref = safeLink(d.post_url);
+    var thumb    = postHref ? el('a', 'mobile-deliv-thumb') : el('div', 'mobile-deliv-thumb');
+    if (postHref) { thumb.href = postHref; thumb.target = '_blank'; thumb.rel = 'noopener noreferrer'; }
+    if (imgUrl) {
+      var img = el('img');
+      img.src = imgUrl; img.alt = ''; img.loading = 'lazy';
+      img.onerror = function () {
+        var ph = el('div', 'mobile-deliv-thumb-ph'); ph.textContent = '▶';
+        this.parentNode.innerHTML = ''; this.parentNode.appendChild(ph);
+      };
+      thumb.appendChild(img);
+    } else {
+      var ph = el('div', 'mobile-deliv-thumb-ph'); ph.textContent = '▶';
+      thumb.appendChild(ph);
+    }
+    top.appendChild(thumb);
+
+    // Info
+    var info = el('div', 'mobile-deliv-info');
+
+    var metaRow = el('div', 'mobile-deliv-meta');
+    var platEl  = el('span', 'mobile-deliv-platform');
+    platEl.textContent = d.platform || '—';
+    metaRow.appendChild(platEl);
+    metaRow.appendChild(badge(d.status));
+    info.appendChild(metaRow);
+
+    var dateEl = el('div', 'mobile-deliv-date');
+    dateEl.textContent = d.posted_date
+      ? ('Posted ' + fmtDateShort(d.posted_date))
+      : (d.due_date ? ('Due ' + fmtDateShort(d.due_date)) : '—');
+    info.appendChild(dateEl);
+
+    var s = d.stats;
+    if (s) {
+      var statParts = [];
+      if (s.views > 0)              statParts.push(fmtNum(s.views) + ' views');
+      if (s.engagement_rate > 0)    statParts.push(s.engagement_rate.toFixed(1) + '% ER');
+      if (s.completion_pct != null) statParts.push(s.completion_pct.toFixed(1) + '% completion');
+      if (statParts.length > 0) {
+        var statsEl = el('div', 'mobile-deliv-stats');
+        statsEl.textContent = statParts.join(' · ');
+        info.appendChild(statsEl);
+      }
+    }
+
+    if (postHref) {
+      var lnk = el('a', 'mobile-deliv-postlink');
+      lnk.href = postHref; lnk.target = '_blank'; lnk.rel = 'noopener noreferrer';
+      lnk.textContent = 'View Post ↗';
+      info.appendChild(lnk);
+    }
+
+    top.appendChild(info);
+    card.appendChild(top);
+
+    // Music check — compact row
+    var m = d.music;
+    var hasBrief  = m && (m.contracted_url || m.contracted_track);
+    var hasActual = m && (m.actual_url     || m.actual_track);
+    if (hasBrief || hasActual) {
+      var urlMatch   = hasBrief && hasActual && musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id);
+      var trackMatch = hasBrief && hasActual && m.contracted_track && m.actual_track &&
+        normTrack(m.contracted_track) === normTrack(m.actual_track);
+      var isMatch = urlMatch || trackMatch;
+
+      var musicRow = el('div', 'mobile-deliv-music');
+      var noteEl = el('span', 'mobile-deliv-music-note'); noteEl.textContent = '♬';
+      musicRow.appendChild(noteEl);
+
+      if (hasBrief && m.contracted_track) {
+        var trackEl = el('span', 'mobile-deliv-music-track');
+        trackEl.textContent = fmtTrack(m.contracted_track) + (m.contracted_artist ? ' — ' + m.contracted_artist : '');
+        musicRow.appendChild(trackEl);
+      }
+
+      var scEl = el('span', isMatch ? 'music-match' : (hasActual ? 'music-diff' : 'mobile-deliv-music-pending'));
+      scEl.textContent = !hasActual ? 'Pending' : (isMatch ? '✓ Confirmed' : '≠ Different');
+      musicRow.appendChild(scEl);
+
+      card.appendChild(musicRow);
+    }
+
+    return card;
+  }
+
   // ── Render: campaigns panel ────────────────────────────────────────────────────
 
   // Creates a copy-URLs button. urls = string[]. Returns null if no urls.
@@ -721,6 +815,7 @@
   }
 
   function renderCampaigns(campaigns, container) {
+    var isMobile = window.innerWidth <= 768;
     if (!campaigns || campaigns.length === 0) {
       var empty = el('div', 'empty-msg');
       empty.textContent = 'No campaigns found for this dashboard.';
@@ -778,11 +873,12 @@
         return;
       }
 
-      // Deliverables table — thumbnail inlined as first column
       var sectionLabel = el('div', 'section-label');
       sectionLabel.textContent = 'Deliverables';
       card.appendChild(sectionLabel);
 
+      if (!isMobile) {
+      // Desktop: full stats table
       var tableWrap = el('div', 'table-wrap');
       var table     = el('table');
 
@@ -955,6 +1051,12 @@
       table.appendChild(tbody);
       tableWrap.appendChild(table);
       card.appendChild(tableWrap);
+      } else {
+        // Mobile: compact card list
+        var delivCardList = el('div', 'mobile-deliv-list');
+        delivs.forEach(function (d) { delivCardList.appendChild(renderDeliverableMobileCard(d)); });
+        card.appendChild(delivCardList);
+      }
 
       // Aggregate stats bar
       var totals = sumStats(delivs);
