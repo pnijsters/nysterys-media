@@ -163,6 +163,7 @@
     var postsDelivered = 0, totalPosts = 0;
     campaigns.forEach(function (c) {
       c.deliverables.forEach(function (d) {
+        if (d.status === 'Cancelled') return;
         totalPosts++;
         if (d.status === 'Posted') postsDelivered++;
         if (d.stats) {
@@ -1175,10 +1176,10 @@
       if (p.is_in_kind) return;
       var amt = Number(p.amount) || 0;
       total += amt;
-      var st = (p.status || '').toLowerCase();
-      if (st === 'paid')                               paid        += amt;
-      else if (st === 'pending' || st === 'invoiced')  pendingAmt  += amt;
-      else                                             notInvoiced += amt;
+      var st = p.status || '';
+      if (st === 'Paid')                                                   paid        += amt;
+      else if (st === 'Pending' || st === 'Invoiced' || st === 'Overdue')  pendingAmt  += amt;
+      else                                                                 notInvoiced += amt;
     });
 
     var outstanding = pendingAmt + notInvoiced;
