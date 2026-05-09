@@ -1359,9 +1359,21 @@
     // Token lives in the URL fragment (#t=...) so it is never sent to any
     // server in access logs or Referer headers. Fall back to query param for
     // backwards compatibility with previously shared links (?t=...).
+    //
+    // If the token arrived as a query param (?t=... or ?token=...), migrate it
+    // to the hash immediately so it never appears in server access logs or
+    // Referer headers going forward. replaceState removes it from browser
+    // history as well.
+    var queryParams = new URLSearchParams(window.location.search);
+    var queryToken  = queryParams.get('t') || queryParams.get('token') || '';
+    if (queryToken) {
+      window.history.replaceState(null, '', window.location.pathname);
+      window.location.hash = 't=' + encodeURIComponent(queryToken);
+      // Fall through — hash is now set, extraction below will find it.
+    }
+
     var hash  = new URLSearchParams(window.location.hash.slice(1)).get('t') || '';
-    var query = new URLSearchParams(window.location.search).get('t') || '';
-    var token = hash || query;
+    var token = hash;
 
     if (!token) {
       showError('no-token');
