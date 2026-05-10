@@ -192,20 +192,35 @@
   // ── Error screen ──────────────────────────────────────────────────────────────
 
   var ERRORS = {
-    'not-found':    { icon: '404', title: 'Dashboard not found',  body: 'This link may have expired or been deactivated. Contact the creator for a new link.' },
-    'no-token':     { icon: '?',   title: 'Invalid link',         body: 'No dashboard token was found in this URL.' },
-    'timeout':      { icon: '⏱',  title: 'Request timed out',    body: 'The server took too long to respond. Please try again in a moment.' },
-    'network':      { icon: '⚡',  title: 'Connection error',     body: 'Unable to load the dashboard. Check your connection and try again.' },
-    'server-error': { icon: '!',   title: 'Server error',         body: 'Something went wrong on our end. Please try again shortly.' },
+    'expired':      { icon: '—',   title: 'THIS LINK HAS EXPIRED', body: 'This dashboard is no longer accessible. Contact the creator for updated access.' },
+    'not-found':    { icon: '404', title: 'Dashboard not found',   body: 'This link has been deactivated. Contact the creator for a new link.' },
+    'no-token':     { icon: '?',   title: 'Invalid link',          body: 'No dashboard token was found in this URL.' },
+    'timeout':      { icon: '⏱',  title: 'Request timed out',     body: 'The server took too long to respond. Please try again in a moment.' },
+    'network':      { icon: '⚡',  title: 'Connection error',      body: 'Unable to load the dashboard. Check your connection and try again.' },
+    'server-error': { icon: '!',   title: 'Server error',          body: 'Something went wrong on our end. Please try again shortly.' },
   };
 
-  function showError(type) {
+  function showError(type, expiresAt) {
     var cfg = ERRORS[type] || ERRORS['server-error'];
     document.getElementById('loading-state').hidden = true;
     document.getElementById('error-icon').textContent  = cfg.icon;
     document.getElementById('error-title').textContent = cfg.title;
     document.getElementById('error-body').textContent  = cfg.body;
-    document.getElementById('error-state').removeAttribute('hidden');
+
+    // For expired state: show the exact date it expired below the body
+    var existing = document.getElementById('error-date-stamp');
+    if (existing) existing.remove();
+    if (type === 'expired' && expiresAt) {
+      var stamp = document.createElement('p');
+      stamp.id = 'error-date-stamp';
+      stamp.className = 'error-date-stamp';
+      stamp.textContent = 'Expired ' + fmtDate(expiresAt.split('T')[0]);
+      document.getElementById('error-body').insertAdjacentElement('afterend', stamp);
+    }
+
+    var errorState = document.getElementById('error-state');
+    errorState.dataset.type = type;
+    errorState.removeAttribute('hidden');
   }
 
   // ── Creator hero ──────────────────────────────────────────────────────────────
@@ -1293,6 +1308,30 @@
 
   // ── Render: full dashboard ─────────────────────────────────────────────────────
 
+  function renderExpiryBanner(expiresAt) {
+    var msLeft = new Date(expiresAt) - new Date();
+    if (msLeft <= 0) return; // already expired — full error state handles it
+
+    var sevenDays = 7 * 24 * 60 * 60 * 1000;
+    if (msLeft >= sevenDays) return; // more than 7 days — no banner
+
+    var isUrgent = msLeft < 24 * 60 * 60 * 1000;
+    var banner = el('div', 'expiry-banner' + (isUrgent ? ' expiry-banner--urgent' : ''));
+    var inner  = el('div', 'container expiry-banner-inner');
+    var text   = el('span', 'expiry-banner-text');
+
+    if (isUrgent) {
+      text.textContent = 'This link expires today';
+    } else {
+      var daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+      text.textContent = 'This link expires ' + fmtDate(expiresAt.split('T')[0]) + ' — ' + daysLeft + ' days remaining';
+    }
+
+    append(inner, text);
+    banner.appendChild(inner);
+    document.querySelector('.agency-header').insertAdjacentElement('afterend', banner);
+  }
+
   function renderDashboard(data) {
     var dash      = data.dashboard;
     var campaigns = data.campaigns || [];
@@ -1301,6 +1340,7 @@
 
     document.getElementById('loading-state').hidden = true;
 
+    if (dash.expires_at) renderExpiryBanner(dash.expires_at);
     renderCreatorHero(dash);
     renderKpiStrip(campaigns, summary, dash);
 
@@ -1390,6 +1430,12 @@
     })
       .then(function (res) {
         clearTimeout(timer);
+        if (res.status === 403) {
+          return res.json().catch(function () { return null; }).then(function (body) {
+            showError('expired', body && body.expires_at ? body.expires_at : null);
+            return null;
+          });
+        }
         if (res.status === 404) { showError('not-found'); return null; }
         if (!res.ok)            { showError('server-error'); return null; }
         return res.json();
