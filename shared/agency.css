@@ -125,6 +125,62 @@ body::before {
 
 .back-home-link:hover { color: var(--orange2); }
 
+/* ── Expiry banner ────────────────────────────────────────── */
+
+.expiry-banner {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+  animation: expiry-slide-in 280ms cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+.expiry-banner--urgent {
+  border-bottom-color: rgba(255, 92, 0, 0.25);
+}
+
+@keyframes expiry-slide-in {
+  from { transform: translateY(-100%); opacity: 0; }
+  to   { transform: translateY(0);     opacity: 1; }
+}
+
+.expiry-banner-inner {
+  display: flex;
+  align-items: center;
+}
+
+.expiry-banner-text {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.expiry-banner--urgent .expiry-banner-text {
+  color: var(--orange);
+}
+
+/* ── Expired full-page state ──────────────────────────────── */
+
+#error-state[data-type="expired"] .error-icon {
+  font-size: 24px;
+  color: var(--orange);
+  letter-spacing: 0.2em;
+}
+
+#error-state[data-type="expired"] .error-title {
+  font-size: 36px;
+  color: var(--white);
+}
+
+.error-date-stamp {
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-top: -8px;
+}
+
 /* ── Top navigation bar ───────────────────────────────────── */
 
 .agency-header {
