@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/hub/static/css/main.d0533e1c.css",
-    "main.js": "/hub/static/js/main.41c5504e.js",
+    "main.js": "/hub/static/js/main.10565f4b.js",
     "static/js/845.2cc70891.chunk.js": "/hub/static/js/845.2cc70891.chunk.js",
     "static/js/844.421930c8.chunk.js": "/hub/static/js/844.421930c8.chunk.js",
     "static/js/510.d3885a6e.chunk.js": "/hub/static/js/510.d3885a6e.chunk.js",
@@ -11,12 +11,12 @@
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/169.25a8278a.chunk.js": "/hub/static/js/169.25a8278a.chunk.js",
     "static/js/177.f9d599f8.chunk.js": "/hub/static/js/177.f9d599f8.chunk.js",
-    "static/js/174.cbb8a363.chunk.js": "/hub/static/js/174.cbb8a363.chunk.js",
+    "static/js/174.10317044.chunk.js": "/hub/static/js/174.10317044.chunk.js",
     "static/media/bebas-neue-latin-400-normal.woff": "/hub/static/media/bebas-neue-latin-400-normal.e07bf68c2e56920dd40b.woff",
     "index.html": "/hub/index.html"
   },
   "entrypoints": [
     "static/css/main.d0533e1c.css",
-    "static/js/main.41c5504e.js"
+    "static/js/main.10565f4b.js"
   ]
 }
