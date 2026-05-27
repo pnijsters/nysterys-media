@@ -93,26 +93,10 @@
     return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
   }
 
-  function extractTikTokMusicId(url) {
-    var m = String(url || '').match(/\/music\/[^/?#]*-(\d{15,20})(?:[/?#]|$)/);
-    return m ? m[1] : null;
-  }
-
   function musicUrlMatch(contractedUrl, contractedId, actualUrl, actualId) {
     if (!contractedUrl || !actualUrl) return false;
     if (contractedId && actualId) return contractedId === actualId;
     return contractedUrl === actualUrl;
-  }
-
-  // ── Completion color scale ────────────────────────────────────────────────────
-  // completion_pct is 0-100. Thresholds align with TikTok algo benchmarks.
-
-  function completionColor(pct) {
-    if (pct == null) return '';
-    if (pct >= 75) return 'var(--accent)';
-    if (pct >= 50) return 'var(--green)';
-    if (pct >= 25) return 'var(--orange2)';
-    return 'var(--red)';
   }
 
   // ── Badge ────────────────────────────────────────────────────────────────────
@@ -137,21 +121,6 @@
       var eased = 1 - Math.pow(1 - progress, 3);
       el.textContent = fmtFn(Math.round(eased * target));
       if (step >= steps) { el.textContent = fmtFn(target); clearInterval(timer); }
-    }, interval);
-  }
-
-  function countUpFloat(el, target, decimals, suffix, duration) {
-    if (!target || target <= 0) { el.textContent = (0).toFixed(decimals) + suffix; return; }
-    duration = duration || 1400;
-    var steps = 55;
-    var interval = Math.max(duration / steps, 14);
-    var step = 0;
-    var timer = setInterval(function () {
-      step++;
-      var progress = step / steps;
-      var eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = (eased * target).toFixed(decimals) + suffix;
-      if (step >= steps) { el.textContent = target.toFixed(decimals) + suffix; clearInterval(timer); }
     }, interval);
   }
 
@@ -468,54 +437,6 @@
     var topPanel = document.getElementById('top-posts-panel');
     buildChartRows(document.getElementById('top-posts-bars'), topPosts, topPosts[0].views, 200);
     topPanel.removeAttribute('hidden');
-  }
-
-  // ── Thumbnail strip ────────────────────────────────────────────────────────────
-
-  function renderThumbStrip(deliverables) {
-    var withMedia = deliverables.filter(function (d) {
-      return d.cover_image_url || d.post_url;
-    });
-    if (withMedia.length === 0) return null;
-
-    var strip = el('div', 'thumb-strip');
-
-    withMedia.forEach(function (d) {
-      var link   = safeLink(d.post_url);
-      var imgUrl = safeLink(d.cover_image_url);
-
-      var item = link ? el('a', 'thumb-item') : el('div', 'thumb-item');
-      if (link) {
-        item.href   = link;
-        item.target = '_blank';
-        item.rel    = 'noopener noreferrer';
-      }
-
-      if (imgUrl) {
-        var img = el('img');
-        img.src     = imgUrl;
-        img.alt     = 'Post preview';
-        img.loading = 'lazy';
-        img.onerror = function () {
-          // Signed CDN URLs expire within ~24h — swap in a styled placeholder
-          var ph = el('div', 'thumb-placeholder');
-          ph.textContent = '▶';
-          item.innerHTML = '';
-          item.appendChild(ph);
-        };
-        var play = el('div', 'thumb-item-play');
-        play.textContent = '▶';
-        append(item, img, play);
-      } else {
-        var ph = el('div', 'thumb-placeholder');
-        ph.textContent = '▶';
-        item.appendChild(ph);
-      }
-
-      strip.appendChild(item);
-    });
-
-    return strip;
   }
 
   // ── Campaign stats aggregate ───────────────────────────────────────────────────
