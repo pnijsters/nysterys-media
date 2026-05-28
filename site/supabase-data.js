@@ -54,8 +54,12 @@
   }
 
   function buildCreator(cfg, profiles, videos, genders, countries) {
-    /* Profile — most recent row */
-    var profile    = profiles.find(function (r) { return r.tiktok_username === cfg.tiktokHandle; }) || {};
+    /* Profile — most recent row with a real follower count. Coupler stamps a
+     * zero-follower row at the start of every sync day; falling through to the
+     * next row prevents "0 followers" from rendering on the public site. */
+    var profile    = profiles.find(function (r) {
+      return r.tiktok_username === cfg.tiktokHandle && Number(r.followers_count) > 0;
+    }) || {};
     var followers  = Number(profile.followers_count) || 0;
     var latestDate = profile.date || '';
 
@@ -131,7 +135,9 @@
     var countryCols  = 'tiktok_username,date,country,percentage';
 
     return Promise.all([
-      get('tiktok_profile_insights_view?select=' + profileCols + '&order=date.desc&limit=4'),
+      // limit=12 (was 4) gives each creator several days of buffer so the
+      // skip-zero-followers filter in buildCreator always finds a real row.
+      get('tiktok_profile_insights_view?select=' + profileCols + '&order=date.desc&limit=12'),
       fetchVideos(),
       get('tiktok_audience_gender_view?select='  + genderCols  + '&order=date.desc&limit=12'),
       get('tiktok_audience_country_view?select=' + countryCols + '&order=date.desc&limit=60'),
