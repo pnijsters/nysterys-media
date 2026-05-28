@@ -942,19 +942,24 @@
               block.appendChild(trackEl);
             }
             if (artist) {
-              var dash2 = document.createTextNode(' — ');
+              var dash2 = document.createTextNode(' · ');
               block.appendChild(dash2);
               var artistEl = el('span', 'music-artist');
               artistEl.textContent = artist;
               block.appendChild(artistEl);
             }
             if (url) {
-              var link = el('a', 'music-link');
-              link.href   = url;
-              link.target = '_blank';
-              link.rel    = 'noopener noreferrer';
-              link.textContent = '↗';
-              block.appendChild(link);
+              // Validate through safeLink so a malformed/javascript: URL stored
+              // in music_url cannot execute when an agency viewer clicks.
+              var safeMusicHref = safeLink(url);
+              if (safeMusicHref) {
+                var link = el('a', 'music-link');
+                link.href   = safeMusicHref;
+                link.target = '_blank';
+                link.rel    = 'noopener noreferrer';
+                link.textContent = '↗';
+                block.appendChild(link);
+              }
             }
             return block;
           }
