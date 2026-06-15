@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>404 — Nysterys Media</title>
+  <title>404 · Nysterys Media</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="dns-prefetch" href="//fonts.googleapis.com" />
@@ -42,7 +42,7 @@
       overflow-x: hidden;
     }
 
-    /* Grain texture overlay — matches global.css */
+    /* Grain texture overlay: matches global.css */
     body::before {
       content: '';
       position: fixed;
@@ -111,7 +111,7 @@
       margin-bottom: 2.5rem;
     }
 
-    /* Two glitch layers — hidden by default via clip-path, briefly revealed */
+    /* Two glitch layers: hidden by default via clip-path, briefly revealed */
     .hero-404::before,
     .hero-404::after {
       content: '404';
@@ -135,7 +135,7 @@
       animation-delay: 60ms;
     }
 
-    /* Orange layer: 3 quick frames ~490ms–700ms into each 7s cycle */
+    /* Orange layer: 3 quick frames ~490ms to 700ms into each 7s cycle */
     @keyframes glitch-a {
       0%, 90%, 100% { clip-path: inset(0 0 100% 0); transform: translateX(0); }
       91%            { clip-path: inset(14% 0 58% 0); transform: translateX(-7px); }

@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://rnntuxabccnphfvvvaks.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Media Kit — Nysterys Media</title>
+  <title>Media Kit · Nysterys Media</title>
   <meta name="theme-color" content="#080808" />
   <meta name="robots" content="noindex, nofollow" />
 
@@ -116,22 +116,13 @@
       padding: 2rem;
       position: relative;
       overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+      transition: transform 0.3s ease, background 0.3s ease;
     }
 
     .overview-stat:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 30px rgba(255, 92, 0, 0.1);
+      transform: translateY(-3px);
       background: var(--surface2);
       z-index: 1;
-    }
-
-    .overview-stat::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 3px; height: 100%;
-      background: var(--orange);
     }
 
     .overview-val {
@@ -231,14 +222,6 @@
     }
 
     .metric:last-child { border-right: none; }
-
-    .metric::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(to right, var(--orange), var(--orange2));
-    }
 
     .metric-val {
       font-family: 'Bebas Neue', sans-serif;
@@ -706,7 +689,7 @@
 
     .dist-count {
       font-size: 0.5rem;
-      color: #444;
+      color: var(--muted);
       text-align: center;
       margin-top: 0.1rem;
     }
@@ -767,7 +750,6 @@
     .process-note {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--orange);
       padding: 1.5rem 2rem;
       font-size: 0.85rem;
       line-height: 1.75;
@@ -778,6 +760,16 @@
     .process-note strong {
       color: var(--white);
       font-weight: 500;
+    }
+
+    /* Quiet, in-theme message shown if the live data fails to load */
+    .mk-fallback {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      padding: 3rem 2rem;
+      text-align: center;
+      font-size: 0.9rem;
     }
 
     .process-terms {
@@ -856,7 +848,7 @@
 
   <!-- ─── Hero ─────────────────────────────────────────── -->
   <section class="mk-hero">
-    <p class="mk-eyebrow">Nysterys Media LLC &mdash; Confidential</p>
+    <p class="mk-eyebrow">Nysterys Media LLC · Confidential</p>
     <h1 class="mk-title">Media <span>Kit</span></h1>
     <p class="mk-subtitle">Audience data, creator profiles, and partnership categories for brand collaboration inquiries.</p>
   </section>
@@ -991,7 +983,7 @@
   <!-- ─── Footer ───────────────────────────────────────── -->
   <footer>
     <div class="footer-logo">NYS<span>T</span>ERYS MEDIA LLC</div>
-    <div class="footer-copy">&copy; 2026 Nysterys Media LLC. Confidential &mdash; not for redistribution.</div>
+    <div class="footer-copy">&copy; 2026 Nysterys Media LLC. Confidential. Not for redistribution.</div>
   </footer>
 
   <!-- ─── Scripts ──────────────────────────────────────── -->
@@ -1144,12 +1136,12 @@
 
         // Details
         + '<div class="creator-details">'
-        +   '<p class="creator-tag">Content Creator &mdash; TikTok, Instagram, YouTube</p>'
+        +   '<p class="creator-tag">Content Creator · TikTok, Instagram, YouTube</p>'
         +   '<h2 class="creator-name">' + creator.name
         +     ' <span class="creator-handle">@' + creator.tiktokHandle + '</span>'
         +   '</h2>'
 
-        // Key metrics — now shows avg AND median views
+        // Key metrics: now shows avg AND median views
         +   '<div class="creator-metrics">'
         +     '<div class="metric"><span class="metric-val" data-target="' + creator.followers + '"></span><span class="metric-lbl">Followers</span></div>'
         +     '<div class="metric"><span class="metric-val" data-target="' + creator.likes + '"></span><span class="metric-lbl">Total Likes</span></div>'
@@ -1172,7 +1164,7 @@
         +   '<p class="chart-title chart-title--spaced">Content Categories</p>'
         +   '<div class="tags-wrap">' + tagsHtml + '</div>'
 
-        // Audience charts — top row
+        // Audience charts: top row
         +   '<div class="creator-charts-wide">'
         +     '<div class="chart-card">'
         +       '<p class="chart-title">Gender Split</p>'
@@ -1191,9 +1183,9 @@
         +     '</div>'
         +   '</div>'
 
-        // View distribution — full width below
+        // View distribution: full width below
         +   '<div class="chart-card chart-card--spaced">'
-        +     '<p class="chart-title">View Distribution &mdash; % of Videos by View Count Bucket</p>'
+        +     '<p class="chart-title">View Distribution · % of Videos by View Count Bucket</p>'
         +     '<div id="dist-' + creator.id + '"></div>'
         +   '</div>'
 
@@ -1332,7 +1324,14 @@
           fadeObserver.observe(el);
         });
       })
-      .catch(function(err) { console.error('Could not load site data:', err); });
+      .catch(function(err) {
+        console.error('Could not load site data:', err);
+        // Don't leave the page blank on failure: show a quiet, in-theme message.
+        var blocks = document.getElementById('creator-blocks');
+        if (blocks && !blocks.children.length) {
+          blocks.innerHTML = '<p class="mk-fallback">Couldn\'t load the media kit right now. Please refresh the page.</p>';
+        }
+      });
   </script>
 
 
@@ -1380,7 +1379,7 @@
       function pageFooter() {
         orange_f(); doc.rect(0, H - 8, W, 8, 'F');
         doc.setTextColor(255,255,255); sz(6);
-        doc.text('NYSTERYS MEDIA LLC — CONFIDENTIAL', M + 4, H - 3);
+        doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, H - 3);
         doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), H - 3);
       }
       function newPage() {
@@ -1388,7 +1387,7 @@
         orange_f(); doc.rect(0, 0, 4, H, 'F');
         orange_f(); doc.rect(0, 0, W, 8, 'F');
         doc.setTextColor(255,255,255); sz(7);
-        doc.text('NYSTERYS MEDIA LLC — CONFIDENTIAL', M + 4, 5.5);
+        doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, 5.5);
         doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), 5.5);
         y = 22;
       }
@@ -1399,7 +1398,7 @@
       orange_f(); doc.rect(0, 0, 4, H, 'F');
       orange_f(); doc.rect(0, 0, W, 8, 'F');
       doc.setTextColor(255,255,255); sz(7);
-      doc.text('NYSTERYS MEDIA LLC — CONFIDENTIAL', M + 4, 5.5);
+      doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, 5.5);
       doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), 5.5);
 
       y = 40;
@@ -1445,7 +1444,7 @@
         orange_t(); sz(13, false); doc.text(' @' + creator.tiktokHandle, M + nameW, y);
 
         y += 5;
-        subtext(); sz(7); doc.text('Content Creator — TikTok, Instagram, YouTube', M, y);
+        subtext(); sz(7); doc.text('Content Creator · TikTok, Instagram, YouTube', M, y);
         y += 7; divL(y); y += 9;
 
         // Key metrics
@@ -1486,7 +1485,7 @@
         doc.text(bioLines, M, y);
         y += bioLines.length * 4.5 + 6;
 
-        // Content categories — filled orange tags with white text
+        // Content categories: filled orange tags with white text
         orange_t(); sz(6); doc.text('CONTENT CATEGORIES', M, y);
         y += 5;
         var cx = M;

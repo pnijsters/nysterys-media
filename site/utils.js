@@ -1,10 +1,10 @@
 /* =============================================================
-   utils.js — Nysterys Media
+   utils.js : Nysterys Media
    Shared utility functions loaded by every page on the site.
    ============================================================= */
 
 /**
- * Email obfuscation — assembles the contact address in JS only
+ * Email obfuscation: assembles the contact address in JS only
  * so it is never present in static HTML source where crawlers
  * and Cloudflare email-rewrite rules could intercept it.
  *

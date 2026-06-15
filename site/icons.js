@@ -1,5 +1,5 @@
 /* =============================================================
-   icons.js — Nysterys Media
+   icons.js : Nysterys Media
    Shared SVG icon strings for social platform links.
    Used by index.html, creator.html, and media-kit.html.
    ============================================================= */
