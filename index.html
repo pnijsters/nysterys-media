@@ -1310,22 +1310,7 @@
   });
 
   /* ── Stat counter animation ── */
-  function animateCounter(el, targetStr, duration) {
-    var m = String(targetStr).match(/^([\d.]+)([^0-9.]*)$/);
-    if (!m) { el.textContent = targetStr; return; }
-    var target   = parseFloat(m[1]);
-    var suffix   = m[2];
-    var decimals = m[1].indexOf('.') >= 0 ? m[1].split('.')[1].length : 0;
-    var start    = null;
-    function step(ts) {
-      if (!start) start = ts;
-      var p = Math.min((ts - start) / duration, 1);
-      var ease = 1 - Math.pow(1 - p, 3);
-      el.textContent = (target * ease).toFixed(decimals) + suffix;
-      if (p < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
+  /* animateCounter lives in site/utils.js (shared by every page). */
 
   /* Trigger counter when stat tile scrolls into view */
   var counterObserver = new IntersectionObserver(function(entries) {

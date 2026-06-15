@@ -547,61 +547,7 @@
   <!-- ─── Scripts ───────────────────────────────────────────── -->
 
   <script>
-    // Colors for the gender donut segments
-    var GENDER_COLORS = ['#ff5c00', '#ff8c42', '#444444'];
-
-    // Draw the gender donut SVG
-    function buildDonut(data) {
-      var svg = document.getElementById('donut-svg');
-      var cx = 18, cy = 18, r = 15.9155;
-      var circumference = 2 * Math.PI * r;
-      svg.innerHTML = '';
-
-      // Background circle (empty track)
-      var bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      bg.setAttribute('cx', cx);
-      bg.setAttribute('cy', cy);
-      bg.setAttribute('r', r);
-      bg.setAttribute('fill', 'none');
-      bg.setAttribute('stroke', '#1e1e1e');
-      bg.setAttribute('stroke-width', '3.5');
-      svg.appendChild(bg);
-
-      // One arc per gender segment
-      var offset = 0;
-      data.forEach(function (segment, index) {
-        var fraction = segment.value / 100;
-        var dash = fraction * circumference;
-        var gap  = circumference - dash;
-
-        var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('cx', cx);
-        circle.setAttribute('cy', cy);
-        circle.setAttribute('r', r);
-        circle.setAttribute('fill', 'none');
-        circle.setAttribute('stroke', GENDER_COLORS[index] || '#333333');
-        circle.setAttribute('stroke-width', '3.5');
-        circle.setAttribute('stroke-dasharray', dash + ' ' + gap);
-        circle.setAttribute('stroke-dashoffset', -(offset * circumference));
-        svg.appendChild(circle);
-
-        offset += fraction;
-      });
-    }
-
-    // Build the gender legend below the donut
-    function buildGenderLegend(data) {
-      var el = document.getElementById('gender-legend');
-      el.innerHTML = data.map(function (segment, index) {
-        return '<div class="legend-row">'
-          + '<div class="legend-left">'
-          +   '<div class="legend-dot" style="background: ' + (GENDER_COLORS[index] || '#333333') + '"></div>'
-          +   '<span class="legend-label">' + segment.label + '</span>'
-          + '</div>'
-          + '<span class="legend-val">' + segment.value + '%</span>'
-          + '</div>';
-      }).join('');
-    }
+    // GENDER_COLORS, buildDonut, buildGenderLegend, animateCounter live in site/utils.js.
 
     // Build age distribution horizontal bars
     function buildAgeBars(data) {
@@ -668,22 +614,7 @@
     }, { passive: true });
 
     /* ── Stat counter animation ── */
-    function animateCounter(el, targetStr, duration) {
-      var m = String(targetStr).match(/^([\d.]+)([^0-9.]*)$/);
-      if (!m) { el.textContent = targetStr; return; }
-      var target   = parseFloat(m[1]);
-      var suffix   = m[2];
-      var decimals = m[1].indexOf('.') >= 0 ? m[1].split('.')[1].length : 0;
-      var start    = null;
-      function step(ts) {
-        if (!start) start = ts;
-        var p = Math.min((ts - start) / duration, 1);
-        var ease = 1 - Math.pow(1 - p, 3);
-        el.textContent = (target * ease).toFixed(decimals) + suffix;
-        if (p < 1) requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
+    // animateCounter lives in site/utils.js (shared by every page).
 
     // Read creator id from the URL query string (e.g. creator.html?id=mys)
     var params = new URLSearchParams(window.location.search);
@@ -747,8 +678,8 @@
         }).join('');
 
         // Build the three charts
-        buildDonut(creator.audience.gender);
-        buildGenderLegend(creator.audience.gender);
+        buildDonut('donut-svg', creator.audience.gender);
+        buildGenderLegend('gender-legend', creator.audience.gender);
         buildAgeBars(creator.audience.age);
         buildCountryBars(creator.audience.topCountries);
 
