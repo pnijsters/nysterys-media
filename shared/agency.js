@@ -1,14 +1,34 @@
-/* Nysterys Agency Dashboard — vanilla JS, no framework, no Supabase SDK.
-   Only network call: one GET to the edge function URL below.
-   All user-supplied content is set via textContent — never innerHTML. */
+/**
+ * agency.js - Nysterys Agency Dashboard. Vanilla JS IIFE, no framework, no
+ * Supabase SDK. Served UNMINIFIED at nysterys.com/shared/, so these comments
+ * ship to viewers; keep them proportionate.
+ *
+ * Fetches one campaign/payment payload from the agency-dashboard edge function
+ * and renders it read-only for a brand or music agency. Three scopes drive the
+ * layout: 'campaigns_only', 'payments_only', or 'campaigns_and_payments' (tabs).
+ *
+ * @security The access token lives in the URL fragment (#t=...), so the browser
+ *           never sends it to any server in the request line, access logs, or
+ *           Referer headers. It reaches the edge function only as an
+ *           Authorization: Bearer header on the one fetch (see init).
+ * @security All user-supplied content is written via textContent, never
+ *           innerHTML. Every outbound link runs through safeLink (http/https
+ *           only) so a stored javascript: URL cannot execute.
+ * @see docs/CODEBASE.md, CLAUDE.md "Agency Dashboard"
+ */
 (function () {
   'use strict';
 
   var EDGE = 'https://rnntuxabccnphfvvvaks.supabase.co/functions/v1/agency-dashboard';
 
-  // ── Creator bios (static — no bio column in DB; update manually when copy changes) ──
-  // handle, follower_count, and avatar_url now come from the API payload.
-
+  /**
+   * Static creator bios keyed by creator_name. There is no bio column in the
+   * DB, so update these by hand when the copy changes. handle, follower_count,
+   * and avatar_url come from the API payload (not here).
+   *
+   * @gotcha The wider CREATORS name->handle/bio/followers/avatar mapping lives
+   *         in CLAUDE.md "Agency Dashboard"; keep both in sync when stats move.
+   */
   var CREATOR_BIOS = {
     'Mys Nijsters': 'Breakout lifestyle and trend creator. Known for her magnetic energy, swag-forward content, and deeply personal storytelling — she has built one of the most engaged young audiences on the platform.',
     'Kym Nijsters': 'Lifestyle and fashion creator known for her fit checks, authentic storytelling, and relatable everyday content. With a natural presence on camera and a growing, engaged community, she consistently connects with her audience on a personal level.',
@@ -29,6 +49,81 @@
     return parent;
   }
 
+  // ── Inline SVG icons ──────────────────────────────────────────────────────────
+  // Geometric 16-grid glyphs mirroring the hub's Icon.js (1.5 stroke, currentColor,
+  // miter joins). They replace emoji/dingbats, which the brand bans as functional
+  // UI on every surface. Color is always inherited from the host via currentColor;
+  // every icon is aria-hidden since it always pairs with a real text label.
+  // @see CLAUDE.md "No emoji or decorative dingbats anywhere as functional UI".
+
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+
+  function svgEl(tag, attrs) {
+    var e = document.createElementNS(SVG_NS, tag);
+    for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+
+  // Each entry lists the child primitives drawn on a 0 0 16 16 grid. Filled
+  // shapes (note heads, play triangle) carry their own fill/stroke overrides.
+  var ICON_PATHS = {
+    music: [
+      { t: 'path',   a: { d: 'M6 11V3l7-1.5v8' } },
+      { t: 'circle', a: { cx: '4', cy: '11', r: '2', fill: 'currentColor', stroke: 'none' } },
+      { t: 'circle', a: { cx: '11', cy: '9.5', r: '2', fill: 'currentColor', stroke: 'none' } },
+    ],
+    play:  [ { t: 'path', a: { d: 'M5.5 3.5 12 8l-6.5 4.5z', fill: 'currentColor', stroke: 'none' } } ],
+    copy:  [
+      { t: 'rect', a: { x: '6', y: '6', width: '8', height: '8', rx: '1.5' } },
+      { t: 'path', a: { d: 'M3.5 10.5V4.5A1.5 1.5 0 0 1 5 3h5.5' } },
+    ],
+    check: [ { t: 'path', a: { d: 'M3.5 8.5l3 3 6-7' } } ],
+    clock: [
+      { t: 'circle', a: { cx: '8', cy: '8', r: '5.5' } },
+      { t: 'path',   a: { d: 'M8 4.5V8l2.5 1.5' } },
+    ],
+    bolt:  [ { t: 'path', a: { d: 'M9 1.5 3.5 9H8l-1 5.5L13 7H8.5z' } } ],
+    ban:   [
+      { t: 'circle', a: { cx: '8', cy: '8', r: '5.5' } },
+      { t: 'path',   a: { d: 'M4.1 4.1l7.8 7.8' } },
+    ],
+  };
+
+  /**
+   * Build a decorative inline SVG icon by name.
+   *
+   * @param {string} name - an ICON_PATHS key.
+   * @param {number} [size=14] - rendered px (sets width + height).
+   * @param {string} [className] - optional class for color/spacing hooks.
+   * @returns {SVGElement|null} the <svg>, or null for an unknown name.
+   */
+  function icon(name, size, className) {
+    var defs = ICON_PATHS[name];
+    if (!defs) return null;
+    var s = size || 14;
+    var svg = svgEl('svg', {
+      viewBox: '0 0 16 16',
+      width: s, height: s,
+      fill: 'none',
+      stroke: 'currentColor',
+      'stroke-width': '1.5',
+      'stroke-linejoin': 'miter',
+      'aria-hidden': 'true',
+      focusable: 'false',
+    });
+    if (className) svg.setAttribute('class', className);
+    defs.forEach(function (d) { svg.appendChild(svgEl(d.t, d.a)); });
+    return svg;
+  }
+
+  /**
+   * Gate a user-supplied URL down to http/https before it becomes an href.
+   *
+   * @returns {string|null} the URL when it parses to http(s), else null.
+   * @security The single chokepoint for outbound links; blocks javascript:,
+   *           data:, and other schemes from any DB-sourced URL (post_url,
+   *           music_url, avatar_url, payment addresses).
+   */
   function safeLink(url) {
     if (!url) return null;
     try {
@@ -109,8 +204,12 @@
 
   // ── Count-up animation ────────────────────────────────────────────────────────
 
+  // Respect the OS "reduce motion" setting: skip the count-up entirely.
+  var REDUCE_MOTION = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
   function countUp(el, target, fmtFn, duration) {
     if (!target || target <= 0) { el.textContent = fmtFn(0); return; }
+    if (REDUCE_MOTION) { el.textContent = fmtFn(target); return; }
     duration = duration || 1400;
     var steps = 55;
     var interval = Math.max(duration / steps, 14);
@@ -126,6 +225,17 @@
 
   // ── Compute summary stats from campaign data ─────────────────────────────────
 
+  /**
+   * Aggregate the KPI-strip numbers across every campaign's deliverables.
+   *
+   * @returns {object} totalViews, totalLikes, avgER, avgCompletion (null when
+   *          no watch-time data), campaignCount, postsDelivered, totalPosts.
+   * @gotcha Cancelled deliverables are skipped entirely (not counted in
+   *         totalPosts or any total). Status strings must be exact title-case
+   *         ('Cancelled', 'Posted'); a casing change in the payload silently
+   *         drops the row from the count. @see the payment-bucket title-case
+   *         rule in renderPayments.
+   */
   function computeSummary(campaigns) {
     var totalViews = 0, totalLikes = 0, totalER = 0, erCount = 0;
     var totalCompletion = 0, completionCount = 0;
@@ -160,19 +270,35 @@
 
   // ── Error screen ──────────────────────────────────────────────────────────────
 
+  // icon: a big typographic glyph (404/?/!), or svg: an ICON_PATHS name for the
+  // states whose natural mark would otherwise be an emoji/dingbat.
   var ERRORS = {
-    'expired':      { icon: '—',   title: 'THIS LINK HAS EXPIRED', body: 'This dashboard is no longer accessible. Contact the creator for updated access.' },
-    'not-found':    { icon: '404', title: 'Dashboard not found',   body: 'This link has been deactivated. Contact the creator for a new link.' },
-    'no-token':     { icon: '?',   title: 'Invalid link',          body: 'No dashboard token was found in this URL.' },
-    'timeout':      { icon: '⏱',  title: 'Request timed out',     body: 'The server took too long to respond. Please try again in a moment.' },
-    'network':      { icon: '⚡',  title: 'Connection error',      body: 'Unable to load the dashboard. Check your connection and try again.' },
-    'server-error': { icon: '!',   title: 'Server error',          body: 'Something went wrong on our end. Please try again shortly.' },
+    'expired':      { svg: 'ban',   title: 'THIS LINK HAS EXPIRED', body: 'This dashboard is no longer accessible. Contact the creator for updated access.' },
+    'not-found':    { icon: '404',  title: 'Dashboard not found',   body: 'This link has been deactivated. Contact the creator for a new link.' },
+    'no-token':     { icon: '?',    title: 'Invalid link',          body: 'No dashboard token was found in this URL.' },
+    'timeout':      { svg: 'clock', title: 'Request timed out',     body: 'The server took too long to respond. Please try again in a moment.' },
+    'network':      { svg: 'bolt',  title: 'Connection error',      body: 'Unable to load the dashboard. Check your connection and try again.' },
+    'server-error': { icon: '!',    title: 'Server error',          body: 'Something went wrong on our end. Please try again shortly.' },
   };
 
+  /**
+   * Replace the loading state with a full-screen error keyed by type.
+   *
+   * @param {string} type - one of the ERRORS keys; falls back to 'server-error'.
+   * @param {string} [expiresAt] - ISO timestamp; for type 'expired' only, stamps
+   *        the exact expiry date under the message.
+   */
   function showError(type, expiresAt) {
     var cfg = ERRORS[type] || ERRORS['server-error'];
     document.getElementById('loading-state').hidden = true;
-    document.getElementById('error-icon').textContent  = cfg.icon;
+    var iconHost = document.getElementById('error-icon');
+    iconHost.textContent = '';
+    if (cfg.svg) {
+      var ig = icon(cfg.svg, 40);
+      if (ig) iconHost.appendChild(ig);
+    } else {
+      iconHost.textContent = cfg.icon;
+    }
     document.getElementById('error-title').textContent = cfg.title;
     document.getElementById('error-body').textContent  = cfg.body;
 
@@ -188,6 +314,26 @@
     }
 
     var errorState = document.getElementById('error-state');
+
+    // Transient failures promise "try again" in the copy, so give them a real
+    // retry control (the static back-home link is not a recovery path).
+    var existingRetry = document.getElementById('error-retry');
+    if (existingRetry) existingRetry.remove();
+    var TRANSIENT = { 'timeout': 1, 'network': 1, 'server-error': 1 };
+    if (TRANSIENT[type]) {
+      var retry = document.createElement('button');
+      retry.id = 'error-retry';
+      retry.type = 'button';
+      retry.className = 'error-retry-btn';
+      retry.textContent = 'Try again';
+      retry.addEventListener('click', function () {
+        errorState.setAttribute('hidden', '');
+        document.getElementById('loading-state').hidden = false;
+        init();
+      });
+      errorState.insertBefore(retry, document.querySelector('#error-state .back-home-link'));
+    }
+
     errorState.dataset.type = type;
     errorState.removeAttribute('hidden');
   }
@@ -196,10 +342,18 @@
   // Hero now shows only the creator's global credential (followers).
   // Campaign-scoped numbers (views, engagement, posts) live in the KPI strip.
 
+  /**
+   * Render the hero: avatar (with initial fallback), handle, first name, static
+   * bio, agency name, and the live follower count from the payload.
+   *
+   * @security avatar_url is assigned to img.src directly (not via safeLink);
+   *           the page CSP img-src restricting to https: + data: is what blocks
+   *           a hostile scheme here. @see agency.css / CLAUDE.md "Agency CSP".
+   */
   function renderCreatorHero(dash) {
     var avatarEl = document.getElementById('hero-avatar');
 
-    // Avatar — src set directly; mitigated by CSP img-src restricting to https: + data:
+    // Avatar - src set directly; mitigated by CSP img-src restricting to https: + data:
     if (dash.avatar_url) {
       avatarEl.src = dash.avatar_url;
       avatarEl.alt = dash.creator_name || '';
@@ -216,13 +370,13 @@
       avatarEl.parentNode.insertBefore(init, avatarEl);
     }
 
-    // All text via textContent — no innerHTML
+    // All text via textContent - no innerHTML
     document.getElementById('hero-handle').textContent      = dash.handle || '';
     document.getElementById('hero-name').textContent        = (dash.creator_name || '').split(' ')[0];
     document.getElementById('hero-bio').textContent         = CREATOR_BIOS[dash.creator_name] || '';
     document.getElementById('hero-agency-name').textContent = dash.agency_name || '';
 
-    // Followers — from live DB value via API, shown inline on the handle line
+    // Followers - from live DB value via API, shown inline on the handle line
     var handleEl  = document.getElementById('hero-handle');
     var followers = dash.follower_count || null;
     if (followers && handleEl) {
@@ -238,8 +392,17 @@
     if (statsEl) statsEl.style.display = 'none';
   }
 
-  // ── KPI strip — campaign-scoped performance numbers ───────────────────────────
+  // ── KPI strip - campaign-scoped performance numbers ───────────────────────────
 
+  /**
+   * Build the campaign-scoped KPI cells (views, engagement, posts, campaigns,
+   * plus optional completion / CPM / music-compliance cells when their data
+   * exists). No-op when there are no campaigns.
+   *
+   * @gotcha The music-compliance cell appears only when agency_type contains
+   *         'music' (case-insensitive). CPM appears only when non-in-kind
+   *         invoice amounts and views are both present.
+   */
   function renderKpiStrip(campaigns, summary, dash) {
     var kpiEl = document.getElementById('kpi-strip');
     if (!kpiEl) return;
@@ -259,10 +422,12 @@
       {
         val:   summary.avgER > 0 ? summary.avgER.toFixed(1) + '%' : '—',
         label: 'Average Engagement',
+        tip:   'Engagement rate: likes, comments and shares as a percent of views.',
       },
       {
         val:   postsLabel,
         label: 'Posts Delivered',
+        tip:   'Posts published versus the number contracted.',
       },
       {
         val:   String(summary.campaignCount),
@@ -270,15 +435,16 @@
       },
     ];
 
-    // Avg Completion — only when watch time data is available
+    // Avg Completion - only when watch time data is available
     if (summary.avgCompletion != null) {
       items.push({
         val:   summary.avgCompletion.toFixed(1) + '%',
         label: 'Avg Video Completion',
+        tip:   'Average share of each video watched to the end.',
       });
     }
 
-    // CPM — only when invoice data exists and views are known
+    // CPM - only when invoice data exists and views are known
     var totalInvoiced = 0;
     campaigns.forEach(function (c) {
       if (c.payment && !c.payment.is_in_kind && c.payment.amount) {
@@ -290,10 +456,11 @@
       items.push({
         val:   '$' + cpm.toFixed(2),
         label: 'Cost Per 1K Views',
+        tip:   'CPM: campaign spend per 1,000 views delivered.',
       });
     }
 
-    // Sound compliance — music agencies only
+    // Sound compliance - music agencies only
     var agencyType = dash && dash.agency_type ? dash.agency_type : '';
     if (agencyType.toLowerCase().indexOf('music') !== -1) {
       var scConfirmed = 0, scMismatched = 0, scTotal = 0;
@@ -322,7 +489,7 @@
           scVal   = scConfirmed + '/' + scTotal + ' Confirmed';
           scColor = null;
         }
-        items.push({ val: scVal, label: 'Music Compliance', color: scColor });
+        items.push({ val: scVal, label: 'Music Compliance', color: scColor, tip: 'Whether the audio used matches the contracted track.' });
       }
     }
 
@@ -333,6 +500,7 @@
       if (item.color) valEl.style.color = item.color;
       var lblEl = el('div', 'kpi-label');
       lblEl.textContent = item.label;
+      if (item.tip) lblEl.title = item.tip;
       append(cell, valEl, lblEl);
       kpiEl.appendChild(cell);
 
@@ -511,6 +679,15 @@
 
   // ── Render: music compliance strip (music-promo agencies only) ────────────────
 
+  /**
+   * Render the Sound Check table comparing contracted vs actual audio per post.
+   * No-op unless agencyType contains 'music' (case-insensitive) and at least
+   * one deliverable carries a music brief.
+   *
+   * @gotcha A row counts as a match on either a music-id/URL match (musicUrlMatch)
+   *         OR a normalized track-name match (normTrack); status is 'pending'
+   *         until the actual audio data arrives.
+   */
   function renderSoundCheck(campaigns, agencyType, container) {
     if (!agencyType || agencyType.toLowerCase().indexOf('music') === -1) return;
 
@@ -546,11 +723,10 @@
     var wrap = el('div', 'sound-check');
 
     var hdr = el('div', 'sound-check-hdr');
-    var icon = el('span', 'sc-icon');
-    icon.textContent = '♬';
+    var hdrIcon = icon('music', 22, 'sc-icon');
     var lbl = el('span', 'sc-hdr-label');
     lbl.textContent = 'Sound Check';
-    append(hdr, icon, lbl);
+    append(hdr, hdrIcon, lbl);
     wrap.appendChild(hdr);
 
     var table = el('table', 'sc-table');
@@ -601,17 +777,17 @@
       thumbTd.appendChild(thumbInner);
       row.appendChild(thumbTd);
 
-      // Column 2: caption (desktop only — hidden on mobile via CSS)
+      // Column 2: caption (desktop only - hidden on mobile via CSS)
       var captionTd = el('td', 'sc-caption-cell');
       buildCaptionContent(item, captionTd);
       row.appendChild(captionTd);
 
-      // Column 3: contracted track (desktop only — hidden on mobile via CSS)
+      // Column 3: contracted track (desktop only - hidden on mobile via CSS)
       var trackTd = el('td', 'sc-track-cell');
       buildTrackContent(item, trackTd);
       row.appendChild(trackTd);
 
-      // Column 4: caption + track stacked (mobile only — hidden on desktop via CSS)
+      // Column 4: caption + track stacked (mobile only - hidden on desktop via CSS)
       var contentTd = el('td', 'sc-content-cell');
       var capDiv = el('div', 'sc-content-caption');
       buildCaptionContent(item, capDiv);
@@ -637,6 +813,13 @@
 
   // ── Mobile deliverable card ───────────────────────────────────────────────────
 
+  /**
+   * Build one compact deliverable card for the mobile (<=768px) layout, which
+   * replaces the desktop stats table. @see renderCampaigns for the isMobile switch.
+   *
+   * @returns {HTMLElement} the card element (thumb, platform/status, date,
+   *          stats line, optional music-check row).
+   */
   function renderDeliverableMobileCard(d) {
     var card = el('div', 'mobile-deliv-card');
     var top  = el('div', 'mobile-deliv-top');
@@ -650,12 +833,12 @@
       var img = el('img');
       img.src = imgUrl; img.alt = ''; img.loading = 'lazy';
       img.onerror = function () {
-        var ph = el('div', 'mobile-deliv-thumb-ph'); ph.textContent = '▶';
+        var ph = el('div', 'mobile-deliv-thumb-ph'); ph.appendChild(icon('play', 16));
         this.parentNode.innerHTML = ''; this.parentNode.appendChild(ph);
       };
       thumb.appendChild(img);
     } else {
-      var ph = el('div', 'mobile-deliv-thumb-ph'); ph.textContent = '▶';
+      var ph = el('div', 'mobile-deliv-thumb-ph'); ph.appendChild(icon('play', 16));
       thumb.appendChild(ph);
     }
     top.appendChild(thumb);
@@ -699,7 +882,7 @@
     top.appendChild(info);
     card.appendChild(top);
 
-    // Music check — compact row
+    // Music check - compact row
     var m = d.music;
     var hasBrief  = m && (m.contracted_url || m.contracted_track);
     var hasActual = m && (m.actual_url     || m.actual_track);
@@ -710,8 +893,7 @@
       var isMatch = urlMatch || trackMatch;
 
       var musicRow = el('div', 'mobile-deliv-music');
-      var noteEl = el('span', 'mobile-deliv-music-note'); noteEl.textContent = '♬';
-      musicRow.appendChild(noteEl);
+      musicRow.appendChild(icon('music', 12, 'mobile-deliv-music-note'));
 
       if (hasBrief && m.contracted_track) {
         var trackEl = el('span', 'mobile-deliv-music-track');
@@ -732,18 +914,28 @@
   // ── Render: campaigns panel ────────────────────────────────────────────────────
 
   // Creates a copy-URLs button. urls = string[]. Returns null if no urls.
+  // label is plain text (no leading glyph); the icon is rendered as SVG.
   function makeCopyBtn(urls, label) {
     if (!urls || urls.length === 0) return null;
-    var text = label || ('⎘ Copy ' + urls.length + ' URL' + (urls.length === 1 ? '' : 's'));
+    var text = label || ('Copy ' + urls.length + ' URL' + (urls.length === 1 ? '' : 's'));
     var btn = el('button', 'copy-urls-btn');
     btn.type = 'button';
-    btn.textContent = text;
+
+    function setContent(iconName, labelText) {
+      btn.textContent = '';
+      btn.appendChild(icon(iconName, 13));
+      var span = el('span');
+      span.textContent = labelText;
+      btn.appendChild(span);
+    }
+    setContent('copy', text);
+
     btn.addEventListener('click', function () {
       navigator.clipboard.writeText(urls.join('\n')).then(function () {
-        btn.textContent = '✓ Copied';
+        setContent('check', 'Copied');
         btn.classList.add('copy-urls-btn--done');
         setTimeout(function () {
-          btn.textContent = text;
+          setContent('copy', text);
           btn.classList.remove('copy-urls-btn--done');
         }, 2000);
       });
@@ -751,6 +943,14 @@
     return btn;
   }
 
+  /**
+   * Render the campaigns panel: a global copy-all-URLs button, then one card
+   * per campaign (header badges, deliverables, aggregate stats bar).
+   *
+   * @gotcha Layout forks on viewport at render time: <=768px swaps the desktop
+   *         stats table for renderDeliverableMobileCard. The breakpoint is read
+   *         once here and not re-evaluated on resize.
+   */
   function renderCampaigns(campaigns, container) {
     var isMobile = window.innerWidth <= 768;
     if (!campaigns || campaigns.length === 0) {
@@ -760,7 +960,7 @@
       return;
     }
 
-    // Global copy button — all posted URLs across all campaigns
+    // Global copy button - all posted URLs across all campaigns
     var allUrls = [];
     campaigns.forEach(function (c) {
       (c.deliverables || []).forEach(function (d) {
@@ -769,7 +969,7 @@
     });
     if (allUrls.length > 0) {
       var globalRow = el('div', 'copy-global-row');
-      var globalBtn = makeCopyBtn(allUrls, '⎘ Copy all ' + allUrls.length + ' post URL' + (allUrls.length === 1 ? '' : 's'));
+      var globalBtn = makeCopyBtn(allUrls, 'Copy all ' + allUrls.length + ' post URL' + (allUrls.length === 1 ? '' : 's'));
       globalRow.appendChild(globalBtn);
       container.appendChild(globalRow);
     }
@@ -825,10 +1025,15 @@
       var thThumb = el('th', 'thumb-col');
       hr.appendChild(thThumb);
       var cols  = ['Platform', 'Status', 'Due', 'Views', 'Completion', 'Likes', 'Comments', 'Shares', 'ER%'];
+      var colTips = {
+        'Completion': 'Average share of the video watched to the end.',
+        'ER%':        'Engagement rate: likes, comments and shares as a percent of views.',
+      };
       cols.forEach(function (c) {
         var th = el('th');
         if (['Views','Completion','Likes','Comments','Shares','ER%'].indexOf(c) !== -1) th.className = 'num-cell';
         th.textContent = c;
+        if (colTips[c]) th.title = colTips[c];
         hr.appendChild(th);
       });
       thead.appendChild(hr);
@@ -844,7 +1049,7 @@
           return td;
         }
 
-        // Thumbnail cell — clickable, with posted date inline to the right
+        // Thumbnail cell - clickable, with posted date inline to the right
         var thumbTd = el('td', 'thumb-col');
         var imgUrl  = safeLink(d.cover_image_url);
         var postUrl = safeLink(d.post_url);
@@ -862,14 +1067,14 @@
           img.loading = 'lazy';
           img.onerror = function () {
             var ph = el('div', 'row-thumb-ph');
-            ph.textContent = '▶';
+            ph.appendChild(icon('play', 16));
             thumbWrap.innerHTML = '';
             thumbWrap.appendChild(ph);
           };
           thumbWrap.appendChild(img);
         } else {
           var ph2 = el('div', 'row-thumb-ph');
-          ph2.textContent = '▶';
+          ph2.appendChild(icon('play', 16));
           thumbWrap.appendChild(ph2);
         }
         thumbInner.appendChild(thumbWrap);
@@ -889,7 +1094,7 @@
 
         var s = d.stats;
 
-        // Views cell — complete views shown as a muted sub-note when available
+        // Views cell - complete views shown as a muted sub-note when available
         var viewsTd = el('td', 'num-cell');
         viewsTd.textContent = s ? fmtNum(s.views) : '—';
         if (s && s.complete_views != null) {
@@ -899,7 +1104,7 @@
         }
         row.appendChild(viewsTd);
 
-        // Completion — neutral, no color coding (agency lacks context to interpret thresholds)
+        // Completion - neutral, no color coding (agency lacks context to interpret thresholds)
         var compTd = el('td', 'num-cell');
         compTd.textContent = s && s.completion_pct != null ? s.completion_pct.toFixed(1) + '%' : '—';
         row.appendChild(compTd);
@@ -911,7 +1116,7 @@
 
         tbody.appendChild(row);
 
-        // Music sub-row — only when there's a mismatch or unverified brief (not yet posted)
+        // Music sub-row - only when there's a mismatch or unverified brief (not yet posted)
         var m = d.music;
         var hasBrief  = m && (m.contracted_url || m.contracted_track);
         var hasActual = m && (m.actual_url     || m.actual_track);
@@ -923,13 +1128,11 @@
         if ((hasBrief || hasActual) && !(hasBrief && hasActual && isMatch)) {
           var musicRow = el('tr', 'music-row');
           var musicTd  = el('td');
-          musicTd.colSpan = 12;
+          musicTd.colSpan = 10; // matches the 10-column deliverables header (thumb + 9 cols)
 
           var detail = el('div', 'music-detail');
 
-          var note = el('span', 'music-note');
-          note.textContent = '♬';
-          detail.appendChild(note);
+          detail.appendChild(icon('music', 13, 'music-note'));
 
           function musicBlock(roleLabel, track, artist, url) {
             var block = el('div', 'music-block');
@@ -1061,7 +1264,7 @@
         var addr    = m.address || '';
         var href    = null;
 
-        // Detect link type — all URLs go through safeLink(); mailto: only on valid email pattern
+        // Detect link type - all URLs go through safeLink(); mailto: only on valid email pattern
         if (/^https?:\/\//i.test(addr)) {
           href = safeLink(addr);
         } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
@@ -1099,6 +1302,16 @@
 
   // ── Render: payments panel ─────────────────────────────────────────────────────
 
+  /**
+   * Render the payments panel: outstanding-amount hero, a Total/Paid/Outstanding
+   * breakdown, where-to-send addresses, and a per-campaign payments table.
+   * In-kind payments are excluded from every money total.
+   *
+   * @gotcha Bucketing keys off exact title-case status strings: 'Paid' is paid;
+   *         'Pending' / 'Invoiced' / 'Overdue' are pending; anything else (incl.
+   *         not-yet-invoiced) is notInvoiced. A casing drift in the payload
+   *         would silently misbucket an amount. @see computeSummary.
+   */
   function renderPayments(campaigns, container, paymentAddresses) {
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
@@ -1125,7 +1338,7 @@
 
     var outstanding = pendingAmt + notInvoiced;
 
-    // ── Payment status hero — outstanding amount leads ──────────────────────────
+    // ── Payment status hero - outstanding amount leads ──────────────────────────
     // All values set via textContent; style.color uses hardcoded CSS variable strings only
     var heroEl = el('div', 'payment-status-hero');
 
@@ -1258,6 +1471,13 @@
     document.querySelector('.agency-header').insertAdjacentElement('afterend', banner);
   }
 
+  /**
+   * Top-level render once the payload arrives: hides loading, draws the expiry
+   * banner / hero / KPI strip, then dispatches on dash.scope to show the
+   * campaigns panel, the payments panel, or both behind a tab switcher.
+   *
+   * @param {object} data - { dashboard, campaigns } from the edge function.
+   */
   function renderDashboard(data) {
     var dash      = data.dashboard;
     var campaigns = data.campaigns || [];
@@ -1278,7 +1498,7 @@
 
     dashboard.removeAttribute('hidden');
 
-    // Performance chart — only when there are campaigns with stats
+    // Performance chart - only when there are campaigns with stats
     if (scope !== 'payments_only') {
       renderPerfChart(campaigns);
     }
@@ -1293,8 +1513,9 @@
       renderPayments(campaigns, payPanel, payAddrs);
 
     } else {
-      // campaigns_and_payments — tab switcher
+      // campaigns_and_payments - tab switcher
       tabsEl.removeAttribute('hidden');
+      tabsEl.setAttribute('role', 'tablist');
       campPanel.removeAttribute('hidden');
       renderSoundCheck(campaigns, dash.agency_type, campPanel);
       renderCampaigns(campaigns, campPanel);
@@ -1303,24 +1524,54 @@
       var tabC = document.getElementById('tab-campaigns');
       var tabP = document.getElementById('tab-payments');
 
-      tabC.addEventListener('click', function () {
-        tabC.classList.add('tab-active');
-        tabP.classList.remove('tab-active');
-        campPanel.removeAttribute('hidden');
-        payPanel.hidden = true;
-      });
+      // Wire the buttons as a real ARIA tablist so screen-reader and keyboard
+      // users perceive the relationship and can arrow between tabs. Roving
+      // tabindex: only the selected tab is in the tab order.
+      campPanel.setAttribute('role', 'tabpanel');
+      campPanel.setAttribute('aria-labelledby', 'tab-campaigns');
+      payPanel.setAttribute('role', 'tabpanel');
+      payPanel.setAttribute('aria-labelledby', 'tab-payments');
+      tabC.setAttribute('role', 'tab');
+      tabP.setAttribute('role', 'tab');
 
-      tabP.addEventListener('click', function () {
-        tabP.classList.add('tab-active');
-        tabC.classList.remove('tab-active');
-        payPanel.removeAttribute('hidden');
-        campPanel.hidden = true;
+      function activateTab(active, inactive, activePanel, inactivePanel) {
+        active.classList.add('tab-active');
+        active.setAttribute('aria-selected', 'true');
+        active.removeAttribute('tabindex');
+        inactive.classList.remove('tab-active');
+        inactive.setAttribute('aria-selected', 'false');
+        inactive.setAttribute('tabindex', '-1');
+        activePanel.removeAttribute('hidden');
+        inactivePanel.hidden = true;
+      }
+
+      activateTab(tabC, tabP, campPanel, payPanel); // initial state
+
+      tabC.addEventListener('click', function () { activateTab(tabC, tabP, campPanel, payPanel); });
+      tabP.addEventListener('click', function () { activateTab(tabP, tabC, payPanel, campPanel); });
+
+      // Left/Right arrows move focus + selection between the two tabs.
+      tabsEl.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        if (document.activeElement === tabC) { activateTab(tabP, tabC, payPanel, campPanel); tabP.focus(); }
+        else                                 { activateTab(tabC, tabP, campPanel, payPanel); tabC.focus(); }
       });
     }
   }
 
   // ── Entry point ────────────────────────────────────────────────────────────────
 
+  /**
+   * Entry point (on DOMContentLoaded): extract the token, fetch the dashboard,
+   * and route HTTP outcomes to showError or renderDashboard. 12s abort timeout.
+   *
+   * @security The token is read from the URL fragment (#t=...) and sent ONLY as
+   *           an Authorization: Bearer header, so it never lands in the request
+   *           line, server access logs, or Referer. A legacy ?t=/?token= query
+   *           param is migrated to the hash via replaceState before use, so old
+   *           shared links stop leaking the token going forward.
+   */
   function init() {
     // Token lives in the URL fragment (#t=...) so it is never sent to any
     // server in access logs or Referer headers. Fall back to query param for
@@ -1335,7 +1586,7 @@
     if (queryToken) {
       window.history.replaceState(null, '', window.location.pathname);
       window.location.hash = 't=' + encodeURIComponent(queryToken);
-      // Fall through — hash is now set, extraction below will find it.
+      // Fall through - hash is now set, extraction below will find it.
     }
 
     var hash  = new URLSearchParams(window.location.hash.slice(1)).get('t') || '';
