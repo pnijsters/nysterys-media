@@ -132,10 +132,7 @@
       border: 1px solid var(--border);
       padding: 2rem;
       margin-bottom: 3rem;
-      position: relative;
-      overflow: hidden;
     }
-
 
     .snapshot-photo {
       width: 160px;
@@ -197,7 +194,7 @@
       padding: 2rem;
       position: relative;
       overflow: hidden;
-      transition: border-color 0.3s, transform 0.3s ease, box-shadow 0.3s ease;
+      transition: border-color 0.3s, transform 0.3s ease;
       display: flex;
       flex-direction: column;
     }
@@ -334,7 +331,7 @@
       padding: 1.75rem 2rem;
       position: relative;
       overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+      transition: transform 0.3s ease, border-color 0.3s ease;
     }
 
     .cpm-card:hover {
@@ -927,7 +924,7 @@
         if (pkg.priceFixed !== null && pkg.priceFixed !== undefined) {
           return sym + pkg.priceFixed.toLocaleString();
         }
-        return sym + pkg.priceMin.toLocaleString() + ' \u2013 ' + sym + pkg.priceMax.toLocaleString();
+        return sym + pkg.priceMin.toLocaleString() + ' to ' + sym + pkg.priceMax.toLocaleString();
       }
 
       // ── Page: cover + packages + terms ────────────────────
@@ -1022,7 +1019,7 @@
       // Two CPM stat boxes side by side
       var cpmBoxW = (W - M * 2 - 4) / 2;
       [
-        { label: 'Single Post CPM (Median Views)', value: '$' + cpm.medianSingleMin.toFixed(2) + ' \u2013 $' + cpm.medianSingleMax.toFixed(2), sub: 'At published single post rates' },
+        { label: 'Single Post CPM (Median Views)', value: '$' + cpm.medianSingleMin.toFixed(2) + ' to $' + cpm.medianSingleMax.toFixed(2), sub: 'At published single post rates' },
         { label: 'Campaign CPM (Median Views)',    value: '$' + cpm.campaignPerPost.toFixed(2),                                                   sub: 'At campaign rate per post' }
       ].forEach(function(box, i) {
         var x = M + i * (cpmBoxW + 4);
@@ -1072,7 +1069,7 @@
       orange_t(); sz(7, false); doc.text('TERMS', M, y);
       y += 8;
       var terms = [
-        { title: 'Turnaround',   text: 'First draft within 48\u201396 hours of brief. Brand has 48 hours to respond or draft is considered approved.' },
+        { title: 'Turnaround',   text: 'First draft within 48 to 96 hours of brief. Brand has 48 hours to respond or draft is considered approved.' },
         { title: 'Revisions',    text: 'Up to two rounds of revisions per package.' },
         { title: 'Payment',      text: 'Due before or upon posting via standard digital payment methods.' },
         { title: 'Content',      text: 'Content remains live indefinitely. Removed only on non-payment or breach of terms.' },
