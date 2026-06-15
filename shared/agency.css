@@ -101,6 +101,8 @@ body::before {
   line-height: 1;
 }
 
+.error-icon svg { display: block; }
+
 .error-title {
   font-family: var(--font-display);
   font-size: 28px;
@@ -114,6 +116,22 @@ body::before {
   max-width: 360px;
   line-height: 1.6;
 }
+
+.error-retry-btn {
+  padding: 9px 22px;
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--orange);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+}
+
+.error-retry-btn:hover { background: var(--orange); color: var(--black); }
 
 .back-home-link {
   font-size: 13px;
@@ -1355,7 +1373,7 @@ a.mobile-deliv-thumb:hover { border-color: var(--orange); }
 
 .sound-check-hdr {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -1526,4 +1544,29 @@ a.mobile-deliv-thumb:hover { border-color: var(--orange); }
     padding: 10px 8px 10px 0 !important;
   }
   .sc-status { width: 80px; font-size: 10px; }
+}
+
+/* ── Keyboard focus ───────────────────────────────────────────
+   A visible focus ring on every interactive surface. The dark theme
+   otherwise loses the UA default outline against near-black. */
+a:focus-visible,
+button:focus-visible,
+.tab:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── Reduced motion ───────────────────────────────────────────
+   Honor the OS "reduce motion" setting: drop entrances, the chart-fill
+   sweep, and the spinner spin. Count-up is short-circuited in JS too. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .chart-fill { transition: none !important; }
 }
