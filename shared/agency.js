@@ -82,7 +82,8 @@
       { t: 'circle', a: { cx: '8', cy: '8', r: '5.5' } },
       { t: 'path',   a: { d: 'M8 4.5V8l2.5 1.5' } },
     ],
-    bolt:  [ { t: 'path', a: { d: 'M9 1.5 3.5 9H8l-1 5.5L13 7H8.5z' } } ],
+    bolt:    [ { t: 'path', a: { d: 'M9 1.5 3.5 9H8l-1 5.5L13 7H8.5z' } } ],
+    chevron: [ { t: 'path', a: { d: 'M6 4l4 4-4 4' } } ], // points right; rotate 90deg when open
     ban:   [
       { t: 'circle', a: { cx: '8', cy: '8', r: '5.5' } },
       { t: 'path',   a: { d: 'M4.1 4.1l7.8 7.8' } },
@@ -1024,23 +1025,27 @@
       // Empty header for thumb column
       var thThumb = el('th', 'thumb-col');
       hr.appendChild(thThumb);
-      var cols  = ['Platform', 'Status', 'Due', 'Views', 'Completion', 'Likes', 'Comments', 'Shares', 'ER%'];
+      // Core columns only. Per-post Likes/Comments/Shares moved into a per-row
+      // expand so the table scans without horizontal scroll; the campaign-stats
+      // bar below already carries those totals.
+      var cols  = ['Platform', 'Status', 'Due', 'Views', 'Completion', 'ER%'];
       var colTips = {
         'Completion': 'Average share of the video watched to the end.',
         'ER%':        'Engagement rate: likes, comments and shares as a percent of views.',
       };
       cols.forEach(function (c) {
         var th = el('th');
-        if (['Views','Completion','Likes','Comments','Shares','ER%'].indexOf(c) !== -1) th.className = 'num-cell';
+        if (['Views','Completion','ER%'].indexOf(c) !== -1) th.className = 'num-cell';
         th.textContent = c;
         if (colTips[c]) th.title = colTips[c];
         hr.appendChild(th);
       });
+      hr.appendChild(el('th', 'caret-col')); // expand control column
       thead.appendChild(hr);
       table.appendChild(thead);
 
       var tbody = el('tbody');
-      delivs.forEach(function (d) {
+      delivs.forEach(function (d, delivIdx) {
         var row = el('tr');
 
         function tdTxt(val, cls) {
@@ -1109,12 +1114,53 @@
         compTd.textContent = s && s.completion_pct != null ? s.completion_pct.toFixed(1) + '%' : '—';
         row.appendChild(compTd);
 
-        row.appendChild(tdTxt(s ? fmtNum(s.likes)            : '—', 'num-cell'));
-        row.appendChild(tdTxt(s ? fmtNum(s.comments)         : '—', 'num-cell'));
-        row.appendChild(tdTxt(s ? fmtNum(s.shares)           : '—', 'num-cell'));
         row.appendChild(tdTxt(s ? fmtRate(s.engagement_rate) : '—', 'num-cell'));
 
+        // Expand control - present only when there is per-post engagement to show.
+        var hasEng = !!(s && (s.likes || s.comments || s.shares));
+        var caretTd = el('td', 'caret-col');
+        var caretBtn = null, engRow = null;
+        if (hasEng) {
+          var detailId = 'eng-' + cardIdx + '-' + delivIdx;
+          caretBtn = el('button', 'row-expand');
+          caretBtn.type = 'button';
+          caretBtn.setAttribute('aria-expanded', 'false');
+          caretBtn.setAttribute('aria-controls', detailId);
+          caretBtn.setAttribute('aria-label', 'Show likes, comments and shares');
+          caretBtn.appendChild(icon('chevron', 13, 'row-expand-icon'));
+          caretTd.appendChild(caretBtn);
+        }
+        row.appendChild(caretTd);
         tbody.appendChild(row);
+
+        // Engagement detail sub-row (Likes / Comments / Shares), collapsed by default.
+        if (hasEng) {
+          engRow = el('tr', 'engagement-row');
+          engRow.id = detailId;
+          engRow.hidden = true;
+          var engTd = el('td');
+          engTd.colSpan = 8; // thumb + 6 core columns + caret
+          var engWrap = el('div', 'engagement-detail');
+          [['Likes', s.likes], ['Comments', s.comments], ['Shares', s.shares]].forEach(function (pair) {
+            var eItem = el('div', 'engagement-item');
+            var eVal  = el('span', 'engagement-value');
+            eVal.textContent = fmtNum(pair[1]);
+            var eLbl  = el('span', 'engagement-label');
+            eLbl.textContent = pair[0];
+            append(eItem, eVal, eLbl);
+            engWrap.appendChild(eItem);
+          });
+          engTd.appendChild(engWrap);
+          engRow.appendChild(engTd);
+          tbody.appendChild(engRow);
+
+          caretBtn.addEventListener('click', function () {
+            var open = engRow.hidden;
+            engRow.hidden = !open;
+            caretBtn.setAttribute('aria-expanded', String(open));
+            caretBtn.classList.toggle('row-expand--open', open);
+          });
+        }
 
         // Music sub-row - only when there's a mismatch or unverified brief (not yet posted)
         var m = d.music;
@@ -1128,7 +1174,7 @@
         if ((hasBrief || hasActual) && !(hasBrief && hasActual && isMatch)) {
           var musicRow = el('tr', 'music-row');
           var musicTd  = el('td');
-          musicTd.colSpan = 10; // matches the 10-column deliverables header (thumb + 9 cols)
+          musicTd.colSpan = 8; // thumb + 6 core columns + caret
 
           var detail = el('div', 'music-detail');
 
@@ -1472,6 +1518,39 @@
   }
 
   /**
+   * Render the closing call-to-action band, inserted just before the footer.
+   * A sales surface should end on a next step, not trail off into a table.
+   * Generic by design - there is no per-agency contact channel in the payload,
+   * so it points back to the Nysterys contact + nysterys.com.
+   */
+  function renderClosingCta(dash) {
+    var first = (dash.creator_name || '').split(' ')[0];
+    var cta   = el('div', 'closing-cta');
+    var inner = el('div', 'container closing-cta-inner');
+
+    var textWrap = el('div', 'closing-cta-text');
+    var kicker = el('div', 'closing-cta-kicker');
+    kicker.textContent = "What's next";
+    var title = el('h2', 'closing-cta-title');
+    title.textContent = first ? ('Ready for ' + first + "'s next campaign?") : 'Ready for the next campaign?';
+    var body = el('p', 'closing-cta-body');
+    body.textContent = 'Reply to your Nysterys contact to lock dates.';
+    append(textWrap, kicker, title, body);
+
+    var link = el('a', 'closing-cta-link');
+    link.href = 'https://nysterys.com';
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Visit nysterys.com ↗';
+
+    append(inner, textWrap, link);
+    cta.appendChild(inner);
+
+    var footer = document.querySelector('.agency-footer');
+    if (footer) footer.parentNode.insertBefore(cta, footer);
+  }
+
+  /**
    * Top-level render once the payload arrives: hides loading, draws the expiry
    * banner / hero / KPI strip, then dispatches on dash.scope to show the
    * campaigns panel, the payments panel, or both behind a tab switcher.
@@ -1558,6 +1637,9 @@
         else                                 { activateTab(tabC, tabP, campPanel, payPanel); tabC.focus(); }
       });
     }
+
+    // Close every scope on a next-step CTA rather than trailing off.
+    renderClosingCta(dash);
   }
 
   // ── Entry point ────────────────────────────────────────────────────────────────
