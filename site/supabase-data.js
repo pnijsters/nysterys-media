@@ -1,4 +1,4 @@
-/* supabase-data.js — fetches live creator stats from Supabase and returns
+/* supabase-data.js: fetches live creator stats from Supabase and returns
    the same data shape the pages previously read from data.json.
    Requires config.js to be loaded first (SITE_CONFIG). */
 (function () {
@@ -39,7 +39,7 @@
     });
   }
 
-  /* Fetch all videos — Supabase caps at 1000 rows per request so page in parallel. */
+  /* Fetch all videos: Supabase caps at 1000 rows per request so page in parallel. */
   function fetchVideos() {
     var cols = 'tiktok_username,total_play,total_like,total_comment,total_share,average_time_watched';
     var pg   = function (off) {
@@ -54,7 +54,7 @@
   }
 
   function buildCreator(cfg, profiles, videos, genders, countries) {
-    /* Profile — most recent row with a real follower count. Coupler stamps a
+    /* Profile: most recent row with a real follower count. Coupler stamps a
      * zero-follower row at the start of every sync day; falling through to the
      * next row prevents "0 followers" from rendering on the public site. */
     var profile    = profiles.find(function (r) {
@@ -76,14 +76,14 @@
     var avgWatch    = vids.length ? totalWatch / vids.length : 0;
     var engRate     = totalViews ? (totalLikes + totalCmts + totalShares) / totalViews : 0;
 
-    /* Gender — most recent date for this creator */
+    /* Gender: most recent date for this creator */
     var cg          = genders.filter(function (r) { return r.tiktok_username === cfg.tiktokHandle; });
     var gDate       = cg.reduce(function (b, r) { return r.date > b ? r.date : b; }, '');
     var gRows       = cg.filter(function (r) { return r.date === gDate; });
     var genderData  = gRows.map(function (r) { return { label: r.gender, value: Math.round(r.percentage * 100) }; });
     var femalePct   = (gRows.find(function (r) { return r.gender === 'Female'; }) || {}).percentage || 0;
 
-    /* Countries — most recent date, top 5, excluding "Others" */
+    /* Countries: most recent date, top 5, excluding "Others" */
     var cc          = countries.filter(function (r) { return r.tiktok_username === cfg.tiktokHandle; });
     var cDate       = cc.reduce(function (b, r) { return r.date > b ? r.date : b; }, '');
     var cRows       = cc.filter(function (r) { return r.date === cDate && r.country !== 'Others'; })

@@ -1,4 +1,4 @@
-/* config.js — static site data that does not come from Supabase */
+/* config.js: static site data that does not come from Supabase */
 var SITE_CONFIG = {
   creators: {
     kym: {
@@ -42,7 +42,7 @@ var SITE_CONFIG = {
             priceMin:   null,
             priceMax:   null,
             priceFixed: 400,
-            unit:       'flat (5 posts — $80 each)'
+            unit:       'flat (5 posts, $80 each)'
           }
         ],
         addons: [
@@ -55,7 +55,7 @@ var SITE_CONFIG = {
           medianSingleMin: 4.72,
           medianSingleMax: 7.86,
           campaignPerPost: 5.03,
-          note: 'CPM is calculated on median views per post. Actual CPM varies by video — the view distribution chart shows why. High-performing posts deliver significantly lower CPM.',
+          note: 'CPM is calculated on median views per post. Actual CPM varies by video. The view distribution chart shows why: high-performing posts deliver significantly lower CPM.',
           viewDistribution: [
             { label: '<10K',     cpm: 20.00 },
             { label: '10K-50K',  cpm: 3.33  },
@@ -107,7 +107,7 @@ var SITE_CONFIG = {
             priceMin:   null,
             priceMax:   null,
             priceFixed: 2000,
-            unit:       'flat (5 posts — $400 each)'
+            unit:       'flat (5 posts, $400 each)'
           }
         ],
         addons: [
@@ -120,7 +120,7 @@ var SITE_CONFIG = {
           medianSingleMin: 1.90,
           medianSingleMax: 3.04,
           campaignPerPost: 1.52,
-          note: 'CPM is calculated on median views per post. Actual CPM varies by video — the view distribution chart shows why. High-performing posts deliver significantly lower CPM.',
+          note: 'CPM is calculated on median views per post. Actual CPM varies by video. The view distribution chart shows why: high-performing posts deliver significantly lower CPM.',
           viewDistribution: [
             { label: '<10K',     cpm: 130.00 },
             { label: '10K-50K',  cpm: 21.67  },

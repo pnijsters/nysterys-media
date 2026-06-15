@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://rnntuxabccnphfvvvaks.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Creator Roster — Kym &amp; Mys | Nysterys Media</title>
+  <title>Creator Roster · Kym &amp; Mys | Nysterys Media</title>
   <meta name="theme-color" content="#080808" />
 
   <!-- Fonts -->
@@ -416,14 +416,14 @@
     }
   </style>
   <meta name="description" content="Kym and Mys are lifestyle and trend creators managed by Nysterys Media. Combined 1.6M+ followers across TikTok, YouTube, and Instagram." />
-  <meta property="og:title" content="Creator Roster — Kym &amp; Mys | Nysterys Media" />
-  <meta property="og:description" content="Browse Kym and Mys — the Nysterys Media creator roster. View audience stats, content categories, and partnership details." />
+  <meta property="og:title" content="Creator Roster · Kym &amp; Mys | Nysterys Media" />
+  <meta property="og:description" content="Browse Kym and Mys, the Nysterys Media creator roster. View audience stats, content categories, and partnership details." />
   <meta property="og:image" content="https://nysterys.com/kym.jpg" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://nysterys.com/creator.html" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Creator Roster — Kym &amp; Mys | Nysterys Media" />
-  <meta name="twitter:description" content="Browse Kym and Mys — the Nysterys Media creator roster. View audience stats, content categories, and partnership details." />
+  <meta name="twitter:title" content="Creator Roster · Kym &amp; Mys | Nysterys Media" />
+  <meta name="twitter:description" content="Browse Kym and Mys, the Nysterys Media creator roster. View audience stats, content categories, and partnership details." />
   <meta name="twitter:image" content="https://nysterys.com/kym.jpg" />
   <link rel="canonical" href="https://nysterys.com/creator.html" />
   <script type="application/ld+json">
@@ -434,7 +434,7 @@
         "@type": "CollectionPage",
         "@id": "https://nysterys.com/creator.html#webpage",
         "url": "https://nysterys.com/creator.html",
-        "name": "Creator Roster — Kym & Mys | Nysterys Media",
+        "name": "Creator Roster · Kym & Mys | Nysterys Media",
         "description": "Kym and Mys are lifestyle and trend creators managed by Nysterys Media.",
         "isPartOf": { "@id": "https://nysterys.com/#website" }
       },
@@ -489,7 +489,7 @@
   <!-- ─── Creator hero ─────────────────────────────────────── -->
   <section class="creator-hero">
     <div class="hero-photo-wrap">
-      <img id="creator-photo" src="" alt="Creator profile photo" />
+      <img id="creator-photo" alt="Creator profile photo" hidden />
       <div class="hero-photo-overlay" aria-hidden="true"></div>
     </div>
     <div class="hero-info">
@@ -699,18 +699,21 @@
         }
 
         // Update page title
-        document.title = creator.name + ' — Nysterys Media';
+        document.title = creator.name + ' · Nysterys Media';
 
         // Hero fields
         var photo = document.getElementById('creator-photo');
+        // Stay hidden until a real photo loads, so a missing src never shows a broken-image box.
+        photo.onerror = function () { photo.hidden = true; };
         photo.src = creator.photo;
         photo.alt = creator.name;
+        photo.hidden = false;
 
         document.getElementById('creator-tag').textContent  = creator.tag;
         document.getElementById('creator-name').textContent = creator.name;
         document.getElementById('creator-bio').textContent  = creator.bio;
 
-        // Stats: followers, likes, engagement rate — with counter animation
+        // Stats: followers, likes, engagement rate, with counter animation
         var statsEl = document.getElementById('creator-stats');
         statsEl.innerHTML =
           '<div>'
@@ -757,6 +760,8 @@
       })
       .catch(function (err) {
         console.error('Could not load site data:', err);
+        // Don't leave the profile half-empty: show a quiet, in-theme message.
+        document.body.innerHTML = '<p class="rc-error">Couldn\'t load this profile right now. Please refresh the page.</p>';
       });
   </script>
 

@@ -1,5 +1,5 @@
 /* =============================================================
-   global.css — Nysterys Media
+   global.css : Nysterys Media
    Shared reset, tokens, nav, footer, and typography utilities
    loaded by every page on the site.
    ============================================================= */
@@ -77,14 +77,14 @@ nav {
   color: var(--orange);
 }
 
-/* Right-side nav group — holds portal link + CTA together */
+/* Right-side nav group: holds portal link + CTA together */
 .nav-right {
   display: flex;
   align-items: center;
   gap: 1.5rem;
 }
 
-/* Team Portal link — subtle, doesn't compete with Work With Us */
+/* Team Portal link: subtle, doesn't compete with Work With Us */
 .nav-portal {
   font-size: 0.65rem;
   letter-spacing: 0.2em;
@@ -99,13 +99,6 @@ nav {
 }
 
 /* ─── Layout utilities ───────────────────────────────────────── */
-
-.divider {
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--orange), transparent);
-  margin: 0 3rem;
-  opacity: 0.3;
-}
 
 .section-label {
   font-size: 0.65rem;
@@ -145,7 +138,7 @@ footer {
 .footer-copy {
   font-size: 0.7rem;
   letter-spacing: 0.1em;
-  color: #444444;
+  color: var(--muted);
 }
 
 /* ─── Marquee ticker ─────────────────────────────────────────── */

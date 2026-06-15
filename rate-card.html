@@ -5,7 +5,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https://rnntuxabccnphfvvvaks.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title id="page-title">Rate Card — Nysterys Media</title>
+  <title id="page-title">Rate Card · Nysterys Media</title>
   <meta name="theme-color" content="#080808" />
   <meta name="robots" content="noindex, nofollow" />
 
@@ -136,13 +136,6 @@
       overflow: hidden;
     }
 
-    .creator-snapshot::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(to right, var(--orange), var(--orange2));
-    }
 
     .snapshot-photo {
       width: 160px;
@@ -211,8 +204,7 @@
 
     .package-card:hover {
       border-color: var(--orange);
-      transform: translateY(-5px);
-      box-shadow: 0 12px 40px rgba(255, 92, 0, 0.1);
+      transform: translateY(-3px);
     }
 
     .package-card::before {
@@ -322,7 +314,6 @@
     .addon-note {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--orange);
       padding: 1.25rem 1.75rem;
       font-size: 0.82rem;
       line-height: 1.7;
@@ -348,16 +339,7 @@
 
     .cpm-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(255, 92, 0, 0.1);
-      border-color: rgba(255, 92, 0, 0.3);
-    }
-
-    .cpm-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(to right, var(--orange), var(--orange2));
+      border-color: var(--orange);
     }
 
     .cpm-label {
@@ -438,7 +420,6 @@
     .cpm-note {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--orange);
       padding: 1.25rem 1.75rem;
       font-size: 0.82rem;
       font-style: italic;
@@ -607,7 +588,7 @@
 
   <!-- ─── Hero ─────────────────────────────────────────── -->
   <section class="rc-hero">
-    <p class="rc-eyebrow">Nysterys Media LLC &mdash; Confidential</p>
+    <p class="rc-eyebrow">Nysterys Media LLC · Confidential</p>
     <h1 class="rc-title" id="rc-title">Rate <span>Card</span></h1>
     <p class="rc-subtitle" id="rc-subtitle">Pricing for brand partnerships and sponsored content collaborations.</p>
   </section>
@@ -693,7 +674,7 @@
   <!-- ─── Footer ───────────────────────────────────────── -->
   <footer>
     <div class="footer-logo">NYS<span>T</span>ERYS MEDIA LLC</div>
-    <div class="footer-copy">&copy; 2026 Nysterys Media LLC. Confidential &mdash; not for redistribution.</div>
+    <div class="footer-copy">&copy; 2026 Nysterys Media LLC. Confidential. Not for redistribution.</div>
   </footer>
 
   <!-- ─── Scripts ──────────────────────────────────────── -->
@@ -771,7 +752,7 @@
       if (pkg.priceFixed !== null && pkg.priceFixed !== undefined) {
         return sym + pkg.priceFixed.toLocaleString();
       }
-      return sym + pkg.priceMin.toLocaleString() + ' &ndash; ' + sym + pkg.priceMax.toLocaleString();
+      return sym + pkg.priceMin.toLocaleString() + ' to ' + sym + pkg.priceMax.toLocaleString();
     }
 
     // Animate bars into view
@@ -795,14 +776,14 @@
         var creator = data.roster.find(function(c) { return c.id === creatorId; });
 
         if (!creator) {
-          document.body.innerHTML = '<p class="rc-error">Creator not found. Add ?id=mys or ?id=kym to the URL.</p>';
+          document.body.innerHTML = '<p class="rc-error">Rate card not found. <a href="index.html#roster">Browse our creators</a> to find the one you are looking for.</p>';
           return;
         }
 
         var rc = creator.rateCard;
 
         // Page title
-        document.getElementById('page-title').textContent = creator.name + ' Rate Card — Nysterys Media';
+        document.getElementById('page-title').textContent = creator.name + ' Rate Card · Nysterys Media';
         document.getElementById('rc-title').innerHTML = creator.name + ' Rate <span>Card</span>';
         document.getElementById('rc-subtitle').textContent = 'Pricing for brand partnerships and sponsored content collaborations with @' + creator.tiktokHandle + '.';
 
@@ -811,7 +792,7 @@
         snapshotEl.innerHTML =
           '<img class="snapshot-photo" src="' + creator.photo + '" alt="' + creator.name + '" />'
           + '<div class="snapshot-info">'
-          +   '<p class="snapshot-tag">Content Creator &mdash; @' + creator.tiktokHandle + '</p>'
+          +   '<p class="snapshot-tag">Content Creator · @' + creator.tiktokHandle + '</p>'
           +   '<h2 class="snapshot-name">' + creator.name + '</h2>'
           +   '<div class="snapshot-stats">'
           +     '<div><span class="snapshot-stat-val" data-target="' + creator.followers + '"></span><span class="snapshot-stat-lbl">Followers</span></div>'
@@ -827,7 +808,7 @@
           counterObserver.observe(el);
         });
 
-        // Packages — staggered fade-in
+        // Packages: staggered fade-in
         document.getElementById('packages-grid').innerHTML = rc.packages.map(function(pkg) {
           return '<div class="package-card">'
             + '<div class="package-name">' + pkg.name + '</div>'
@@ -869,7 +850,7 @@
         document.getElementById('cpm-grid').innerHTML =
           '<div class="cpm-card">'
           + '<p class="cpm-label">Single Post CPM (median views)</p>'
-          + '<p class="cpm-value">$' + cpm.medianSingleMin.toFixed(2) + ' &ndash; $' + cpm.medianSingleMax.toFixed(2) + '</p>'
+          + '<p class="cpm-value">$' + cpm.medianSingleMin.toFixed(2) + ' to $' + cpm.medianSingleMax.toFixed(2) + '</p>'
           + '<p class="cpm-sub">Per 1,000 views at published single post rates</p>'
           + '</div>'
           + '<div class="cpm-card">'
@@ -880,7 +861,7 @@
 
         var maxCpm = Math.max.apply(null, cpm.viewDistribution.map(function(d) { return d.cpm; }));
         document.getElementById('cpm-dist').innerHTML =
-          '<p class="cpm-dist-title">CPM by View Bucket &mdash; Single Post Mid-Rate</p>'
+          '<p class="cpm-dist-title">CPM by View Bucket · Single Post Mid-Rate</p>'
           + '<div class="cpm-dist-rows">'
           + cpm.viewDistribution.map(function(d) {
               var w = (d.cpm / maxCpm) * 100;
@@ -907,7 +888,11 @@
         var cpmDist = document.getElementById('cpm-dist');
         if (cpmDist) barObserver.observe(cpmDist);
       })
-      .catch(function(err) { console.error('Could not load site data:', err); });
+      .catch(function(err) {
+        console.error('Could not load site data:', err);
+        // Don't leave a half-empty rate card: show a quiet, in-theme message.
+        document.body.innerHTML = '<p class="rc-error">Couldn\'t load this rate card right now. Please refresh the page.</p>';
+      });
   </script>
 
   <!-- jsPDF -->
@@ -949,7 +934,7 @@
       function pageFooter() {
         orange_f(); doc.rect(0, H - 8, W, 8, 'F');
         doc.setTextColor(255,255,255); sz(6);
-        doc.text('NYSTERYS MEDIA LLC — CONFIDENTIAL', M + 4, H - 3);
+        doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, H - 3);
         doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), H - 3);
       }
 
@@ -970,7 +955,7 @@
       y = 22;
       // Confidential label in the orange top bar
       doc.setTextColor(255,255,255); sz(7, false);
-      doc.text('NYSTERYS MEDIA LLC — CONFIDENTIAL', M + 4, y - 6);
+      doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, y - 6);
       doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), y - 6);
 
       // Name block
@@ -1064,8 +1049,8 @@
       });
       y += 30;
 
-      // CPM by view bucket — horizontal bars
-      subtext(); sz(6, false); doc.text('CPM BY VIEW BUCKET — SINGLE POST MID-RATE', M, y);
+      // CPM by view bucket: horizontal bars
+      subtext(); sz(6, false); doc.text('CPM BY VIEW BUCKET · SINGLE POST MID-RATE', M, y);
       y += 6;
       var maxCpm = Math.max.apply(null, cpm.viewDistribution.map(function(d) { return d.cpm; }));
       var barAreaW = W - M * 2 - 50;
@@ -1094,7 +1079,7 @@
       orange_f(); doc.rect(0, 0, 4, H, 'F');
       orange_f(); doc.rect(0, 0, W, 8, 'F');
       doc.setTextColor(255,255,255); sz(7);
-      doc.text('NYSTERYS MEDIA LLC — CONFIDENTIAL', M + 4, 5.5);
+      doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, 5.5);
       doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), 5.5);
       y = 22;
 
