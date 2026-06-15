@@ -483,22 +483,10 @@
       text-transform: uppercase;
       color: var(--muted);
       transition: background 0.2s, color 0.2s;
-      position: relative;
     }
 
-    .collab-item::before {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--orange);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s;
-    }
-
+    /* List rows: quiet tint hover (no accent bar) so feature cards stand out. */
     .collab-item:hover { background: var(--surface2); color: var(--white); }
-    .collab-item:hover::before { transform: scaleX(1); }
 
     /* ─── Contact ─────────────────────────────────────────── */
     .mk-contact {

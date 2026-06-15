@@ -267,24 +267,12 @@
     .addon-item {
       background: var(--surface2);
       padding: 1.75rem 2rem;
-      position: relative;
-      overflow: hidden;
       transition: background 0.2s;
     }
 
-    .addon-item::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(to right, var(--orange), var(--orange2));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s ease;
-    }
-
+    /* List rows use a quiet background-tint hover (no accent bar): feature
+       cards carry the scaleX bar, rows stay calmer so the system has rhythm. */
     .addon-item:hover { background: var(--surface); }
-    .addon-item:hover::before { transform: scaleX(1); }
 
     .addon-name {
       font-family: 'Bebas Neue', sans-serif;
@@ -445,24 +433,10 @@
     .term-item {
       background: var(--surface);
       padding: 1.75rem 1.5rem;
-      position: relative;
-      overflow: hidden;
       transition: background 0.2s;
     }
 
-    .term-item::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(to right, var(--orange), var(--orange2));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s ease;
-    }
-
     .term-item:hover { background: var(--surface2); }
-    .term-item:hover::before { transform: scaleX(1); }
 
     .term-title {
       font-family: 'Bebas Neue', sans-serif;
