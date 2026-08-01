@@ -1526,170 +1526,55 @@
   // ── Rates ──────────────────────────────────────────────────────────────────
 
   /**
-   * Price one package for the selected platforms.
+   * Render the Rates tab: a plain price list.
    *
-   * MIRROR of hub-src/src/utils/rateCard.js `priceSelection`. That module has the
-   * Jest suite that specifies this behaviour; this file is plain browser JS and
-   * cannot import it. Change both together.
-   *
-   * @gotcha Override matching is SET EQUALITY, not subset: a pin on
-   *         [TikTok, YouTube] must NOT price [TikTok, YouTube, Instagram], since
-   *         a third placement is more work and needs its own decision.
-   * @gotcha A selected platform with no price row makes the package unavailable
-   *         rather than free. Quoting a placement at $0 because a row is missing
-   *         would commit the creator to unpaid work.
-   */
-  function priceSelection(pkg, selectedIds) {
-    var selected = selectedIds.slice().sort();
-    var quantity = Math.max(1, Number(pkg.quantity) || 1);
-
-    var pin = null;
-    (pkg.overrides || []).forEach(function (o) {
-      var ids = (o.platform_ids || []).slice().sort();
-      if (ids.length === selected.length && ids.every(function (v, i) { return v === selected[i]; })) pin = o;
-    });
-    if (pin) {
-      return { available: true, total: Number(pin.price) || 0, isOverride: true, note: pin.note || null, lines: [] };
-    }
-
-    if (!selected.length) return { available: false, total: 0, isOverride: false, note: null, lines: [] };
-
-    var byPlatform = {};
-    (pkg.platform_prices || []).forEach(function (p) { byPlatform[p.platform_id] = p; });
-
-    var missing = selected.filter(function (id) { return !byPlatform[id]; });
-    if (missing.length) return { available: false, total: 0, isOverride: false, note: null, lines: [] };
-
-    var lines = selected.map(function (id) {
-      var per = Number(byPlatform[id].price_per_post) || 0;
-      return { platform_id: id, pricePerPost: per, lineTotal: per * quantity };
-    });
-    var total = Math.round(lines.reduce(function (s, l) { return s + l.lineTotal; }, 0) * 100) / 100;
-    return { available: true, total: total, isOverride: false, note: null, lines: lines, quantity: quantity };
-  }
-
-  /**
-   * Render the Rates tab: platform toggles that re-price every package live.
-   *
-   * The toggles are the point. A static list would bury the cross-post upsell in
-   * a footnote; letting the brand switch a platform on and watch each price move
-   * makes the bundle something they feel rather than read.
+   * Each package is one line: what it is, which platforms it covers, and what
+   * it costs. Nothing is computed here and nothing is interactive. An earlier
+   * version made the agency toggle platforms while prices re-summed, which made
+   * a price list into a configurator and read as a quote engine rather than a
+   * rate card. A bundle is simply its own line.
    *
    * @param {object} rateCard - payload.rate_card
-   * @param {Array} platforms - payload.platforms, [{id, name}]
    * @param {HTMLElement} container
    */
-  function renderRates(rateCard, platforms, container) {
+  function renderRates(rateCard, container) {
     container.innerHTML = '';
-    if (!rateCard) return;
-
-    var nameById = {};
-    platforms.forEach(function (p) { nameById[p.id] = p.name; });
-
-    // Only offer platforms this card actually prices, so a toggle can never
-    // make every package read "not offered".
-    var offered = platforms.filter(function (p) {
-      return (rateCard.packages || []).some(function (pkg) {
-        return (pkg.platform_prices || []).some(function (pp) { return pp.platform_id === p.id; })
-          || (pkg.overrides || []).some(function (o) { return (o.platform_ids || []).indexOf(p.id) !== -1; });
-      });
-    });
-    if (!offered.length) return;
-
-    // Start on the single most-priced platform rather than all of them: the
-    // opening number should be the entry price, with the upsell one tap away.
-    var selected = [offered[0].id];
+    if (!rateCard || !(rateCard.packages || []).length) return;
 
     var wrap = el('div', 'rates-section');
-
-    var lead = el('div', 'rates-lead');
-    var leadLabel = el('div', 'section-label');
-    leadLabel.textContent = 'Where it posts';
-    var toggles = el('div', 'rates-toggles');
-    lead.appendChild(leadLabel);
-    lead.appendChild(toggles);
-    wrap.appendChild(lead);
-
     var list = el('div', 'rates-list');
+
+    rateCard.packages.forEach(function (pkg) {
+      var row = el('div', 'rate-row');
+
+      var main = el('div', 'rate-row-main');
+      var nm = el('div', 'rate-name');
+      nm.textContent = pkg.name;
+      main.appendChild(nm);
+
+      var bits = [];
+      if (pkg.quantity > 1) bits.push(pkg.quantity + ' posts');
+      if ((pkg.platforms || []).length) bits.push(pkg.platforms.join(' + '));
+      if (pkg.description) bits.push(pkg.description);
+      if (bits.length) {
+        var meta = el('div', 'rate-meta');
+        meta.textContent = bits.join(' \u00b7 ');
+        main.appendChild(meta);
+      }
+      row.appendChild(main);
+
+      var amt = el('div', 'rate-amount');
+      amt.textContent = fmtMoney(pkg.price);
+      row.appendChild(amt);
+
+      list.appendChild(row);
+    });
+
     wrap.appendChild(list);
 
-    function draw() {
-      // Toggles
-      toggles.innerHTML = '';
-      offered.forEach(function (p) {
-        var on  = selected.indexOf(p.id) !== -1;
-        var btn = el('button', 'rate-toggle' + (on ? ' rate-toggle-on' : ''));
-        btn.type = 'button';
-        btn.textContent = p.name;
-        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        btn.addEventListener('click', function () {
-          var i = selected.indexOf(p.id);
-          // Never allow an empty selection: with nothing ticked every package
-          // reads "unavailable", which looks broken rather than informative.
-          if (i === -1) selected.push(p.id);
-          else if (selected.length > 1) selected.splice(i, 1);
-          draw();
-        });
-        toggles.appendChild(btn);
-      });
-
-      // Packages
-      list.innerHTML = '';
-      (rateCard.packages || []).forEach(function (pkg) {
-        var r   = priceSelection(pkg, selected);
-        var row = el('div', 'rate-row' + (r.available ? '' : ' rate-row-off'));
-
-        var main = el('div', 'rate-row-main');
-        var nm   = el('div', 'rate-name');
-        nm.textContent = pkg.name;
-        main.appendChild(nm);
-
-        var meta = [];
-        if (pkg.quantity > 1) meta.push(pkg.quantity + ' posts');
-        if (pkg.unit) meta.push(pkg.unit);
-        if (pkg.description) meta.push(pkg.description);
-        if (meta.length) {
-          var mt = el('div', 'rate-meta');
-          mt.textContent = meta.join(' · ');
-          main.appendChild(mt);
-        }
-        row.appendChild(main);
-
-        var right = el('div', 'rate-row-price');
-        if (!r.available) {
-          var na = el('div', 'rate-na');
-          na.textContent = 'Not offered on this combination';
-          right.appendChild(na);
-        } else {
-          var amt = el('div', 'rate-amount');
-          amt.textContent = fmtMoney(r.total);
-          right.appendChild(amt);
-
-          var sub = el('div', 'rate-breakdown');
-          if (r.isOverride) {
-            // Showing arithmetic that does not reach a pinned number undermines
-            // it, so a pin states that it is negotiated and stays silent on sums.
-            sub.textContent = r.note ? ('Negotiated · ' + r.note) : 'Negotiated rate';
-            sub.className = 'rate-breakdown rate-breakdown-pinned';
-          } else {
-            sub.textContent = r.lines.map(function (l) {
-              return nameById[l.platform_id] + ' ' + fmtMoney(l.pricePerPost)
-                + (r.quantity > 1 ? (' x ' + r.quantity) : '');
-            }).join('  +  ');
-          }
-          right.appendChild(sub);
-        }
-        row.appendChild(right);
-        list.appendChild(row);
-      });
-    }
-
-    draw();
-
-    // Add-ons
     if ((rateCard.addons || []).length) {
       var addWrap = el('div', 'rates-addons');
-      var addLbl  = el('div', 'section-label');
+      var addLbl = el('div', 'section-label');
       addLbl.textContent = 'Add-ons';
       addWrap.appendChild(addLbl);
       rateCard.addons.forEach(function (a) {
@@ -1869,7 +1754,7 @@
       panels.push({ tab: document.getElementById('tab-payments'), panel: payPanel });
     }
     if (dash.show_rates && data.rate_card) {
-      renderRates(data.rate_card, data.platforms || [], ratesPanel);
+      renderRates(data.rate_card, ratesPanel);
       panels.push({ tab: document.getElementById('tab-rates'), panel: ratesPanel });
     }
 
