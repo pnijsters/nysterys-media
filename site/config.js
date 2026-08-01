@@ -9,6 +9,13 @@
  *         platform listed here is counted whether or not its stats feed exists.
  */
 var SITE_CONFIG = {
+  /* Homepage roster card. A platform earns its own stats row only once its
+   * audience clears this bar: a channel too small to sell is noise on a card
+   * whose job is to win brand deals. Rows therefore do not sum to the combined
+   * figure above them, which is why the card labels them "Main platforms". */
+  rosterCard: {
+    minFollowersForPlatformRow: 50000,
+  },
   creators: {
     kym: {
       id: 'kym',
