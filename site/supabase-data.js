@@ -312,10 +312,23 @@
         dataAsOf:            latestDate,
         viewDistribution:    viewBuckets(plays),
       },
+      /* Measured audience only. Every field here comes from a live feed.
+       *
+       * @gotcha There is no `age` bracket and there must not be one until a feed
+       *         supplies it. config.js used to carry a hand-typed age
+       *         distribution that was byte-identical for both creators, and it
+       *         rendered on the creator page, the media kit AND the media-kit
+       *         PDF as measured analytics. No age demographic exists anywhere in
+       *         the database; neither TikTok nor YouTube supplies one today.
+       * @gotcha The old `cfg.audience.*` fallbacks were removed with it: they
+       *         named keys config.js never defined, so an empty feed would have
+       *         handed `undefined` to the chart builders rather than degrading.
+       *         An empty array renders an empty chart, which is the honest
+       *         result and what every builder here already handles.
+       */
       audience: {
-        gender:       genderData.length ? genderData : cfg.audience.gender,
-        age:          cfg.audience.age,
-        topCountries: countryData.length ? countryData : cfg.audience.topCountries,
+        gender:       genderData,
+        topCountries: countryData,
       },
       contentCategories: cfg.contentCategories,
       rateCard:          cfg.rateCard,

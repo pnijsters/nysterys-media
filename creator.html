@@ -143,11 +143,93 @@
       color: var(--muted);
     }
 
+    /* Per-platform breakdown. Quiet by design: the orange hero figures above
+       are the one moment of heat, so this reads as supporting evidence rather
+       than competing for the same glance. Mirrors the roster card treatment. */
+    .hero-platforms {
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      margin-bottom: 2.5rem;
+      max-width: 30rem;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.8s forwards;
+    }
+
+    .hero-platforms-lbl {
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #5c5c5c;
+      margin-bottom: 0.7rem;
+    }
+
+    .hero-platform-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .hero-platform {
+      display: grid;
+      grid-template-columns: 13px 4.75rem 1fr;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.3rem 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .hero-platform-icon {
+      display: inline-flex;
+      color: #5c5c5c;
+    }
+
+    .hero-platform-icon svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .hero-platform-name {
+      font-size: 0.6rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #7a7a7a;
+    }
+
+    /* Min-widths align the columns between rows. Deliberately not subgrid:
+       where subgrid is unsupported the declaration is dropped and every figure
+       stacks onto its own line, a far worse failure than a little drift. */
+    .hero-platform-figs {
+      display: flex;
+      align-items: baseline;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fig-followers { min-width: 3rem; }
+    .fig-views     { min-width: 6.2rem; }
+
+    .hero-platform-sep {
+      color: #3d3d3d;
+      padding: 0 0.45rem;
+    }
+
+    @media (max-width: 700px) {
+      /* The icon already identifies the platform, so the name column yields
+         first and the figures keep their width. */
+      .hero-platform {
+        grid-template-columns: 13px 1fr;
+      }
+
+      .hero-platform-name {
+        display: none;
+      }
+    }
+
     .hero-socials {
       display: flex;
       gap: 0.75rem;
       opacity: 0;
-      animation: fadeUp 0.7s 0.8s forwards;
+      animation: fadeUp 0.7s 0.95s forwards;
     }
 
     .hero-social {
@@ -198,6 +280,23 @@
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(2rem, 4vw, 3rem);
       letter-spacing: 0.04em;
+    }
+
+    /* Source attribution, pushed to the far end of the header row so it states
+       provenance without crowding the title. */
+    .section-note {
+      margin-left: auto;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #5c5c5c;
+    }
+
+    @media (max-width: 700px) {
+      .section-note {
+        margin-left: 0;
+        flex-basis: 100%;
+      }
     }
 
     /* ─── Charts grid ─────────────────────────────────────── */
@@ -300,30 +399,38 @@
       color: var(--orange);
     }
 
-    /* ─── Age distribution bars ───────────────────────────── */
-    .age-bars {
+    /* ─── Distribution bars (shared by any label + value + bar list) ─ */
+    .dist-bars {
       display: flex;
       flex-direction: column;
       gap: 1.1rem;
     }
 
-    .age-row {
+    .dist-row {
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
     }
 
-    .age-meta {
+    .dist-meta {
       display: flex;
       justify-content: space-between;
       font-size: 0.78rem;
     }
 
-    .age-meta-label {
+    .dist-meta-label {
       color: var(--muted);
     }
 
-    .age-meta-value {
+    /* Sample size sits with its band so a percentage is never read without it:
+       "1M+ 4%" means something different at 20 posts than at 900. */
+    .dist-count {
+      color: #5c5c5c;
+      font-size: 0.68rem;
+      margin-left: 0.55rem;
+    }
+
+    .dist-meta-value {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 0.95rem;
       color: var(--white);
@@ -497,6 +604,7 @@
       <h1 class="hero-name" id="creator-name"></h1>
       <p class="hero-bio"  id="creator-bio"></p>
       <div class="hero-stats" id="creator-stats"></div>
+      <div class="hero-platforms" id="creator-platforms"></div>
       <div class="hero-socials" id="creator-socials"></div>
     </div>
   </section>
@@ -508,6 +616,10 @@
     <div class="section-header">
       <span class="section-label">Analytics</span>
       <h2 class="section-title">Audience Insights</h2>
+      <!-- All three charts read TikTok feeds. The hero above them is a
+           cross-platform total, so without this the section silently reads as
+           if it described every platform. -->
+      <span class="section-note">Measured on TikTok</span>
     </div>
 
     <div class="charts-grid">
@@ -521,10 +633,12 @@
         </div>
       </div>
 
-      <!-- Age distribution -->
-      <div class="chart-card" id="card-age">
-        <p class="chart-title">Age Distribution</p>
-        <div class="age-bars" id="age-bars"></div>
+      <!-- View distribution: replaced an Age Distribution chart whose numbers
+           were hand-typed in config.js and identical for both creators. No age
+           demographic exists in any feed, so it could not be made real. -->
+      <div class="chart-card" id="card-dist">
+        <p class="chart-title">View Distribution</p>
+        <div class="dist-bars" id="dist-bars"></div>
       </div>
 
       <!-- Top countries -->
@@ -550,15 +664,29 @@
     // GENDER_COLORS, buildDonut, buildGenderLegend, animateCounter live in site/utils.js.
 
     // Build age distribution horizontal bars
-    function buildAgeBars(data) {
-      var maxValue = Math.max.apply(null, data.map(function (d) { return d.value; }));
-      var el = document.getElementById('age-bars');
-      el.innerHTML = data.map(function (bracket) {
-        var widthPct = (bracket.value / maxValue) * 100;
-        return '<div class="age-row">'
-          + '<div class="age-meta">'
-          +   '<span class="age-meta-label">' + bracket.label + '</span>'
-          +   '<span class="age-meta-value">' + bracket.value + '%</span>'
+    /**
+     * How a creator's posts spread across view bands.
+     *
+     * @param {Array<{label:string,count:number,pct:number}>} data
+     *        creator.tiktokStats.viewDistribution, computed from live video rows
+     *
+     * @gotcha Bars are scaled to the LARGEST band, not to 100. Most creators
+     *         concentrate in one or two bands, so scaling to 100 would render
+     *         every bar as a stub and the shape would be unreadable.
+     */
+    function buildViewDistribution(data) {
+      var el = document.getElementById('dist-bars');
+      if (!el) return;
+      if (!data || !data.length) { el.innerHTML = ''; return; }
+      var maxPct = Math.max.apply(null, data.map(function (d) { return d.pct; })) || 1;
+      el.innerHTML = data.map(function (band) {
+        var widthPct = (band.pct / maxPct) * 100;
+        return '<div class="dist-row">'
+          + '<div class="dist-meta">'
+          +   '<span class="dist-meta-label">' + band.label
+          +     '<span class="dist-count">' + band.count + ' posts</span>'
+          +   '</span>'
+          +   '<span class="dist-meta-value">' + band.pct + '%</span>'
           + '</div>'
           + '<div class="bar-track">'
           +   '<div class="bar-fill" data-width="' + widthPct + '"></div>'
@@ -569,8 +697,14 @@
 
     // Build top countries horizontal bars
     function buildCountryBars(data) {
-      var maxValue = data[0].value; // already sorted descending
       var el = document.getElementById('country-bars');
+      if (!el) return;
+      // @gotcha An empty feed must render an empty chart, not throw. This read
+      //         data[0].value directly, so one gap in the country feed would
+      //         throw and the page-level catch would replace the ENTIRE profile
+      //         with an error screen over one missing chart.
+      if (!data || !data.length) { el.innerHTML = ''; return; }
+      var maxValue = data[0].value; // already sorted descending
       el.innerHTML = data.map(function (country) {
         var widthPct = (country.value / maxValue) * 100;
         return '<div class="country-row">'
@@ -666,6 +800,28 @@
           animateCounter(document.getElementById('stat-eng'),       creator.engagementRate, 700);
         }, 400);
 
+        // Per-platform breakdown, same rule and wording as the roster cards:
+        // a platform earns a row only above the config threshold, so these
+        // deliberately do not sum to the combined figures above them.
+        var platformsEl = document.getElementById('creator-platforms');
+        var rows = creator.platformRows || [];
+        platformsEl.innerHTML = rows.length
+          ? '<p class="hero-platforms-lbl">Main platforms</p>'
+            + '<ul class="hero-platform-list">' + rows.map(function (r) {
+                return '<li class="hero-platform">'
+                  + '<span class="hero-platform-icon">' + (ICONS[r.key] || '') + '</span>'
+                  + '<span class="hero-platform-name">' + r.label + '</span>'
+                  + '<span class="hero-platform-figs">'
+                  +   '<span class="fig fig-followers">' + r.followers + '</span>'
+                  +   '<span class="hero-platform-sep">·</span>'
+                  +   '<span class="fig fig-views">' + r.views + ' views</span>'
+                  +   '<span class="hero-platform-sep">·</span>'
+                  +   '<span class="fig">' + r.engagementRate + '</span>'
+                  + '</span>'
+                  + '</li>';
+              }).join('') + '</ul>'
+          : '';
+
         // Social links
         var socialsEl = document.getElementById('creator-socials');
         socialsEl.innerHTML = Object.entries(creator.socials).map(function (entry) {
@@ -680,7 +836,7 @@
         // Build the three charts
         buildDonut('donut-svg', creator.audience.gender);
         buildGenderLegend('gender-legend', creator.audience.gender);
-        buildAgeBars(creator.audience.age);
+        buildViewDistribution(creator.tiktokStats.viewDistribution);
         buildCountryBars(creator.audience.topCountries);
 
         // Attach observers to each chart card

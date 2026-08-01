@@ -255,9 +255,10 @@
       margin-bottom: 2rem;
     }
 
+    /* Two cards since the fabricated Age Distribution card was removed. */
     .creator-charts-wide {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 1.5rem;
       margin-bottom: 2rem;
     }
@@ -1004,10 +1005,14 @@
     }, { threshold: 0.5 });
 
     function buildBarRows(elId, data) {
-      var max = data[0].value;
-      data.forEach(function(d) { if (d.value > max) max = d.value; });
       var el = document.getElementById(elId);
       if (!el) return;
+      // @gotcha An empty feed must render an empty chart, not throw. This read
+      //         data[0].value before the null guard, so one gap in a feed took
+      //         down the whole media kit.
+      if (!data || !data.length) { el.innerHTML = ''; return; }
+      var max = data[0].value;
+      data.forEach(function(d) { if (d.value > max) max = d.value; });
       el.innerHTML = data.map(function(d) {
         var w = (d.value / max) * 100;
         return '<div class="bar-row">'
@@ -1099,10 +1104,10 @@
         +         '<div class="donut-legend" id="legend-' + creator.id + '"></div>'
         +       '</div>'
         +     '</div>'
-        +     '<div class="chart-card">'
-        +       '<p class="chart-title">Age Distribution</p>'
-        +       '<div class="bar-rows" id="age-' + creator.id + '"></div>'
-        +     '</div>'
+        // An Age Distribution card sat here. Its numbers were hand-typed in
+        // config.js and identical for both creators; no age demographic exists
+        // in any feed, so it could not be made real and was removed rather than
+        // shipped to brands as measured analytics.
         +     '<div class="chart-card">'
         +       '<p class="chart-title">Top Countries</p>'
         +       '<div class="bar-rows" id="countries-' + creator.id + '"></div>'
@@ -1227,7 +1232,6 @@
           ordered.forEach(function(creator) {
             buildDonut('donut-' + creator.id, creator.audience.gender);
             buildGenderLegend('legend-' + creator.id, creator.audience.gender);
-            buildBarRows('age-' + creator.id, creator.audience.age);
             buildBarRows('countries-' + creator.id, creator.audience.topCountries);
             buildDistChart('dist-' + creator.id, creator.tiktokStats.viewDistribution);
           });
@@ -1429,9 +1433,10 @@
         orange_t(); sz(6.5); doc.text('AUDIENCE INSIGHTS', M, y);
         y += 9;
 
-        // Three columns: gender | age | countries
-        var colW3 = (W - M * 2 - 8) / 3;
-        var c1 = M, c2 = M + colW3 + 4, c3 = M + (colW3 + 4) * 2;
+        // Two columns: gender | countries. An age column sat between them until
+        // its numbers proved to be hand-typed and identical for both creators.
+        var colW3 = (W - M * 2 - 6) / 2;
+        var c1 = M, c3 = M + colW3 + 6;
         var rowY = y;
 
         // Gender
@@ -1449,23 +1454,14 @@
           gy += 7;
         });
 
-        // Age
-        subtext(); sz(5.5); doc.text('AGE DISTRIBUTION', c2, rowY);
-        var ay = rowY + 7;
-        var maxAge = Math.max.apply(null, creator.audience.age.map(function(d) { return d.value; }));
-        creator.audience.age.forEach(function(bracket) {
-          subtext(); sz(6.5); doc.text(bracket.label, c2, ay);
-          dark(); doc.text(bracket.value + '%', c2 + colW3 - doc.getTextWidth(bracket.value + '%'), ay);
-          doc.setFillColor(220,220,220); doc.rect(c2, ay + 1, colW3, 2, 'F');
-          orange_f(); doc.rect(c2, ay + 1, colW3 * (bracket.value / maxAge), 2, 'F');
-          ay += 7;
-        });
-
         // Countries
         subtext(); sz(5.5); doc.text('TOP COUNTRIES', c3, rowY);
         var cy3 = rowY + 7;
-        var maxCo = creator.audience.topCountries[0].value;
-        creator.audience.topCountries.forEach(function(country) {
+        // Same empty-feed guard as the on-screen charts: a gap in the country
+        // feed must not abort PDF generation half way down the page.
+        var countries = creator.audience.topCountries || [];
+        var maxCo = countries.length ? countries[0].value : 1;
+        countries.forEach(function(country) {
           subtext(); sz(6.5); doc.text(country.label, c3, cy3);
           orange_t(); doc.text(country.value + '%', c3 + colW3 - doc.getTextWidth(country.value + '%'), cy3);
           doc.setFillColor(220,220,220); doc.rect(c3, cy3 + 1, colW3, 2, 'F');
