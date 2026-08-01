@@ -563,6 +563,10 @@
   position: relative;
   transition: border-color .3s;
   cursor: pointer;
+  /* Query container for the platform rows below. Safe alongside the hover
+     flex-expand: the card's width comes from the flex parent, never from its
+     own contents, so inline-size containment changes nothing here. */
+  container-type: inline-size;
 }
 
 .talent-card:hover {
@@ -774,9 +778,104 @@
       letter-spacing: 0.05em;
     }
 
+/* The three combined figures read as one row. Without this the .talent-stat
+   blocks stacked, costing six lines of vertical space and flattening the
+   hierarchy the orange hero figures are supposed to carry. */
+.talent-stats {
+  display: flex;
+  gap: 2.25rem;
+  margin-bottom: 1.5rem;
+}
+
 .talent-stat {
   display: flex;
   flex-direction: column;
+}
+
+/* Per-platform breakdown. Deliberately quiet: the combined figures above are
+   the one moment of orange, so the split reads as supporting evidence rather
+   than competing for the same glance. */
+.talent-platforms {
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+  margin-bottom: 1.75rem;
+}
+
+.talent-platforms-lbl {
+  font-size: .55rem;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: #5c5c5c;
+  margin-bottom: .7rem;
+}
+
+.talent-platform-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.talent-platform {
+  display: grid;
+  grid-template-columns: 13px 4.75rem 1fr;
+  align-items: center;
+  gap: .65rem;
+  padding: .3rem 0;
+  font-size: .78rem;
+  color: var(--muted);
+}
+
+.talent-platform-icon {
+  display: inline-flex;
+  color: #5c5c5c;
+}
+
+.talent-platform-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.talent-platform-name {
+  font-size: .6rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #7a7a7a;
+}
+
+/* Min-widths (not a grid) align the columns between the two platform rows.
+   Deliberately not subgrid: where subgrid is unsupported the declaration is
+   dropped and every figure stacks into its own line, which is a far worse
+   failure than a few pixels of drift. */
+.talent-platform-figs {
+  display: flex;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+
+.fig-followers { min-width: 3rem; }
+.fig-views     { min-width: 6.2rem; }
+
+.talent-platform-sep {
+  color: #3d3d3d;
+  padding: 0 .45rem;
+}
+
+/* Narrow CARD, not narrow viewport. The cards are tightest just above the 768px
+   breakpoint, where two of them still sit side by side; below 768px the roster
+   is one column and each card is at its widest. A viewport media query would
+   therefore relax the layout at exactly the wrong moment. */
+@container (max-width: 430px) {
+  .talent-stats { gap: 1.5rem; }
+
+  /* The icon already identifies the platform, so the name column yields first
+     and the figures keep their width. */
+  .talent-platform {
+    grid-template-columns: 13px 1fr;
+  }
+
+  .talent-platform-name {
+    display: none;
+  }
 }
 
 .stat-val {
@@ -1337,6 +1436,37 @@ function buildSocialLink(platform, url) {
     ICONS[platform] + ' ' + platform.toUpperCase() + '</a>';
 }
 
+/**
+ * Render the per-platform breakdown under a roster card's combined figures.
+ *
+ * @param {Array} rows - creator.platformRows from site/supabase-data.js
+ * @returns {string} markup, or '' when no platform clears the bar
+ *
+ * @gotcha These rows deliberately do NOT sum to the combined figures above:
+ *         platforms under the threshold are omitted. Hence "Main platforms",
+ *         which reports rather than claims completeness. @see site/config.js
+ */
+function buildPlatformRows(rows) {
+  if (!rows || !rows.length) return '';
+  var items = rows.map(function (r) {
+    return '<li class="talent-platform">' +
+      '<span class="talent-platform-icon">' + (ICONS[r.key] || '') + '</span>' +
+      '<span class="talent-platform-name">' + r.label + '</span>' +
+      '<span class="talent-platform-figs">' +
+        '<span class="fig fig-followers">' + r.followers + '</span>' +
+        '<span class="talent-platform-sep">·</span>' +
+        '<span class="fig fig-views">' + r.views + ' views</span>' +
+        '<span class="talent-platform-sep">·</span>' +
+        '<span class="fig">' + r.engagementRate + '</span>' +
+      '</span>' +
+    '</li>';
+  }).join('');
+  return '<div class="talent-platforms">' +
+    '<p class="talent-platforms-lbl">Main platforms</p>' +
+    '<ul class="talent-platform-list">' + items + '</ul>' +
+  '</div>';
+}
+
 function buildTalentCard(creator) {
   var socials = Object.entries(creator.socials)
     .map(function(entry) { return buildSocialLink(entry[0], entry[1]); })
@@ -1353,6 +1483,7 @@ function buildTalentCard(creator) {
         '<div class="talent-stat"><span class="stat-val">' + creator.likes + '</span><span class="stat-lbl">Likes</span></div>' +
         '<div class="talent-stat"><span class="stat-val">' + creator.engagementRate + '</span><span class="stat-lbl">Eng. Rate</span></div>' +
       '</div>' +
+      buildPlatformRows(creator.platformRows) +
       '<p class="talent-bio">' + creator.bio + '</p>' +
       '<div class="talent-socials">' + socials + '</div>' +
     '</div>' +

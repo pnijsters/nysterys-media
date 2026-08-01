@@ -83,6 +83,44 @@
     return { followers: 0, likes: 0, views: 0, interactions: 0, engViews: 0 };
   }
 
+  /* Display label per platform key. Keyed off the `platforms` map, so adding
+   * Instagram means adding one entry here and one in buildCreator. */
+  var PLATFORM_LABELS = { tiktok: 'TikTok', youtube: 'YouTube', instagram: 'Instagram' };
+
+  /**
+   * The per-platform rows the roster card renders under the combined figures.
+   *
+   * @param {object} platforms - creator.platforms map
+   * @returns {Array<{key:string,label:string,followers:string,views:string,engagementRate:string}>}
+   *          biggest audience first; formatted for direct render.
+   *
+   * @invariant A platform appears only once its audience clears
+   *            SITE_CONFIG.rosterCard.minFollowersForPlatformRow (a business
+   *            rule, not a data one: a channel too small to sell is noise on a
+   *            card whose job is to win brand deals).
+   * @gotcha Because small platforms are filtered out, these rows deliberately do
+   *         NOT sum to the combined hero figure above them. The card labels the
+   *         block so it never claims to be the full picture. Do not "fix" this
+   *         by re-deriving the hero from the visible rows: that would throw away
+   *         real audience from the number brands read first.
+   */
+  function platformRows(platforms) {
+    var min = (SITE_CONFIG.rosterCard || {}).minFollowersForPlatformRow || 0;
+    return Object.keys(platforms)
+      .map(function (k) { return { key: k, p: platforms[k] }; })
+      .filter(function (e) { return e.p.followers >= min; })
+      .sort(function (a, b) { return b.p.followers - a.p.followers; })
+      .map(function (e) {
+        return {
+          key:            e.key,
+          label:          PLATFORM_LABELS[e.key] || e.key,
+          followers:      fmtShort(e.p.followers),
+          views:          fmtShort(e.p.views),
+          engagementRate: Math.round((e.p.engViews ? e.p.interactions / e.p.engViews : 0) * 1000) / 10 + '%',
+        };
+      });
+  }
+
   function fetchVideos() {
     var cols = 'tiktok_username,total_play,total_like,total_comment,total_share,average_time_watched';
     return getAll('tiktok_video_insights_view?select=' + cols);
@@ -205,6 +243,7 @@
       photo:          cfg.photo,
       socials:        cfg.socials,
       platforms:      platforms,
+      platformRows:   platformRows(platforms),
       totals: {
         followers:      xFollowers,
         likes:          xLikes,
