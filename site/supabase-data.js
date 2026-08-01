@@ -87,6 +87,46 @@
    * Instagram means adding one entry here and one in buildCreator. */
   var PLATFORM_LABELS = { tiktok: 'TikTok', youtube: 'YouTube', instagram: 'Instagram' };
 
+  /* "TikTok, YouTube and Instagram" from the creator's actual accounts. Reads
+   * `socials` (not the stats map) so a platform they are genuinely on is named
+   * even before its feed exists, matching the About "Platforms" tile.
+   *
+   * @gotcha Ordered by audience, biggest first, NOT by the key order in
+   *         config.js: that order is arbitrary and put Instagram (no data at
+   *         all) ahead of YouTube. A platform with no feed yet sorts last.
+   */
+  function platformSentence(socials, platforms) {
+    var names = Object.keys(socials || {})
+      .sort(function (a, b) {
+        var fa = (platforms[a] || {}).followers || -1;
+        var fb = (platforms[b] || {}).followers || -1;
+        return fb - fa;
+      })
+      .map(function (k) { return PLATFORM_LABELS[k] || k; });
+    if (names.length < 2) return names[0] || '';
+    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
+  /**
+   * Substitute {placeholders} in a bio with live figures.
+   *
+   * @param {string} tpl - bio text from SITE_CONFIG, may contain {followers} etc
+   * @param {object} vars - placeholder name to already-formatted value
+   * @returns {string} bio with every known placeholder replaced
+   *
+   * @invariant Bios carry NO hard-coded figures. Mys's once claimed "1.4 million
+   *            followers and 54 million likes" and drifted to being wrong by
+   *            300K followers and 23M likes, sitting inches under the correct
+   *            numbers on the same card. An unknown placeholder is left intact
+   *            rather than blanked, so a typo is visible instead of silently
+   *            deleting words from a sentence on the public site.
+   */
+  function fillBio(tpl, vars) {
+    return String(tpl || '').replace(/\{(\w+)\}/g, function (whole, key) {
+      return Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : whole;
+    });
+  }
+
   /**
    * The per-platform rows the roster card renders under the combined figures.
    *
@@ -234,7 +274,13 @@
       id:             cfg.id,
       name:           cfg.name,
       tag:            cfg.tag,
-      bio:            cfg.bio,
+      bio:            fillBio(cfg.bio, {
+        followers:      fmtShort(xFollowers),
+        likes:          fmtShort(xLikes),
+        views:          fmtShort(xViews),
+        engagementRate: Math.round(xEngRate * 1000) / 10 + '%',
+        platforms:      platformSentence(cfg.socials, platforms),
+      }),
       /* Headline figures are cross-platform (see file header). */
       followers:      fmtShort(xFollowers),
       likes:          fmtShort(xLikes),
