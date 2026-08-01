@@ -1,4 +1,13 @@
-/* config.js: static site data that does not come from Supabase */
+/**
+ * site/config.js - static public-site data that does not come from Supabase.
+ *
+ * Loaded before supabase-data.js, which reads `creators[id]` to know which feed
+ * rows belong to whom: `tiktokHandle` keys the tiktok_* views,
+ * `youtubeAccountId` keys yt_channel_stats_view.account__account_id.
+ *
+ * @gotcha `socials` doubles as the source for the About "Platforms" tile, so a
+ *         platform listed here is counted whether or not its stats feed exists.
+ */
 var SITE_CONFIG = {
   creators: {
     kym: {
@@ -8,6 +17,7 @@ var SITE_CONFIG = {
       bio: 'Kym is a lifestyle and fashion creator known for her fit checks, authentic wasian perspective, and JROTC content. With a natural presence on camera and a growing audience, she connects with fans through real, relatable storytelling.',
       photo: 'site/kym.jpg',
       tiktokHandle: 'kymchi_n_crackers',
+      youtubeAccountId: 'UCr7Xef4lCMrp9OtlkuGCcVw',
       socials: {
         tiktok:    'https://www.tiktok.com/@kymchi_n_crackers',
         instagram: 'https://www.instagram.com/glittery.unicorn.farts/',
@@ -73,6 +83,7 @@ var SITE_CONFIG = {
       bio: 'Mys is a breakout lifestyle and trend creator with over 1.4 million followers and 54 million likes on TikTok. Known for her magnetic energy, swag-forward content, and deeply personal storytelling, she has built one of the most engaged young audiences on the platform.',
       photo: 'site/mys.jpg',
       tiktokHandle: 'mysthegreat',
+      youtubeAccountId: 'UCXwaen66ayFBKg0atM2PRIg',
       socials: {
         tiktok:    'https://www.tiktok.com/@mysthegreat',
         instagram: 'https://www.instagram.com/therealmysthegreat/',

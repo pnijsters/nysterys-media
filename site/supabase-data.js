@@ -1,13 +1,44 @@
-/* supabase-data.js: fetches live creator stats from Supabase and returns
-   the same data shape the pages previously read from data.json.
-   Requires config.js to be loaded first (SITE_CONFIG). */
+/**
+ * site/supabase-data.js - live creator stats for the public marketing pages.
+ *
+ * Fetches every platform feed with the ANON key and returns the data shape the
+ * pages previously read from data.json. Requires config.js (SITE_CONFIG) first.
+ *
+ * Used by: index.html, creator.html, media-kit.html, rate-card.html.
+ *
+ * The headline creator fields (followers / likes / engagementRate) and the
+ * About tiles are CROSS-PLATFORM totals: TikTok + YouTube today, Instagram the
+ * moment its feed lands. Per-platform detail stays in `platforms`, and the
+ * TikTok-only deep dive (view distribution, audience, watch time) stays in
+ * `tiktokStats` because the media kit and rate card price TikTok posts off it.
+ *
+ * @gotcha Every feed here is read as an unauthenticated visitor, so each view
+ *         needs its own `grant select ... to anon`. Recreating a view drops the
+ *         grant and silently blanks the public site.
+ * @gotcha YouTube like/comment/share counts are DAILY deltas, not lifetime
+ *         per-video counters like TikTok's. See buildYouTube.
+ */
 (function () {
   var URL  = 'https://rnntuxabccnphfvvvaks.supabase.co';
   var KEY  = 'sb_publishable_uTUIIpWaYYgke_5rtyhUnw_0lMfHI3c';
   var HDRS = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY };
+  var PAGE = 1000; // PostgREST caps a single response at 1000 rows.
 
   function get(path) {
     return fetch(URL + '/rest/v1/' + path, { headers: HDRS }).then(function (r) { return r.json(); });
+  }
+
+  /* Page through a feed until a short page proves the end. Used for anything
+   * whose row count grows without bound (every video ever, every sync day). */
+  function getAll(path, offset, acc) {
+    offset = offset || 0;
+    acc    = acc    || [];
+    var sep = path.indexOf('?') === -1 ? '?' : '&';
+    return get(path + sep + 'limit=' + PAGE + '&offset=' + offset).then(function (rows) {
+      if (!rows || !rows.length) return acc;
+      var all = acc.concat(rows);
+      return rows.length < PAGE ? all : getAll(path, offset + PAGE, all);
+    });
   }
 
   function fmtShort(n) {
@@ -15,6 +46,12 @@
     if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
     if (n >= 1000)    return Math.round(n / 1000) + 'K';
     return n.toLocaleString();
+  }
+
+  function num(v) { return Number(v) || 0; }
+
+  function sum(rows, key) {
+    return rows.reduce(function (s, r) { return s + num(r[key]); }, 0);
   }
 
   function median(arr) {
@@ -39,21 +76,63 @@
     });
   }
 
-  /* Fetch all videos: Supabase caps at 1000 rows per request so page in parallel. */
-  function fetchVideos() {
-    var cols = 'tiktok_username,total_play,total_like,total_comment,total_share,average_time_watched';
-    var pg   = function (off) {
-      return get('tiktok_video_insights_view?select=' + cols + '&limit=1000&offset=' + off);
-    };
-    return pg(0).then(function (p1) {
-      if (p1.length < 1000) return p1;
-      return Promise.all([pg(1000), pg(2000)]).then(function (rest) {
-        return p1.concat(rest[0]).concat(rest[1]);
-      });
-    });
+  /* An empty platform: the shape every build*() returns, so a creator with no
+   * account on a platform (or a feed that has not landed yet) sums to zero
+   * instead of poisoning the totals with NaN. */
+  function emptyPlatform() {
+    return { followers: 0, likes: 0, views: 0, interactions: 0, engViews: 0 };
   }
 
-  function buildCreator(cfg, profiles, videos, genders, countries) {
+  function fetchVideos() {
+    var cols = 'tiktok_username,total_play,total_like,total_comment,total_share,average_time_watched';
+    return getAll('tiktok_video_insights_view?select=' + cols);
+  }
+
+  function fetchYouTube() {
+    var cols = 'account__account_id,report__date,channel_totals__subscribers,channel_totals__views,'
+             + 'performance__views,interactions__likes,interactions__comments,interactions__shares';
+    return getAll('yt_channel_stats_view?select=' + cols + '&order=report__date.desc');
+  }
+
+  /**
+   * Roll one creator's YouTube channel into the shared platform shape.
+   *
+   * @param {object} cfg - SITE_CONFIG.creators[id]
+   * @param {Array}  rows - every yt_channel_stats_view row, newest date first
+   * @returns {{followers:number,likes:number,views:number,interactions:number,engViews:number,dataAsOf:string}}
+   *
+   * @gotcha `channel_totals__*` are cumulative lifetime snapshots (take the
+   *         latest row); `interactions__*` and `performance__views` are DAILY
+   *         deltas (sum them). Mixing the two bases understates any rate built
+   *         from them, so engagement pairs the daily interactions with the
+   *         daily views (engViews), never with lifetime views.
+   * @gotcha The daily feed starts 2026-02-20, so YouTube likes are a floor, not
+   *         a true lifetime count. It covers 98%+ of both channels' lifetime
+   *         views, so the gap is small, and the About tiles read "+".
+   */
+  function buildYouTube(cfg, rows) {
+    if (!cfg.youtubeAccountId) return emptyPlatform();
+    var mine = rows.filter(function (r) { return r.account__account_id === cfg.youtubeAccountId; });
+    if (!mine.length) return emptyPlatform();
+
+    /* Newest row carrying a real subscriber count. Mirrors the TikTok
+     * skip-the-zero-row guard: a sync that lands mid-write must never render
+     * "0 followers" on the public site. */
+    var latest = mine.find(function (r) { return num(r.channel_totals__subscribers) > 0; }) || {};
+
+    return {
+      followers:    num(latest.channel_totals__subscribers),
+      views:        num(latest.channel_totals__views),
+      likes:        sum(mine, 'interactions__likes'),
+      interactions: sum(mine, 'interactions__likes')
+                  + sum(mine, 'interactions__comments')
+                  + sum(mine, 'interactions__shares'),
+      engViews:     sum(mine, 'performance__views'),
+      dataAsOf:     latest.report__date || '',
+    };
+  }
+
+  function buildCreator(cfg, profiles, videos, genders, countries, ytRows) {
     /* Profile: most recent row with a real follower count. Coupler stamps a
      * zero-follower row at the start of every sync day; falling through to the
      * next row prevents "0 followers" from rendering on the public site. */
@@ -63,14 +142,15 @@
     var followers  = Number(profile.followers_count) || 0;
     var latestDate = profile.date || '';
 
-    /* Video aggregates */
+    /* Video aggregates. TikTok rows are per-video LIFETIME counters, so summing
+     * them gives a true all-time total (unlike YouTube's daily deltas). */
     var vids        = videos.filter(function (v) { return v.tiktok_username === cfg.tiktokHandle; });
     var plays       = vids.map(function (v) { return Number(v.total_play)  || 0; });
     var totalViews  = plays.reduce(function (s, v) { return s + v; }, 0);
-    var totalLikes  = vids.reduce(function (s, v) { return s + (Number(v.total_like)    || 0); }, 0);
-    var totalShares = vids.reduce(function (s, v) { return s + (Number(v.total_share)   || 0); }, 0);
-    var totalCmts   = vids.reduce(function (s, v) { return s + (Number(v.total_comment) || 0); }, 0);
-    var totalWatch  = vids.reduce(function (s, v) { return s + (Number(v.average_time_watched) || 0); }, 0);
+    var totalLikes  = sum(vids, 'total_like');
+    var totalShares = sum(vids, 'total_share');
+    var totalCmts   = sum(vids, 'total_comment');
+    var totalWatch  = sum(vids, 'average_time_watched');
     var avgViews    = vids.length ? Math.round(totalViews  / vids.length) : 0;
     var medViews    = Math.round(median(plays));
     var avgWatch    = vids.length ? totalWatch / vids.length : 0;
@@ -92,17 +172,45 @@
     var countryData = cRows.map(function (r) { return { label: r.country, value: Math.round(r.percentage * 1000) / 10 }; });
     var usPct       = (cRows.find(function (r) { return r.country === 'United States'; }) || {}).percentage || 0;
 
+    /* Per-platform rollup. Instagram slots in here as a third entry the day its
+     * feed lands; nothing downstream needs to change. */
+    var platforms = {
+      tiktok: {
+        followers:    followers,
+        likes:        totalLikes,
+        views:        totalViews,
+        interactions: totalLikes + totalCmts + totalShares,
+        engViews:     totalViews,
+      },
+      youtube: buildYouTube(cfg, ytRows),
+    };
+    var all = Object.keys(platforms).map(function (k) { return platforms[k]; });
+    var xFollowers = all.reduce(function (s, p) { return s + p.followers;    }, 0);
+    var xLikes     = all.reduce(function (s, p) { return s + p.likes;        }, 0);
+    var xViews     = all.reduce(function (s, p) { return s + p.views;        }, 0);
+    var xInter     = all.reduce(function (s, p) { return s + p.interactions; }, 0);
+    var xEngViews  = all.reduce(function (s, p) { return s + p.engViews;     }, 0);
+    var xEngRate   = xEngViews ? xInter / xEngViews : 0;
+
     return {
       id:             cfg.id,
       name:           cfg.name,
       tag:            cfg.tag,
       bio:            cfg.bio,
-      followers:      fmtShort(followers),
-      likes:          fmtShort(totalLikes),
-      engagementRate: Math.round(engRate * 1000) / 10 + '%',
+      /* Headline figures are cross-platform (see file header). */
+      followers:      fmtShort(xFollowers),
+      likes:          fmtShort(xLikes),
+      engagementRate: Math.round(xEngRate * 1000) / 10 + '%',
       tiktokHandle:   cfg.tiktokHandle,
       photo:          cfg.photo,
       socials:        cfg.socials,
+      platforms:      platforms,
+      totals: {
+        followers:      xFollowers,
+        likes:          xLikes,
+        views:          xViews,
+        engagementRate: Math.round(xEngRate * 1000) / 10 / 100,
+      },
       tiktokStats: {
         followers:           followers,
         allTimeViews:        totalViews,
@@ -129,6 +237,11 @@
     };
   }
 
+  /**
+   * Load every public feed and return the site-wide data object.
+   *
+   * @returns {Promise<{about:object, roster:Array, mediaKit:object}>}
+   */
   window.loadSiteData = function () {
     var profileCols  = 'tiktok_username,date,followers_count';
     var genderCols   = 'tiktok_username,date,gender,percentage';
@@ -141,28 +254,39 @@
       fetchVideos(),
       get('tiktok_audience_gender_view?select='  + genderCols  + '&order=date.desc&limit=12'),
       get('tiktok_audience_country_view?select=' + countryCols + '&order=date.desc&limit=60'),
+      fetchYouTube(),
     ]).then(function (res) {
       var profiles  = res[0];
       var videos    = res[1];
       var genders   = res[2];
       var countries = res[3];
+      var ytRows    = res[4];
 
       var roster = ['kym', 'mys'].map(function (id) {
-        return buildCreator(SITE_CONFIG.creators[id], profiles, videos, genders, countries);
+        return buildCreator(SITE_CONFIG.creators[id], profiles, videos, genders, countries, ytRows);
       });
 
-      var totalFollowers = roster.reduce(function (s, c) { return s + c.tiktokStats.followers; },    0);
-      var totalLikes     = roster.reduce(function (s, c) { return s + c.tiktokStats.allTimeLikes; }, 0);
-      var totalViews     = roster.reduce(function (s, c) { return s + c.tiktokStats.allTimeViews; }, 0);
+      var totalFollowers = roster.reduce(function (s, c) { return s + c.totals.followers; }, 0);
+      var totalLikes     = roster.reduce(function (s, c) { return s + c.totals.likes;     }, 0);
+      var totalViews     = roster.reduce(function (s, c) { return s + c.totals.views;     }, 0);
       var femaleAvg      = roster.reduce(function (s, c) { return s + c.tiktokStats.femaleAudience; }, 0) / roster.length;
+
+      /* Platforms tile counts the platforms the roster actually has accounts on
+       * (config socials), NOT the feeds we have stats for. Instagram is live for
+       * both creators while its Coupler feed is still pending, so counting feeds
+       * would quietly drop the tile from 3 to 2. */
+      var platformCount = roster.reduce(function (set, c) {
+        Object.keys(c.socials || {}).forEach(function (k) { set[k] = true; });
+        return set;
+      }, {});
 
       return {
         about: {
           stats: [
             { value: fmtShort(totalFollowers) + '+', label: 'Combined Followers' },
             { value: fmtShort(totalLikes)     + '+', label: 'Combined Likes'     },
-            { value: '3',                            label: 'Platforms'          },
-            { value: '2',                            label: 'Creators'           },
+            { value: String(Object.keys(platformCount).length), label: 'Platforms' },
+            { value: String(roster.length),          label: 'Creators'           },
           ]
         },
         roster: roster,
