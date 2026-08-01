@@ -5,8 +5,14 @@
  * rows belong to whom: `tiktokHandle` keys the tiktok_* views,
  * `youtubeAccountId` keys yt_channel_stats_view.account__account_id.
  *
- * @gotcha `socials` doubles as the source for the About "Platforms" tile, so a
- *         platform listed here is counted whether or not its stats feed exists.
+ * @gotcha `socials` doubles as the source for the About "Platforms" tile and the
+ *         `{platforms}` bio placeholder, so a platform listed here is named and
+ *         counted whether or not its stats feed exists.
+ * @gotcha Bios must NEVER hard-code a figure. Use the placeholders
+ *         `{followers}` `{likes}` `{views}` `{engagementRate}` `{platforms}`,
+ *         filled from live data by fillBio() in site/supabase-data.js. A typed
+ *         number goes stale silently and ends up contradicting the stats
+ *         rendered inches away on the same card.
  */
 var SITE_CONFIG = {
   /* Homepage roster card. A platform earns its own stats row only once its
@@ -87,7 +93,7 @@ var SITE_CONFIG = {
       id: 'mys',
       name: 'Mys',
       tag: 'Content Creator',
-      bio: 'Mys is a breakout lifestyle and trend creator with over 1.4 million followers and 54 million likes on TikTok. Known for her magnetic energy, swag-forward content, and deeply personal storytelling, she has built one of the most engaged young audiences on the platform.',
+      bio: 'Mys is a breakout lifestyle and trend creator with over {followers} followers and {likes} likes across {platforms}. Known for her magnetic energy, swag-forward content, and deeply personal storytelling, she has built one of the most engaged young audiences online.',
       photo: 'site/mys.jpg',
       tiktokHandle: 'mysthegreat',
       youtubeAccountId: 'UCXwaen66ayFBKg0atM2PRIg',
