@@ -36,49 +36,7 @@ var SITE_CONFIG = {
         instagram: 'https://www.instagram.com/glittery.unicorn.farts/',
         youtube:   'https://www.youtube.com/@ShimmieKymmie'
       },
-      contentCategories: ['Fashion', 'Lifestyle', 'Beauty', 'Teenage', 'School', 'College', 'JROTC'],
-      rateCard: {
-        currency: 'USD',
-        packages: [
-          {
-            id:         'single',
-            name:       'Single Post',
-            desc:       'One organic TikTok video created, drafted for approval, and posted to the creator\'s account.',
-            priceMin:   75,
-            priceMax:   125,
-            priceFixed: null,
-            unit:       'per post'
-          },
-          {
-            id:         'campaign',
-            name:       'Campaign Post',
-            desc:       '5 posts over an agreed period at a preferred rate. Sustained audience exposure at $80 per post versus the standard single post rate.',
-            priceMin:   null,
-            priceMax:   null,
-            priceFixed: 400,
-            unit:       'flat (5 posts, $80 each)'
-          }
-        ],
-        addons: [
-          { name: 'Exclusivity',   desc: 'Prevents the creator from posting for directly competing brands for an agreed period.' },
-          { name: 'Usage Rights',  desc: 'License to repost or repurpose the content on your own channels and paid media.' },
-          { name: 'Spark Code',    desc: 'A TikTok-issued code that lets you boost the organic post as a paid ad directly from the creator\'s account, preserving authentic engagement.' }
-        ],
-        addonNote: 'All add-ons are priced on request. Contact us with your requirements and we will provide a tailored quote.',
-        cpm: {
-          medianSingleMin: 4.72,
-          medianSingleMax: 7.86,
-          campaignPerPost: 5.03,
-          note: 'CPM is calculated on median views per post. Actual CPM varies by video. The view distribution chart shows why: high-performing posts deliver significantly lower CPM.',
-          viewDistribution: [
-            { label: '<10K',     cpm: 20.00 },
-            { label: '10K-50K',  cpm: 3.33  },
-            { label: '50K-250K', cpm: 0.67  },
-            { label: '250K-1M',  cpm: 0.16  },
-            { label: '1M+',      cpm: 0.07  }
-          ]
-        }
-      }
+      contentCategories: ['Fashion', 'Lifestyle', 'Beauty', 'Teenage', 'School', 'College', 'JROTC']
     },
     mys: {
       id: 'mys',
@@ -94,48 +52,6 @@ var SITE_CONFIG = {
         youtube:   'https://www.youtube.com/@Mys-The-Great'
       },
       contentCategories: ['Fashion', 'Lifestyle', 'Music', 'Beauty', 'Teenage', 'School', 'Concerts'],
-      rateCard: {
-        currency: 'USD',
-        packages: [
-          {
-            id:         'single',
-            name:       'Single Post',
-            desc:       'One organic TikTok video created, drafted for approval, and posted to the creator\'s account.',
-            priceMin:   500,
-            priceMax:   800,
-            priceFixed: null,
-            unit:       'per post'
-          },
-          {
-            id:         'campaign',
-            name:       'Campaign Post',
-            desc:       '5 posts over an agreed period at a preferred rate. Sustained audience exposure at $400 per post versus the standard single post rate.',
-            priceMin:   null,
-            priceMax:   null,
-            priceFixed: 2000,
-            unit:       'flat (5 posts, $400 each)'
-          }
-        ],
-        addons: [
-          { name: 'Exclusivity',   desc: 'Prevents the creator from posting for directly competing brands for an agreed period.' },
-          { name: 'Usage Rights',  desc: 'License to repost or repurpose the content on your own channels and paid media.' },
-          { name: 'Spark Code',    desc: 'A TikTok-issued code that lets you boost the organic post as a paid ad directly from the creator\'s account, preserving authentic engagement.' }
-        ],
-        addonNote: 'All add-ons are priced on request. Contact us with your requirements and we will provide a tailored quote.',
-        cpm: {
-          medianSingleMin: 1.90,
-          medianSingleMax: 3.04,
-          campaignPerPost: 1.52,
-          note: 'CPM is calculated on median views per post. Actual CPM varies by video. The view distribution chart shows why: high-performing posts deliver significantly lower CPM.',
-          viewDistribution: [
-            { label: '<10K',     cpm: 130.00 },
-            { label: '10K-50K',  cpm: 21.67  },
-            { label: '50K-250K', cpm: 4.33   },
-            { label: '250K-1M',  cpm: 1.04   },
-            { label: '1M+',      cpm: 0.43   }
-          ]
-        }
-      }
     }
   },
   mediaKit: {

@@ -4,13 +4,17 @@
  * Fetches every platform feed with the ANON key and returns the data shape the
  * pages previously read from data.json. Requires config.js (SITE_CONFIG) first.
  *
- * Used by: index.html, creator.html, media-kit.html, rate-card.html.
+ * Used by: index.html, creator.html, media-kit.html.
  *
  * The headline creator fields (followers / likes / engagementRate) and the
  * About tiles are CROSS-PLATFORM totals: TikTok + YouTube today, Instagram the
  * moment its feed lands. Per-platform detail stays in `platforms`, and the
  * TikTok-only deep dive (view distribution, audience, watch time) stays in
- * `tiktokStats` because the media kit and rate card price TikTok posts off it.
+ * `tiktokStats` because the media kit and the creator page chart it.
+ *
+ * Pricing is NOT here. The public rate card was removed 2026-08-01; rates now
+ * live per agency in the token-gated dashboard, so the public site never
+ * carries a price. @see CLAUDE.md "Agency rate cards"
  *
  * @gotcha Every feed here is read as an unauthenticated visitor, so each view
  *         needs its own `grant select ... to anon`. Recreating a view drops the
@@ -331,7 +335,6 @@
         topCountries: countryData,
       },
       contentCategories: cfg.contentCategories,
-      rateCard:          cfg.rateCard,
     };
   }
 
