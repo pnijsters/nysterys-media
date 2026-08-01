@@ -1691,54 +1691,10 @@ button:focus-visible,
 }
 
 /* ─── Rates tab ──────────────────────────────────────────────────────────────
-   Read-only pricing for this agency. The platform toggles are the point: a
-   static list would bury the cross-post upsell in a footnote, so prices move as
-   the brand switches a platform on. Orange stays the single accent (the price),
-   with the arithmetic beneath it stepped back to --dim. */
+   A price list, not a configurator. Each package is one line: what it is, which
+   platforms it covers, what it costs. Nothing here is interactive. */
 
-.rates-lead {
-  display: flex;
-  align-items: baseline;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-}
-
-.rates-toggles {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.rate-toggle {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--dim);
-  cursor: pointer;
-  font-family: var(--font-body);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  padding: 7px 14px;
-  transition: color var(--transition), border-color var(--transition), background-color var(--transition);
-}
-
-/* :not(.rate-toggle-on) is load-bearing. A bare .rate-toggle:hover has
-   specificity (0,2,0) and beats .rate-toggle-on at (0,1,0), so a SELECTED
-   toggle rendered grey for as long as the pointer sat on it, which is exactly
-   the moment right after you click it. */
-.rate-toggle:not(.rate-toggle-on):hover { color: var(--muted); border-color: var(--surface3); }
-
-.rate-toggle-on {
-  color: var(--orange);
-  border-color: var(--orange);
-  background: rgba(255, 92, 0, 0.08);
-}
-
-.rates-list {
-  border-top: 1px solid var(--border);
-}
+.rates-list { border-top: 1px solid var(--border); }
 
 .rate-row {
   display: flex;
@@ -1748,11 +1704,6 @@ button:focus-visible,
   padding: 18px 0;
   border-bottom: 1px solid var(--border);
 }
-
-/* A combination this package is not sold on. Dimmed rather than hidden: the
-   brand needs to see that the package exists but the placement is not offered,
-   otherwise the list appears to lose rows as they toggle. */
-.rate-row-off { opacity: 0.45; }
 
 .rate-name {
   font-family: var(--font-display);
@@ -1769,39 +1720,14 @@ button:focus-visible,
   max-width: 60ch;
 }
 
-.rate-row-price {
-  text-align: right;
-  flex-shrink: 0;
-}
-
 .rate-amount {
   font-family: var(--font-display);
   font-size: 28px;
   letter-spacing: 0.03em;
   color: var(--orange);
   line-height: 1;
-}
-
-.rate-breakdown {
-  color: var(--dim);
-  font-size: 12px;
-  margin-top: 6px;
+  flex-shrink: 0;
   font-variant-numeric: tabular-nums;
-}
-
-/* A pinned price states that it is negotiated instead of showing arithmetic.
-   Displaying a sum that does not reach the number would undermine it. */
-.rate-breakdown-pinned {
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  font-size: 11px;
-}
-
-.rate-na {
-  color: var(--dim);
-  font-size: 12px;
-  max-width: 22ch;
 }
 
 .rates-addons { margin-top: 40px; }
@@ -1841,10 +1767,5 @@ button:focus-visible,
 }
 
 @media (max-width: 640px) {
-  .rate-row {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .rate-row-price { text-align: left; }
+  .rate-row { flex-direction: column; gap: 8px; }
 }
