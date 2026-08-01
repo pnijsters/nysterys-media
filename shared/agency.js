@@ -1523,6 +1523,205 @@
    * Generic by design - there is no per-agency contact channel in the payload,
    * so it points back to the Nysterys contact + nysterys.com.
    */
+  // ── Rates ──────────────────────────────────────────────────────────────────
+
+  /**
+   * Price one package for the selected platforms.
+   *
+   * MIRROR of hub-src/src/utils/rateCard.js `priceSelection`. That module has the
+   * Jest suite that specifies this behaviour; this file is plain browser JS and
+   * cannot import it. Change both together.
+   *
+   * @gotcha Override matching is SET EQUALITY, not subset: a pin on
+   *         [TikTok, YouTube] must NOT price [TikTok, YouTube, Instagram], since
+   *         a third placement is more work and needs its own decision.
+   * @gotcha A selected platform with no price row makes the package unavailable
+   *         rather than free. Quoting a placement at $0 because a row is missing
+   *         would commit the creator to unpaid work.
+   */
+  function priceSelection(pkg, selectedIds) {
+    var selected = selectedIds.slice().sort();
+    var quantity = Math.max(1, Number(pkg.quantity) || 1);
+
+    var pin = null;
+    (pkg.overrides || []).forEach(function (o) {
+      var ids = (o.platform_ids || []).slice().sort();
+      if (ids.length === selected.length && ids.every(function (v, i) { return v === selected[i]; })) pin = o;
+    });
+    if (pin) {
+      return { available: true, total: Number(pin.price) || 0, isOverride: true, note: pin.note || null, lines: [] };
+    }
+
+    if (!selected.length) return { available: false, total: 0, isOverride: false, note: null, lines: [] };
+
+    var byPlatform = {};
+    (pkg.platform_prices || []).forEach(function (p) { byPlatform[p.platform_id] = p; });
+
+    var missing = selected.filter(function (id) { return !byPlatform[id]; });
+    if (missing.length) return { available: false, total: 0, isOverride: false, note: null, lines: [] };
+
+    var lines = selected.map(function (id) {
+      var per = Number(byPlatform[id].price_per_post) || 0;
+      return { platform_id: id, pricePerPost: per, lineTotal: per * quantity };
+    });
+    var total = Math.round(lines.reduce(function (s, l) { return s + l.lineTotal; }, 0) * 100) / 100;
+    return { available: true, total: total, isOverride: false, note: null, lines: lines, quantity: quantity };
+  }
+
+  /**
+   * Render the Rates tab: platform toggles that re-price every package live.
+   *
+   * The toggles are the point. A static list would bury the cross-post upsell in
+   * a footnote; letting the brand switch a platform on and watch each price move
+   * makes the bundle something they feel rather than read.
+   *
+   * @param {object} rateCard - payload.rate_card
+   * @param {Array} platforms - payload.platforms, [{id, name}]
+   * @param {HTMLElement} container
+   */
+  function renderRates(rateCard, platforms, container) {
+    container.innerHTML = '';
+    if (!rateCard) return;
+
+    var nameById = {};
+    platforms.forEach(function (p) { nameById[p.id] = p.name; });
+
+    // Only offer platforms this card actually prices, so a toggle can never
+    // make every package read "not offered".
+    var offered = platforms.filter(function (p) {
+      return (rateCard.packages || []).some(function (pkg) {
+        return (pkg.platform_prices || []).some(function (pp) { return pp.platform_id === p.id; })
+          || (pkg.overrides || []).some(function (o) { return (o.platform_ids || []).indexOf(p.id) !== -1; });
+      });
+    });
+    if (!offered.length) return;
+
+    // Start on the single most-priced platform rather than all of them: the
+    // opening number should be the entry price, with the upsell one tap away.
+    var selected = [offered[0].id];
+
+    var wrap = el('div', 'rates-section');
+
+    var lead = el('div', 'rates-lead');
+    var leadLabel = el('div', 'section-label');
+    leadLabel.textContent = 'Where it posts';
+    var toggles = el('div', 'rates-toggles');
+    lead.appendChild(leadLabel);
+    lead.appendChild(toggles);
+    wrap.appendChild(lead);
+
+    var list = el('div', 'rates-list');
+    wrap.appendChild(list);
+
+    function draw() {
+      // Toggles
+      toggles.innerHTML = '';
+      offered.forEach(function (p) {
+        var on  = selected.indexOf(p.id) !== -1;
+        var btn = el('button', 'rate-toggle' + (on ? ' rate-toggle-on' : ''));
+        btn.type = 'button';
+        btn.textContent = p.name;
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.addEventListener('click', function () {
+          var i = selected.indexOf(p.id);
+          // Never allow an empty selection: with nothing ticked every package
+          // reads "unavailable", which looks broken rather than informative.
+          if (i === -1) selected.push(p.id);
+          else if (selected.length > 1) selected.splice(i, 1);
+          draw();
+        });
+        toggles.appendChild(btn);
+      });
+
+      // Packages
+      list.innerHTML = '';
+      (rateCard.packages || []).forEach(function (pkg) {
+        var r   = priceSelection(pkg, selected);
+        var row = el('div', 'rate-row' + (r.available ? '' : ' rate-row-off'));
+
+        var main = el('div', 'rate-row-main');
+        var nm   = el('div', 'rate-name');
+        nm.textContent = pkg.name;
+        main.appendChild(nm);
+
+        var meta = [];
+        if (pkg.quantity > 1) meta.push(pkg.quantity + ' posts');
+        if (pkg.unit) meta.push(pkg.unit);
+        if (pkg.description) meta.push(pkg.description);
+        if (meta.length) {
+          var mt = el('div', 'rate-meta');
+          mt.textContent = meta.join(' · ');
+          main.appendChild(mt);
+        }
+        row.appendChild(main);
+
+        var right = el('div', 'rate-row-price');
+        if (!r.available) {
+          var na = el('div', 'rate-na');
+          na.textContent = 'Not offered on this combination';
+          right.appendChild(na);
+        } else {
+          var amt = el('div', 'rate-amount');
+          amt.textContent = fmtMoney(r.total);
+          right.appendChild(amt);
+
+          var sub = el('div', 'rate-breakdown');
+          if (r.isOverride) {
+            // Showing arithmetic that does not reach a pinned number undermines
+            // it, so a pin states that it is negotiated and stays silent on sums.
+            sub.textContent = r.note ? ('Negotiated · ' + r.note) : 'Negotiated rate';
+            sub.className = 'rate-breakdown rate-breakdown-pinned';
+          } else {
+            sub.textContent = r.lines.map(function (l) {
+              return nameById[l.platform_id] + ' ' + fmtMoney(l.pricePerPost)
+                + (r.quantity > 1 ? (' x ' + r.quantity) : '');
+            }).join('  +  ');
+          }
+          right.appendChild(sub);
+        }
+        row.appendChild(right);
+        list.appendChild(row);
+      });
+    }
+
+    draw();
+
+    // Add-ons
+    if ((rateCard.addons || []).length) {
+      var addWrap = el('div', 'rates-addons');
+      var addLbl  = el('div', 'section-label');
+      addLbl.textContent = 'Add-ons';
+      addWrap.appendChild(addLbl);
+      rateCard.addons.forEach(function (a) {
+        var r = el('div', 'rate-addon');
+        var l = el('div', 'rate-addon-main');
+        var n = el('div', 'rate-addon-name');
+        n.textContent = a.name;
+        l.appendChild(n);
+        if (a.description) {
+          var d = el('div', 'rate-addon-desc');
+          d.textContent = a.description;
+          l.appendChild(d);
+        }
+        var p = el('div', 'rate-addon-price');
+        // A null price means "priced on request", never $0.
+        p.textContent = a.price === null ? 'On request' : fmtMoney(a.price);
+        r.appendChild(l);
+        r.appendChild(p);
+        addWrap.appendChild(r);
+      });
+      wrap.appendChild(addWrap);
+    }
+
+    if (rateCard.notes) {
+      var note = el('p', 'rates-note');
+      note.textContent = rateCard.notes;
+      wrap.appendChild(note);
+    }
+
+    container.appendChild(wrap);
+  }
+
   function renderClosingCta(dash) {
     var first = (dash.creator_name || '').split(' ')[0];
     var cta   = el('div', 'closing-cta');
@@ -1557,6 +1756,69 @@
    *
    * @param {object} data - { dashboard, campaigns } from the edge function.
    */
+  /**
+   * Show the enabled panels and, when there is more than one, wire a real ARIA
+   * tablist over them.
+   *
+   * @param {HTMLElement} tabsEl - the nav that holds the tab buttons
+   * @param {Array<{tab:HTMLElement, panel:HTMLElement}>} panels - enabled, in order
+   *
+   * @gotcha With exactly one panel the tab bar stays hidden. A lone tab is not a
+   *         choice, and a brand-new agency with rates only would otherwise see a
+   *         one-item tablist that looks like something failed to load.
+   * @gotcha Roving tabindex: only the selected tab is in the tab order, which is
+   *         what lets a keyboard user arrow between tabs rather than tabbing
+   *         through every one of them.
+   */
+  function activatePanels(tabsEl, panels) {
+    if (!panels.length) return;
+
+    if (panels.length === 1) {
+      panels[0].panel.removeAttribute('hidden');
+      return;
+    }
+
+    tabsEl.removeAttribute('hidden');
+    tabsEl.setAttribute('role', 'tablist');
+
+    panels.forEach(function (p) {
+      p.tab.removeAttribute('hidden');
+      p.tab.setAttribute('role', 'tab');
+      p.panel.setAttribute('role', 'tabpanel');
+      p.panel.setAttribute('aria-labelledby', p.tab.id);
+    });
+
+    function select(index) {
+      panels.forEach(function (p, i) {
+        var on = i === index;
+        p.tab.classList.toggle('tab-active', on);
+        p.tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        if (on) p.tab.removeAttribute('tabindex');
+        else    p.tab.setAttribute('tabindex', '-1');
+        if (on) p.panel.removeAttribute('hidden');
+        else    p.panel.hidden = true;
+      });
+    }
+
+    panels.forEach(function (p, i) {
+      p.tab.addEventListener('click', function () { select(i); });
+    });
+
+    tabsEl.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      e.preventDefault();
+      var cur = panels.findIndex(function (p) { return p.tab === document.activeElement; });
+      if (cur === -1) return;
+      var next = e.key === 'ArrowRight'
+        ? (cur + 1) % panels.length
+        : (cur - 1 + panels.length) % panels.length;
+      select(next);
+      panels[next].tab.focus();
+    });
+
+    select(0);
+  }
+
   function renderDashboard(data) {
     var dash      = data.dashboard;
     var campaigns = data.campaigns || [];
@@ -1577,66 +1839,41 @@
 
     dashboard.removeAttribute('hidden');
 
-    // Performance chart - only when there are campaigns with stats
-    if (scope !== 'payments_only') {
+    /* Panels are declared, then the tab bar is built from whichever are on.
+     * This replaced a hardcoded two-tab switcher driven by the `scope` enum:
+     * scope encodes COMBINATIONS, so a third panel would have taken it from 3
+     * values to 7 and a fourth to 15. Rates is a separate boolean for exactly
+     * that reason, and a brand-new agency can run rates-only with no campaigns
+     * behind it. @see shared_dashboards.show_rates */
+    var ratesPanel = document.getElementById('rates-panel');
+    var panels = [];
+
+    /* @gotcha Test scope POSITIVELY. Written as "scope !== 'payments_only'" and
+     * "scope !== 'campaigns_only'", a rates_only prospect link satisfies BOTH
+     * and renders empty Campaigns and Payments tabs to someone we have not even
+     * signed yet. */
+    var wantsCampaigns = scope === 'campaigns_only' || scope === 'campaigns_and_payments';
+    var wantsPayments  = scope === 'payments_only'  || scope === 'campaigns_and_payments';
+
+    if (wantsCampaigns) {
+      // Performance chart sits above the tabs, so it is gated on the same
+      // positive test rather than a "not payments_only" that a rates_only link
+      // would sail straight through.
       renderPerfChart(campaigns);
-    }
-
-    if (scope === 'campaigns_only') {
-      campPanel.removeAttribute('hidden');
       renderSoundCheck(campaigns, dash.agency_type, campPanel);
       renderCampaigns(campaigns, campPanel);
-
-    } else if (scope === 'payments_only') {
-      payPanel.removeAttribute('hidden');
-      renderPayments(campaigns, payPanel, payAddrs);
-
-    } else {
-      // campaigns_and_payments - tab switcher
-      tabsEl.removeAttribute('hidden');
-      tabsEl.setAttribute('role', 'tablist');
-      campPanel.removeAttribute('hidden');
-      renderSoundCheck(campaigns, dash.agency_type, campPanel);
-      renderCampaigns(campaigns, campPanel);
-      renderPayments(campaigns, payPanel, payAddrs);
-
-      var tabC = document.getElementById('tab-campaigns');
-      var tabP = document.getElementById('tab-payments');
-
-      // Wire the buttons as a real ARIA tablist so screen-reader and keyboard
-      // users perceive the relationship and can arrow between tabs. Roving
-      // tabindex: only the selected tab is in the tab order.
-      campPanel.setAttribute('role', 'tabpanel');
-      campPanel.setAttribute('aria-labelledby', 'tab-campaigns');
-      payPanel.setAttribute('role', 'tabpanel');
-      payPanel.setAttribute('aria-labelledby', 'tab-payments');
-      tabC.setAttribute('role', 'tab');
-      tabP.setAttribute('role', 'tab');
-
-      function activateTab(active, inactive, activePanel, inactivePanel) {
-        active.classList.add('tab-active');
-        active.setAttribute('aria-selected', 'true');
-        active.removeAttribute('tabindex');
-        inactive.classList.remove('tab-active');
-        inactive.setAttribute('aria-selected', 'false');
-        inactive.setAttribute('tabindex', '-1');
-        activePanel.removeAttribute('hidden');
-        inactivePanel.hidden = true;
-      }
-
-      activateTab(tabC, tabP, campPanel, payPanel); // initial state
-
-      tabC.addEventListener('click', function () { activateTab(tabC, tabP, campPanel, payPanel); });
-      tabP.addEventListener('click', function () { activateTab(tabP, tabC, payPanel, campPanel); });
-
-      // Left/Right arrows move focus + selection between the two tabs.
-      tabsEl.addEventListener('keydown', function (e) {
-        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-        e.preventDefault();
-        if (document.activeElement === tabC) { activateTab(tabP, tabC, payPanel, campPanel); tabP.focus(); }
-        else                                 { activateTab(tabC, tabP, campPanel, payPanel); tabC.focus(); }
-      });
+      panels.push({ tab: document.getElementById('tab-campaigns'), panel: campPanel });
     }
+    if (wantsPayments) {
+      renderPayments(campaigns, payPanel, payAddrs);
+      panels.push({ tab: document.getElementById('tab-payments'), panel: payPanel });
+    }
+    if (dash.show_rates && data.rate_card) {
+      renderRates(data.rate_card, data.platforms || [], ratesPanel);
+      panels.push({ tab: document.getElementById('tab-rates'), panel: ratesPanel });
+    }
+
+    activatePanels(tabsEl, panels);
 
     // Close every scope on a next-step CTA rather than trailing off.
     renderClosingCta(dash);
