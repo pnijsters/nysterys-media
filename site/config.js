@@ -37,15 +37,6 @@ var SITE_CONFIG = {
         youtube:   'https://www.youtube.com/@ShimmieKymmie'
       },
       contentCategories: ['Fashion', 'Lifestyle', 'Beauty', 'Teenage', 'School', 'College', 'JROTC'],
-      audience: {
-        age: [
-          { label: '18-24', value: 40.5 },
-          { label: '25-34', value: 26.3 },
-          { label: '35-44', value: 18.3 },
-          { label: '45-54', value: 9.9  },
-          { label: '55+',   value: 5.0  }
-        ]
-      },
       rateCard: {
         currency: 'USD',
         packages: [
@@ -103,15 +94,6 @@ var SITE_CONFIG = {
         youtube:   'https://www.youtube.com/@Mys-The-Great'
       },
       contentCategories: ['Fashion', 'Lifestyle', 'Music', 'Beauty', 'Teenage', 'School', 'Concerts'],
-      audience: {
-        age: [
-          { label: '18-24', value: 40.5 },
-          { label: '25-34', value: 26.3 },
-          { label: '35-44', value: 18.3 },
-          { label: '45-54', value: 9.9  },
-          { label: '55+',   value: 5.0  }
-        ]
-      },
       rateCard: {
         currency: 'USD',
         packages: [
