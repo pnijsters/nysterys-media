@@ -1422,9 +1422,15 @@
    *           URL that expires in 60 seconds, so revoking a shared link revokes
    *           document access immediately and nothing long-lived can be copied
    *           out of the page or a screenshot of it.
-   * @gotcha Navigates the current tab rather than opening one. The URL only
-   *         exists after an async round trip, and a window.open() that late is
-   *         swallowed by popup blockers.
+   * @security The new tab is opened blank and has its `opener` severed before
+   *           it is ever navigated, so the invoice document can never reach
+   *           back into this page through window.opener.
+   * @gotcha The tab is opened SYNCHRONOUSLY, before the fetch, and pointed at
+   *         the URL once it arrives. A window.open() issued after an await is
+   *         swallowed by popup blockers, since it no longer counts as part of
+   *         the click.
+   * @gotcha Replacing the current tab instead would strand the reader: the hub
+   *         previews this dashboard in a popup window with no back button.
    */
   function openInvoice(number, btn, label) {
     if (btn.disabled) return;
@@ -1432,11 +1438,16 @@
     var original = label.textContent;
     btn.disabled = true;
 
+    // Must happen inside the click, not in the .then below.
+    var tab = window.open('', '_blank');
+    if (tab) tab.opener = null;
+
     var ac    = new AbortController();
     var timer = setTimeout(function () { ac.abort(); }, 12000);
 
     function failed() {
       clearTimeout(timer);
+      if (tab) tab.close();   // never leave an orphaned blank tab behind
       btn.disabled = false;
       btn.classList.add('is-failed');
       label.textContent = 'Not available';
@@ -1458,10 +1469,14 @@
       .then(function (data) {
         var href = data && safeLink(data.url);
         if (!href) { failed(); return; }
-        // Re-enable behind the navigation: a PDF served as an attachment
-        // downloads without unloading the page, leaving the button stuck.
-        setTimeout(function () { btn.disabled = false; }, 1500);
-        window.location.href = href;
+        btn.disabled = false;
+        if (tab) {
+          tab.location.href = href;
+        } else {
+          // Popups blocked for this site. Showing the invoice still beats
+          // refusing to; this page reloads cleanly from its own URL.
+          window.location.href = href;
+        }
       })
       .catch(function () { failed(); });
   }
