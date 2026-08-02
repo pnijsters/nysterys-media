@@ -843,6 +843,51 @@ tbody tr:hover td { background: var(--surface2); }
 
 .post-link:hover { color: var(--orange2); }
 
+/* ── Invoice reference ────────────────────────────────────────
+   The number is the affordance, not a separate action icon: the agency
+   quotes it into their own AP system, so it stays readable in every
+   state. Tabular figures keep the column aligned down the rows. */
+
+.invoice-cell { font-size: 12px; font-variant-numeric: tabular-nums; }
+
+/* Mobile tucks the reference under the period rather than pushing a fifth
+   column past the edge of the horizontal scroll. */
+.invoice-sub {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
+}
+
+.invoice-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--orange);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition), opacity var(--transition);
+}
+
+.invoice-link:hover { color: var(--orange2); }
+
+/* Minting the URL takes a round trip. Dimming the control is the whole
+   loading state: a spinner on a sub-second action reads as slower than
+   the action actually is. */
+.invoice-link:disabled { cursor: default; opacity: 0.45; }
+
+.invoice-link.is-failed { color: var(--muted); opacity: 1; }
+
+.invoice-link-icon { flex: none; opacity: 0.75; }
+
 /* ── Aggregate stats row per campaign ─────────────────────── */
 
 .campaign-stats-row {
