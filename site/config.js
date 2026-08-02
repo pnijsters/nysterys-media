@@ -3,7 +3,14 @@
  *
  * Loaded before supabase-data.js, which reads `creators[id]` to know which feed
  * rows belong to whom: `tiktokHandle` keys the tiktok_* views,
- * `youtubeAccountId` keys yt_channel_stats_view.account__account_id.
+ * `youtubeAccountId` keys yt_channel_stats_view.account__account_id, and
+ * `instagramAccount` keys the ig_* views on `instagram_username`.
+ *
+ * @gotcha An account key may name a feed that does not exist yet. Kym's
+ *         Instagram importers have not been run, so her `instagramAccount`
+ *         matches no rows and buildInstagram returns an empty platform. That is
+ *         the designed behaviour: the key goes in once, and her figures appear
+ *         the day the importer runs, with no code change.
  *
  * @gotcha `socials` doubles as the source for the About "Platforms" tile and the
  *         `{platforms}` bio placeholder, so a platform listed here is named and
@@ -31,6 +38,7 @@ var SITE_CONFIG = {
       photo: 'site/kym.jpg',
       tiktokHandle: 'kymchi_n_crackers',
       youtubeAccountId: 'UCr7Xef4lCMrp9OtlkuGCcVw',
+      instagramAccount: 'glittery.unicorn.farts',
       socials: {
         tiktok:    'https://www.tiktok.com/@kymchi_n_crackers',
         instagram: 'https://www.instagram.com/glittery.unicorn.farts/',
@@ -46,6 +54,7 @@ var SITE_CONFIG = {
       photo: 'site/mys.jpg',
       tiktokHandle: 'mysthegreat',
       youtubeAccountId: 'UCXwaen66ayFBKg0atM2PRIg',
+      instagramAccount: 'therealmysthegreat',
       socials: {
         tiktok:    'https://www.tiktok.com/@mysthegreat',
         instagram: 'https://www.instagram.com/therealmysthegreat/',

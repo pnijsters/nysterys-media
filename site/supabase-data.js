@@ -7,8 +7,10 @@
  * Used by: index.html, creator.html, media-kit.html.
  *
  * The headline creator fields (followers / likes / engagementRate) and the
- * About tiles are CROSS-PLATFORM totals: TikTok + YouTube today, Instagram the
- * moment its feed lands. Per-platform detail stays in `platforms`, and the
+ * About tiles are CROSS-PLATFORM totals across TikTok, YouTube and Instagram.
+ * A creator whose importers have not run for a platform contributes zero to
+ * those totals rather than breaking them. Per-platform detail stays in
+ * `platforms`, and the
  * TikTok-only deep dive (view distribution, audience, watch time) stays in
  * `tiktokStats` because the media kit and the creator page chart it.
  *
@@ -170,6 +172,71 @@
     return getAll('tiktok_video_insights_view?select=' + cols);
   }
 
+  /* Instagram arrives as two feeds: the profile snapshot carries the follower
+   * count, the per-post feed carries everything else. Both are keyed on
+   * `instagram_username`.
+   *
+   * @gotcha Wrapped in a catch that degrades to an empty array. A creator whose
+   *         Coupler importers have never run has no rows, which is fine, but a
+   *         feed VIEW that does not exist yet returns a PostgREST error OBJECT
+   *         rather than an array, and handing that to .filter() would throw and
+   *         take the whole page down over one absent platform. */
+  function safeGet(path) {
+    return get(path).then(function (rows) {
+      return Array.isArray(rows) ? rows : [];
+    }).catch(function () { return []; });
+  }
+
+  function fetchInstagramProfiles() {
+    return safeGet('ig_profile_overview_view?select=instagram_username,followers_count');
+  }
+
+  function fetchInstagramPosts() {
+    var cols = 'instagram_username,views,likes,comments,shares,reach';
+    return safeGet('ig_post_performance_view?select=' + cols);
+  }
+
+  /**
+   * Roll one creator's Instagram account into the shared platform shape.
+   *
+   * @param {object} cfg - SITE_CONFIG.creators[id]
+   * @param {Array}  profiles - ig_profile_overview_view rows
+   * @param {Array}  posts - ig_post_performance_view rows
+   * @returns {{followers:number,likes:number,views:number,interactions:number,engViews:number}}
+   *
+   * @gotcha Instagram post rows are per-post LIFETIME counters, like TikTok's
+   *         and unlike YouTube's daily deltas, so summing them is correct and
+   *         engagement pairs lifetime interactions with lifetime views.
+   * @gotcha Saves are deliberately NOT counted as an interaction. TikTok's rate
+   *         is likes + comments + shares, and adding a fourth term on one
+   *         platform only would inflate Instagram against the others inside a
+   *         single cross-platform figure.
+   */
+  function buildInstagram(cfg, profiles, posts) {
+    if (!cfg.instagramAccount) return emptyPlatform();
+
+    var profile = profiles.find(function (r) {
+      return r.instagram_username === cfg.instagramAccount;
+    });
+    var mine = posts.filter(function (r) {
+      return r.instagram_username === cfg.instagramAccount;
+    });
+    if (!profile && !mine.length) return emptyPlatform();
+
+    var likes  = sum(mine, 'likes');
+    var cmts   = sum(mine, 'comments');
+    var shares = sum(mine, 'shares');
+    var views  = sum(mine, 'views');
+
+    return {
+      followers:    num((profile || {}).followers_count),
+      likes:        likes,
+      views:        views,
+      interactions: likes + cmts + shares,
+      engViews:     views,
+    };
+  }
+
   function fetchYouTube() {
     var cols = 'account__account_id,report__date,channel_totals__subscribers,channel_totals__views,'
              + 'performance__views,interactions__likes,interactions__comments,interactions__shares';
@@ -214,7 +281,7 @@
     };
   }
 
-  function buildCreator(cfg, profiles, videos, genders, countries, ytRows) {
+  function buildCreator(cfg, profiles, videos, genders, countries, ytRows, igProfiles, igPosts) {
     /* Profile: most recent row with a real follower count. Coupler stamps a
      * zero-follower row at the start of every sync day; falling through to the
      * next row prevents "0 followers" from rendering on the public site. */
@@ -254,8 +321,9 @@
     var countryData = cRows.map(function (r) { return { label: r.country, value: Math.round(r.percentage * 1000) / 10 }; });
     var usPct       = (cRows.find(function (r) { return r.country === 'United States'; }) || {}).percentage || 0;
 
-    /* Per-platform rollup. Instagram slots in here as a third entry the day its
-     * feed lands; nothing downstream needs to change. */
+    /* Per-platform rollup. Everything downstream (hero figures, bio
+     * placeholders, roster rows, About tiles) is derived from this map, so a
+     * fourth platform is one more entry here and one more PLATFORM_LABELS key. */
     var platforms = {
       tiktok: {
         followers:    followers,
@@ -264,7 +332,8 @@
         interactions: totalLikes + totalCmts + totalShares,
         engViews:     totalViews,
       },
-      youtube: buildYouTube(cfg, ytRows),
+      youtube:   buildYouTube(cfg, ytRows),
+      instagram: buildInstagram(cfg, igProfiles, igPosts),
     };
     var all = Object.keys(platforms).map(function (k) { return platforms[k]; });
     var xFollowers = all.reduce(function (s, p) { return s + p.followers;    }, 0);
@@ -356,15 +425,21 @@
       get('tiktok_audience_gender_view?select='  + genderCols  + '&order=date.desc&limit=12'),
       get('tiktok_audience_country_view?select=' + countryCols + '&order=date.desc&limit=60'),
       fetchYouTube(),
+      fetchInstagramProfiles(),
+      fetchInstagramPosts(),
     ]).then(function (res) {
-      var profiles  = res[0];
-      var videos    = res[1];
-      var genders   = res[2];
-      var countries = res[3];
-      var ytRows    = res[4];
+      var profiles   = res[0];
+      var videos     = res[1];
+      var genders    = res[2];
+      var countries  = res[3];
+      var ytRows     = res[4];
+      var igProfiles = res[5];
+      var igPosts    = res[6];
 
       var roster = ['kym', 'mys'].map(function (id) {
-        return buildCreator(SITE_CONFIG.creators[id], profiles, videos, genders, countries, ytRows);
+        return buildCreator(
+          SITE_CONFIG.creators[id], profiles, videos, genders, countries, ytRows, igProfiles, igPosts
+        );
       });
 
       var totalFollowers = roster.reduce(function (s, c) { return s + c.totals.followers; }, 0);
@@ -373,9 +448,9 @@
       var femaleAvg      = roster.reduce(function (s, c) { return s + c.tiktokStats.femaleAudience; }, 0) / roster.length;
 
       /* Platforms tile counts the platforms the roster actually has accounts on
-       * (config socials), NOT the feeds we have stats for. Instagram is live for
-       * both creators while its Coupler feed is still pending, so counting feeds
-       * would quietly drop the tile from 3 to 2. */
+       * (config socials), NOT the feeds we have stats for. Kym's Instagram
+       * importers have not been run, so counting feeds would quietly drop the
+       * tile below the number of platforms the agency genuinely sells on. */
       var platformCount = roster.reduce(function (set, c) {
         Object.keys(c.socials || {}).forEach(function (k) { set[k] = true; });
         return set;
