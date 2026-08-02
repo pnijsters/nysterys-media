@@ -22,6 +22,15 @@
   var EDGE = 'https://rnntuxabccnphfvvvaks.supabase.co/functions/v1/agency-dashboard';
 
   /**
+   * The dashboard token, captured by init from the URL fragment.
+   *
+   * Held in the IIFE closure (never on window) so only this file can read it.
+   * Needed beyond the initial fetch because an invoice download re-authorizes
+   * against the same token at click time.
+   */
+  var AUTH_TOKEN = '';
+
+  /**
    * Static creator bios keyed by creator_name. There is no bio column in the
    * DB, so update these by hand when the copy changes. handle, follower_count,
    * and avatar_url come from the API payload (not here).
@@ -87,6 +96,14 @@
     ban:   [
       { t: 'circle', a: { cx: '8', cy: '8', r: '5.5' } },
       { t: 'path',   a: { d: 'M4.1 4.1l7.8 7.8' } },
+    ],
+    // Page with a cut corner + two rule lines. Straight segments only, to sit
+    // with the rects and plain paths the rest of the set is built from.
+    doc: [
+      { t: 'path', a: { d: 'M3.5 1.5h5.25L12.5 5.25v9.25h-9z' } },
+      { t: 'path', a: { d: 'M8.75 1.5v3.75h3.75' } },
+      { t: 'path', a: { d: 'M5.75 9h4.5' } },
+      { t: 'path', a: { d: 'M5.75 11.5h3' } },
     ],
   };
 
@@ -1358,6 +1375,97 @@
    *         not-yet-invoiced) is notInvoiced. A casing drift in the payload
    *         would silently misbucket an amount. @see computeSummary.
    */
+  /**
+   * Build the Invoice cell for one payment row.
+   *
+   * The reference is the visible thing, not an icon: an agency quotes this
+   * number in its own accounts-payable system, so it has to be readable and
+   * copyable whether or not a PDF exists behind it.
+   *
+   * Three states, deliberately quiet: linked (a PDF is on file), plain muted
+   * text (no PDF, but the reference still matters for their records), and an
+   * em dash (no number at all, only possible on invoices predating automatic
+   * numbering). No "unavailable" label. An absent affordance is the message.
+   *
+   * @returns the control alone, not a cell: desktop gives it its own column,
+   *          mobile tucks it under the period. @see renderPayments
+   */
+  function invoiceControl(p) {
+    if (!p.invoice_number) {
+      var none = el('span', 'muted-cell');
+      none.textContent = '—';
+      return none;
+    }
+
+    if (!p.has_document) {
+      var plain = el('span', 'muted-cell');
+      plain.textContent = p.invoice_number;
+      return plain;
+    }
+
+    // A button, not an anchor: there is no URL until the click mints one.
+    var btn = el('button', 'invoice-link');
+    btn.type = 'button';
+    btn.title = 'Open invoice ' + p.invoice_number;
+    var label = el('span');
+    label.textContent = p.invoice_number;
+    append(btn, icon('doc', 12, 'invoice-link-icon'), label);
+    btn.addEventListener('click', function () { openInvoice(p.invoice_number, btn, label); });
+    return btn;
+  }
+
+  /**
+   * Exchange an invoice number for a short-lived URL, then go to the PDF.
+   *
+   * @security The page never holds a link to a stored file. The edge function
+   *           re-validates this dashboard's token on every click and returns a
+   *           URL that expires in 60 seconds, so revoking a shared link revokes
+   *           document access immediately and nothing long-lived can be copied
+   *           out of the page or a screenshot of it.
+   * @gotcha Navigates the current tab rather than opening one. The URL only
+   *         exists after an async round trip, and a window.open() that late is
+   *         swallowed by popup blockers.
+   */
+  function openInvoice(number, btn, label) {
+    if (btn.disabled) return;
+
+    var original = label.textContent;
+    btn.disabled = true;
+
+    var ac    = new AbortController();
+    var timer = setTimeout(function () { ac.abort(); }, 12000);
+
+    function failed() {
+      clearTimeout(timer);
+      btn.disabled = false;
+      btn.classList.add('is-failed');
+      label.textContent = 'Not available';
+      setTimeout(function () {
+        btn.classList.remove('is-failed');
+        label.textContent = original;
+      }, 3200);
+    }
+
+    fetch(EDGE + '?doc=' + encodeURIComponent(number), {
+      method:  'GET',
+      headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + AUTH_TOKEN },
+      signal:  ac.signal,
+    })
+      .then(function (res) {
+        clearTimeout(timer);
+        return res.ok ? res.json() : null;
+      })
+      .then(function (data) {
+        var href = data && safeLink(data.url);
+        if (!href) { failed(); return; }
+        // Re-enable behind the navigation: a PDF served as an attachment
+        // downloads without unloading the page, leaving the button stuck.
+        setTimeout(function () { btn.disabled = false; }, 1500);
+        window.location.href = href;
+      })
+      .catch(function () { failed(); });
+  }
+
   function renderPayments(campaigns, container, paymentAddresses) {
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
@@ -1444,9 +1552,16 @@
     var tableWrap = el('div', 'table-wrap');
     var table     = el('table');
 
+    /* The invoice reference gets its own trailing column on desktop, but on a
+     * phone a fifth column lands two swipes into the horizontal scroll, which
+     * hides the one control on this table. There it moves under the period
+     * instead, where it is visible without scrolling at all. */
+    var isMobile = window.innerWidth <= 768;
+
     var thead = el('thead');
     var hr    = el('tr');
-    ['Period', 'Status', 'Amount', 'Date'].forEach(function (c) {
+    (isMobile ? ['Period', 'Status', 'Amount', 'Date']
+              : ['Period', 'Status', 'Amount', 'Date', 'Invoice']).forEach(function (c) {
       var th = el('th');
       th.textContent = c;
       hr.appendChild(th);
@@ -1462,7 +1577,14 @@
       var periodTd = el('td');
       var startStr = fmtDate(c.start_date);
       var endStr   = fmtDate(c.end_date);
-      periodTd.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '—';
+      var periodStr = el('div');
+      periodStr.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '—';
+      periodTd.appendChild(periodStr);
+      if (isMobile) {
+        var sub = el('div', 'sub-note invoice-sub');
+        sub.appendChild(invoiceControl(p));
+        periodTd.appendChild(sub);
+      }
       row.appendChild(periodTd);
 
       var statusTd = el('td');
@@ -1481,6 +1603,12 @@
       var dateTd = el('td', 'muted-cell');
       dateTd.textContent = fmtDate(p.paid_date || p.invoice_date);
       row.appendChild(dateTd);
+
+      if (!isMobile) {
+        var invTd = el('td', 'invoice-cell');
+        invTd.appendChild(invoiceControl(p));
+        row.appendChild(invTd);
+      }
 
       tbody.appendChild(row);
     });
@@ -1800,6 +1928,8 @@
       showError('no-token');
       return;
     }
+
+    AUTH_TOKEN = token;
 
     var ac    = new AbortController();
     var timer = setTimeout(function () { ac.abort(); }, 12000);
