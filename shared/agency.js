@@ -987,9 +987,16 @@
    * falls back to the brief for work that has not posted yet.
    *
    * @param {object[]} delivs - the campaign's deliverables.
-   * @returns {?object} {track, artist, brief, more} where `more` counts the
-   *          additional distinct sounds in the campaign, or null when the
-   *          campaign carries no music at all (caller falls back to dates).
+   * @returns {?object} {track, artist, brief, original, more} where `more`
+   *          counts the additional distinct sounds in the campaign, or null
+   *          when the campaign carries no identifiable sound (caller falls
+   *          back to dates).
+   * @gotcha TikTok reports creator-uploaded audio as the track "original
+   *         sound", which names nothing. For those the CREDITED ACCOUNT
+   *         becomes the headline and `original` flags the qualifier chip, so
+   *         eight such campaigns read as eight distinct artists rather than
+   *         eight copies of the same non-title. A post with no artist either
+   *         is skipped: there is nothing to call it.
    * @gotcha Distinctness is measured on normTrack, the same normalisation the
    *         per-deliverable mismatch check uses, so 'purple-rain' and
    *         'Purple Rain' are one sound rather than two.
@@ -1003,15 +1010,16 @@
       var useActual = !!m.actual_track;
       var track = m.actual_track || m.contracted_track;
       if (!track) return;
-      var key = normTrack(track);
+      var artist   = useActual ? m.actual_artist : m.contracted_artist;
+      var original = !!(useActual && m.actual_is_original);
+      if (original && !artist) return;
+      var key = normTrack(original ? artist : track);
       if (seen.indexOf(key) !== -1) return;
       seen.push(key);
       if (!lead) {
-        lead = {
-          track:  fmtTrack(track),
-          artist: useActual ? m.actual_artist : m.contracted_artist,
-          brief:  !useActual,
-        };
+        lead = original
+          ? { track: artist,          artist: null,   brief: false,      original: true  }
+          : { track: fmtTrack(track), artist: artist, brief: !useActual, original: false };
       }
     });
     if (!lead) return null;
@@ -1401,6 +1409,11 @@
         var trackEl = el('span');
         trackEl.textContent = sound.track;
         title.appendChild(trackEl);
+        if (sound.original) {
+          var origEl = el('span', 'camp-title-qual');
+          origEl.textContent = 'Original sound';
+          title.appendChild(origEl);
+        }
         if (sound.more > 0) {
           var moreEl = el('span', 'camp-title-more');
           moreEl.textContent = '+' + sound.more + ' more';
