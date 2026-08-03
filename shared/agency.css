@@ -448,6 +448,18 @@ body::before {
   color: var(--muted);
 }
 
+/* Qualifies a headline figure that would otherwise overclaim (currently the
+   sounds-checked denominator). Sentence case and dim on purpose: it is a
+   caveat the agency can read, not a second statistic competing with the
+   value above it. */
+.kpi-note {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--dim);
+  max-width: 30ch;
+}
+
 /* ── Performance chart section ────────────────────────────── */
 
 .perf-charts-grid {
@@ -571,34 +583,175 @@ body::before {
   border-bottom-color: var(--orange);
 }
 
-/* ── Campaign cards ───────────────────────────────────────── */
+/* ── Campaign list ─────────────────────────────────────────────
+   One bordered list, one row per campaign, collapsed by default. The
+   previous layout gave every campaign its own card with its own table
+   header and its own totals bar, which spent roughly half its height on
+   repeated chrome and ran ~6 screens at 19 campaigns. Column headers are
+   stated once here; the campaign body is built on first expand. */
 
-.campaign-card {
+.camp-list {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  margin-bottom: 16px;
   overflow: hidden;
-  animation: slideUp 0.35s ease both;
 }
 
-.campaign-head {
+/* Shared track for the header and every row, so the columns line up down
+   the list. Fixed widths on the right-hand columns are load-bearing: each
+   row is its own grid container, so `auto` would let every row size its
+   own badge column and the numbers would stagger. */
+.camp-listhead,
+.camp-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 208px 92px 72px;
+  align-items: center;
+  gap: 14px;
+}
+
+.camp-listhead {
+  padding: 9px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+
+.camp-listhead-num { text-align: right; }
+
+.camp-item {
+  border-bottom: 1px solid var(--border);
+  animation: slideUp 0.3s ease both;
+}
+
+.camp-item:last-child { border-bottom: none; }
+
+.camp-row {
+  width: 100%;
+  padding: 11px 20px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  color: var(--white);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.camp-row:hover { background: var(--surface2); }
+.camp-item--open > .camp-row { background: var(--surface2); }
+
+/* A div row (campaign with no deliverables) keeps the grid but not the
+   affordances. */
+div.camp-row { cursor: default; }
+div.camp-row:hover { background: transparent; }
+
+.camp-caret {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  transition: transform var(--transition), color var(--transition);
+}
+
+.camp-row:hover .camp-caret { color: var(--orange); }
+.camp-item--open .camp-caret { transform: rotate(90deg); color: var(--orange); }
+
+.camp-id { min-width: 0; display: block; }
+
+.camp-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  color: var(--white);
+  min-width: 0;
+}
+
+.camp-title > span:first-of-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.camp-title-note { color: var(--orange); flex: none; }
+
+.camp-title-more,
+.camp-sound-pending {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.camp-title .music-diff { flex: none; }
+
+.camp-sub {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.camp-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.camp-metric {
+  text-align: right;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.camp-metric-er { color: var(--orange); }
+.camp-metric-empty { color: var(--dim); }
+
+.camp-body {
+  background: var(--black);
+  border-top: 1px solid var(--border);
+}
+
+/* Foot band: aggregate totals plus the copy-URLs control, on one line.
+   Totals render only for multi-deliverable campaigns - on a single-post
+   campaign they reprinted the row above them verbatim. */
+.camp-foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--surface2);
 }
 
-.campaign-name-group { flex: 1; min-width: 0; }
-
-.campaign-badges {
+.camp-foot-stats {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  row-gap: 12px;
+}
+
+/* A pill that lands last on a wrapped line keeps a divider it should not have,
+   so the rule is drawn only where a pill actually sits beside another. */
+.camp-foot-stats .stat-pill:last-child {
+  border-right: none;
+  margin-right: 0;
+  padding-right: 0;
 }
 
 /* ── Copy URLs buttons ────────────────────────────────────── */
@@ -634,23 +787,6 @@ body::before {
 .copy-urls-btn--done {
   color: var(--green);
   border-color: var(--green);
-}
-
-.campaign-name {
-  font-family: var(--font-display);
-  font-size: 20px;
-  letter-spacing: 0.04em;
-  color: var(--white);
-  line-height: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.campaign-dates {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 4px;
 }
 
 /* ── Inline row thumbnail ─────────────────────────────────── */
@@ -888,21 +1024,15 @@ tbody tr:hover td { background: var(--surface2); }
 
 .invoice-link-icon { flex: none; opacity: 0.75; }
 
-/* ── Aggregate stats row per campaign ─────────────────────── */
-
-.campaign-stats-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0;
-  border-top: 1px solid var(--border);
-  padding: 14px 20px;
-  background: var(--surface2);
-}
+/* ── Aggregate stat pills (campaign foot band) ────────────── */
 
 .stat-pill {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  /* Never shrink below the label: squeezed pills ran 'TOTAL VIEWS' straight
+     into 'TOTAL LIKES' with no gap once the band wrapped on a phone. */
+  flex: none;
   padding-right: 24px;
   margin-right: 24px;
   border-right: 1px solid var(--border);
@@ -1142,13 +1272,6 @@ tbody tr:hover td { background: var(--surface2); }
   font-size: 13px;
 }
 
-.no-deliverables {
-  padding: 12px 20px;
-  color: var(--dim);
-  font-size: 12px;
-  font-style: italic;
-}
-
 /* ── Footer ───────────────────────────────────────────────── */
 
 /* ── Closing CTA ──────────────────────────────────────────── */
@@ -1281,16 +1404,70 @@ tbody tr:hover td { background: var(--surface2); }
   .kpi-cell  { padding: 14px 16px; }
   .kpi-value { font-size: 26px; }
 
-  .campaign-head { flex-direction: column; align-items: flex-start; }
+  /* Phone: the badge and metric columns move under the campaign title rather
+     than squeezing five columns into 360px. The caret keeps its own column so
+     the second line stays indented under the title it belongs to. */
+  .camp-listhead { display: none; }
 
-  .campaign-name { font-size: 16px; }
+  .camp-row {
+    grid-template-columns: 22px auto 1fr;
+    align-items: start;
+    gap: 0 10px;
+    padding: 12px 16px;
+  }
+
+  .camp-caret   { grid-area: 1 / 1; margin-top: 3px; }
+  .camp-id      { grid-area: 1 / 2 / auto / 4; }
+  .camp-badges  { grid-area: 2 / 2 / auto / 4; margin-top: 8px; }
+
+  .camp-metric {
+    grid-row: 3;
+    justify-self: start;
+    margin-top: 8px;
+    text-align: left;
+    font-size: 12px;
+  }
+
+  .camp-metric:not(.camp-metric-er) { grid-column: 2; }
+  .camp-metric-er { grid-column: 3; margin-left: 14px; }
+
+  /* The column headers are hidden on phones, so each metric labels itself. */
+  .camp-metric::after {
+    content: 'views';
+    margin-left: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .camp-metric-er::after { content: 'ER'; }
+
+  .camp-title { font-size: 16px; }
 
   .tab-bar { overflow-x: auto; }
 
   thead th, tbody td { padding: 8px 12px; }
 
-  .stat-pill { padding-right: 14px; margin-right: 14px; }
-  .campaign-stats-row { padding: 12px 16px; row-gap: 12px; }
+  /* Two fixed columns beat a wrapping row of bordered pills on a phone: the
+     labels are wider than the values, so shrink-to-fit pills let 'TOTAL VIEWS'
+     overflow straight into 'TOTAL LIKES' with nothing between them. */
+  .camp-foot { padding: 12px 16px; row-gap: 14px; }
+
+  .camp-foot-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    width: 100%;
+  }
+
+  .stat-pill,
+  .camp-foot-stats .stat-pill:last-child {
+    border-right: none;
+    padding-right: 0;
+    margin-right: 0;
+  }
 
   .payment-status-hero { padding: 20px; }
   .payment-status-amount { font-size: 40px; }
@@ -1314,10 +1491,6 @@ tbody tr:hover td { background: var(--surface2); }
   .footer-tagline { display: none; }
 
   .payment-addresses-cards { grid-template-columns: 1fr; }
-
-  .campaign-name { white-space: normal; }
-
-  .stat-pill { border-right: none; padding-right: 0; margin-right: 0; }
 
   .kpi-strip > *:last-child:nth-child(odd) { grid-column: span 2; }
 }
