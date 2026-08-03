@@ -681,6 +681,7 @@ div.camp-row:hover { background: transparent; }
 .camp-title-note { color: var(--orange); flex: none; }
 
 .camp-title-more,
+.camp-title-qual,
 .camp-sound-pending {
   flex: none;
   font-family: var(--font-body);
