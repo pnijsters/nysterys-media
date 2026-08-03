@@ -478,12 +478,20 @@
       });
     }
 
-    // Sound compliance - music agencies only
+    // Sound compliance - music agencies only.
+    //
+    // A deliverable is only CHECKABLE when a sound was briefed on it: with no
+    // contracted track there is nothing to compare the live audio against.
+    // scTotal is therefore the briefed count, NOT the post count, and the tile
+    // states that denominator against the delivered total. Reporting a bare
+    // 'All Confirmed' beside '23/23 Posts Delivered' read as all 23 posts
+    // verified when only 2 carried a brief, which overclaims to the agency.
     var agencyType = dash && dash.agency_type ? dash.agency_type : '';
     if (agencyType.toLowerCase().indexOf('music') !== -1) {
-      var scConfirmed = 0, scMismatched = 0, scTotal = 0;
+      var scConfirmed = 0, scMismatched = 0, scTotal = 0, scDelivered = 0;
       campaigns.forEach(function (c) {
         (c.deliverables || []).forEach(function (d) {
+          if (d.status !== 'Cancelled') scDelivered++;
           var mu = d.music;
           if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
           scTotal++;
@@ -501,13 +509,25 @@
           scVal   = scMismatched + (scMismatched === 1 ? ' Mismatch' : ' Mismatches');
           scColor = 'var(--orange2)';
         } else if (scConfirmed === scTotal) {
-          scVal   = 'All Confirmed';
-          scColor = 'var(--green)';
+          scVal = scTotal + ' of ' + scDelivered;
+          // Green only when every delivered post was actually checked. On
+          // partial coverage it would read as a clean bill of health for the
+          // whole campaign when most posts were never compared to anything.
+          scColor = scTotal === scDelivered ? 'var(--green)' : null;
         } else {
           scVal   = scConfirmed + '/' + scTotal + ' Confirmed';
           scColor = null;
         }
-        items.push({ val: scVal, label: 'Music Compliance', color: scColor, tip: 'Whether the audio used matches the contracted track.' });
+        var unbriefed = scDelivered - scTotal;
+        items.push({
+          val:   scVal,
+          label: 'Sounds Checked',
+          color: scColor,
+          tip:   'Posts where the audio used was compared against the contracted track.',
+          note:  unbriefed > 0
+            ? unbriefed + (unbriefed === 1 ? ' post has' : ' posts have') + ' no contracted sound on file'
+            : null,
+        });
       }
     }
 
@@ -520,6 +540,11 @@
       lblEl.textContent = item.label;
       if (item.tip) lblEl.title = item.tip;
       append(cell, valEl, lblEl);
+      if (item.note) {
+        var noteEl = el('div', 'kpi-note');
+        noteEl.textContent = item.note;
+        cell.appendChild(noteEl);
+      }
       kpiEl.appendChild(cell);
 
       if (item.anim) {
@@ -533,6 +558,18 @@
   }
 
   // ── Performance charts ────────────────────────────────────────────────────────
+
+  /**
+   * Rows drawn in each performance chart.
+   *
+   * @invariant Both charts use this same cap. They sit side by side, so a
+   *            per-campaign chart that grew with the roster while the posts
+   *            chart stayed fixed left the pair badly mismatched in height
+   *            (19 bars against 8) and pushed the campaign list a screen down.
+   *            A chart is a headline, not a record: the full per-campaign
+   *            numbers live in the campaign list below.
+   */
+  var CHART_ROWS = 8;
 
   function buildChartRows(barsEl, items, max, delayBase) {
     items.forEach(function (item, i) {
@@ -592,25 +629,36 @@
 
     if (avgItems.length === 0) return;
     avgItems.sort(function (a, b) { return b.views - a.views; });
+    var avgTotal = avgItems.length;
+    var avgTop   = avgItems.slice(0, CHART_ROWS);
+
+    // Say so when the chart is a top-N rather than the whole roster; a silently
+    // truncated chart reads as "these are all the campaigns".
+    if (avgTotal > CHART_ROWS) {
+      document.getElementById('perf-chart-sub').textContent =
+        'Top ' + CHART_ROWS + ' of ' + avgTotal + ' campaigns, normalized per post';
+    }
 
     var section = document.getElementById('perf-chart-section');
-    buildChartRows(document.getElementById('perf-chart-bars'), avgItems, avgItems[0].views, 120);
+    buildChartRows(document.getElementById('perf-chart-bars'), avgTop, avgTop[0].views, 120);
     section.removeAttribute('hidden');
 
     // ── Chart 2: top individual posts ──
+    // The sub-line names the sound, not the agency: every campaign on a shared
+    // dashboard belongs to the same agency, so that label repeated one constant
+    // string down the whole chart.
     var allPosts = [];
     campaigns.forEach(function (c) {
-      var parts  = (c.name || '').split('-');
-      var agency = parts.length >= 4 ? parts.slice(3).join('-') : (c.name || '');
-
       c.deliverables.forEach(function (d) {
         if (d.stats && d.stats.views > 0) {
+          var m = d.music;
+          var track = m && (m.actual_track || m.contracted_track);
           allPosts.push({
             label: fmtDateShort(d.posted_date || d.due_date),
-            title: c.name || '',
+            title: track ? fmtTrack(track) : '',
             views: d.stats.views,
             value: fmtNum(d.stats.views) + ' views',
-            sub:   agency,
+            sub:   track ? fmtTrack(track) : '',
           });
         }
       });
@@ -618,7 +666,7 @@
 
     if (allPosts.length === 0) return;
     allPosts.sort(function (a, b) { return b.views - a.views; });
-    var topPosts = allPosts.slice(0, 8);
+    var topPosts = allPosts.slice(0, CHART_ROWS);
 
     var topPanel = document.getElementById('top-posts-panel');
     buildChartRows(document.getElementById('top-posts-bars'), topPosts, topPosts[0].views, 200);
@@ -929,6 +977,73 @@
     return card;
   }
 
+  // ── Campaign identity ─────────────────────────────────────────────────────────
+
+  /**
+   * Pick the sound that names a campaign in the collapsed list.
+   *
+   * A music agency thinks in tracks, not date ranges, so the track headlines the
+   * row and the dates demote to the sub-line. Prefers what actually went live;
+   * falls back to the brief for work that has not posted yet.
+   *
+   * @param {object[]} delivs - the campaign's deliverables.
+   * @returns {?object} {track, artist, brief, more} where `more` counts the
+   *          additional distinct sounds in the campaign, or null when the
+   *          campaign carries no music at all (caller falls back to dates).
+   * @gotcha Distinctness is measured on normTrack, the same normalisation the
+   *         per-deliverable mismatch check uses, so 'purple-rain' and
+   *         'Purple Rain' are one sound rather than two.
+   */
+  function campaignSound(delivs) {
+    var seen = [];
+    var lead = null;
+    delivs.forEach(function (d) {
+      var m = d.music;
+      if (!m) return;
+      var useActual = !!m.actual_track;
+      var track = m.actual_track || m.contracted_track;
+      if (!track) return;
+      var key = normTrack(track);
+      if (seen.indexOf(key) !== -1) return;
+      seen.push(key);
+      if (!lead) {
+        lead = {
+          track:  fmtTrack(track),
+          artist: useActual ? m.actual_artist : m.contracted_artist,
+          brief:  !useActual,
+        };
+      }
+    });
+    if (!lead) return null;
+    lead.more = seen.length - 1;
+    return lead;
+  }
+
+  /**
+   * Roll the per-deliverable music check up to one campaign-level state.
+   *
+   * @returns {?string} 'diff' when any deliverable used a different sound than
+   *          the brief, 'pending' when a brief has not been verified against a
+   *          live post yet, or null when everything on the campaign matches.
+   *          A clean campaign shows no chip at all: the flag is the exception.
+   */
+  function campaignMusicFlag(delivs) {
+    var pending = false;
+    for (var i = 0; i < delivs.length; i++) {
+      var m = delivs[i].music;
+      if (!m) continue;
+      var hasBrief  = !!(m.contracted_url || m.contracted_track);
+      var hasActual = !!(m.actual_url     || m.actual_track);
+      if (!hasBrief) continue;
+      if (!hasActual) { pending = true; continue; }
+      var urlMatch   = musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id);
+      var trackMatch = !!(m.contracted_track && m.actual_track &&
+        normTrack(m.contracted_track) === normTrack(m.actual_track));
+      if (!urlMatch && !trackMatch) return 'diff';
+    }
+    return pending ? 'pending' : null;
+  }
+
   // ── Render: campaigns panel ────────────────────────────────────────────────────
 
   // Creates a copy-URLs button. urls = string[]. Returns null if no urls.
@@ -962,78 +1077,17 @@
   }
 
   /**
-   * Render the campaigns panel: a global copy-all-URLs button, then one card
-   * per campaign (header badges, deliverables, aggregate stats bar).
+   * Build the per-campaign deliverables table (desktop layout).
    *
-   * @gotcha Layout forks on viewport at render time: <=768px swaps the desktop
-   *         stats table for renderDeliverableMobileCard. The breakpoint is read
-   *         once here and not re-evaluated on resize.
+   * Extracted from renderCampaigns so the table can be built lazily into a
+   * collapsed campaign row without duplicating the row/engagement/music markup.
+   *
+   * @param {object[]} delivs - the campaign's deliverables (never empty).
+   * @param {number} cardIdx - the campaign's list index, used only to keep the
+   *        engagement sub-row ids unique across the page.
+   * @returns {HTMLElement} the .table-wrap element.
    */
-  function renderCampaigns(campaigns, container) {
-    var isMobile = window.innerWidth <= 768;
-    if (!campaigns || campaigns.length === 0) {
-      var empty = el('div', 'empty-msg');
-      empty.textContent = 'No campaigns found for this dashboard.';
-      container.appendChild(empty);
-      return;
-    }
-
-    // Global copy button - all posted URLs across all campaigns
-    var allUrls = [];
-    campaigns.forEach(function (c) {
-      (c.deliverables || []).forEach(function (d) {
-        if (d.post_url) allUrls.push(d.post_url);
-      });
-    });
-    if (allUrls.length > 0) {
-      var globalRow = el('div', 'copy-global-row');
-      var globalBtn = makeCopyBtn(allUrls, 'Copy all ' + allUrls.length + ' post URL' + (allUrls.length === 1 ? '' : 's'));
-      globalRow.appendChild(globalBtn);
-      container.appendChild(globalRow);
-    }
-
-    campaigns.forEach(function (campaign, cardIdx) {
-      var card = el('div', 'campaign-card');
-      card.style.animationDelay = (cardIdx * 0.07) + 's';
-
-      // Card header
-      var head      = el('div', 'campaign-head');
-      var nameGroup = el('div', 'campaign-name-group');
-      var datesEl = el('div', 'campaign-name');
-      var startStr = fmtDate(campaign.start_date);
-      var endStr   = fmtDate(campaign.end_date);
-      datesEl.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '';
-      nameGroup.appendChild(datesEl);
-
-      var badgesWrap = el('div', 'campaign-badges');
-      badgesWrap.appendChild(badge(campaign.status));
-      if (campaign.payment) {
-        var payStatus = campaign.payment.is_in_kind ? 'In-Kind' : (campaign.payment.status || 'Not-Invoiced');
-        badgesWrap.appendChild(badge(payStatus));
-      }
-      // Per-campaign copy button
-      var campUrls = (campaign.deliverables || []).filter(function (d) { return d.post_url; }).map(function (d) { return d.post_url; });
-      var campCopyBtn = makeCopyBtn(campUrls, null);
-      if (campCopyBtn) badgesWrap.appendChild(campCopyBtn);
-      append(head, nameGroup, badgesWrap);
-      card.appendChild(head);
-
-      var delivs = campaign.deliverables || [];
-
-      if (delivs.length === 0) {
-        var noDeliv = el('div', 'no-deliverables');
-        noDeliv.textContent = 'No deliverables for this campaign.';
-        card.appendChild(noDeliv);
-        container.appendChild(card);
-        return;
-      }
-
-      var sectionLabel = el('div', 'section-label');
-      sectionLabel.textContent = 'Deliverables';
-      card.appendChild(sectionLabel);
-
-      if (!isMobile) {
-      // Desktop: full stats table
+  function buildDeliverablesTable(delivs, cardIdx) {
       var tableWrap = el('div', 'table-wrap');
       var table     = el('table');
 
@@ -1258,39 +1312,202 @@
       });
       table.appendChild(tbody);
       tableWrap.appendChild(table);
-      card.appendChild(tableWrap);
-      } else {
-        // Mobile: compact card list
-        var delivCardList = el('div', 'mobile-deliv-list');
-        delivs.forEach(function (d) { delivCardList.appendChild(renderDeliverableMobileCard(d)); });
-        card.appendChild(delivCardList);
-      }
+      return tableWrap;
+  }
 
-      // Aggregate stats bar
-      var totals = sumStats(delivs);
-      if (totals.hasStats) {
-        var statsRow = el('div', 'campaign-stats-row');
-        var metrics  = [
-          { label: 'Total Views',    value: fmtNum(totals.views) },
-          { label: 'Total Likes',    value: fmtNum(totals.likes) },
-          { label: 'Total Comments', value: fmtNum(totals.comments) },
-          { label: 'Total Shares',   value: fmtNum(totals.shares) },
-          { label: 'Engagement Rate', value: totals.avgER !== null ? totals.avgER.toFixed(1) + '%' : '—', highlight: true },
-        ];
-        metrics.forEach(function (m) {
-          var pill  = el('div', m.highlight ? 'stat-pill stat-pill-er' : 'stat-pill');
-          var valEl = el('div', 'stat-pill-value');
-          valEl.textContent = m.value;
-          var lblEl = el('div', 'stat-pill-label');
-          lblEl.textContent = m.label;
-          append(pill, valEl, lblEl);
-          statsRow.appendChild(pill);
-        });
-        card.appendChild(statsRow);
-      }
+  /**
+   * Render the campaigns panel as one collapsible list, a row per campaign.
+   *
+   * Each row leads with the sound (a music agency's mental handle on a deal),
+   * carries its status/payment badges and headline views + ER, and expands to
+   * the full deliverables table. Collapsed by default because an agency with
+   * ~20 campaigns wants to scan the list, not scroll six screens of tables.
+   *
+   * @gotcha Layout forks on viewport at render time: <=768px swaps the desktop
+   *         stats table for renderDeliverableMobileCard. The breakpoint is read
+   *         once here and not re-evaluated on resize.
+   * @perf Bodies are built on first expand, so a 19-campaign dashboard mounts
+   *       19 rows instead of 19 tables plus their thumbnails.
+   */
+  function renderCampaigns(campaigns, container) {
+    var isMobile = window.innerWidth <= 768;
+    if (!campaigns || campaigns.length === 0) {
+      var empty = el('div', 'empty-msg');
+      empty.textContent = 'No campaigns found for this dashboard.';
+      container.appendChild(empty);
+      return;
+    }
 
-      container.appendChild(card);
+    // Global copy button - all posted URLs across all campaigns
+    var allUrls = [];
+    campaigns.forEach(function (c) {
+      (c.deliverables || []).forEach(function (d) {
+        if (d.post_url) allUrls.push(d.post_url);
+      });
     });
+    if (allUrls.length > 0) {
+      var globalRow = el('div', 'copy-global-row');
+      var globalBtn = makeCopyBtn(allUrls, 'Copy all ' + allUrls.length + ' post URL' + (allUrls.length === 1 ? '' : 's'));
+      globalRow.appendChild(globalBtn);
+      container.appendChild(globalRow);
+    }
+
+    var list = el('div', 'camp-list');
+
+    // One column header for the whole list. Repeating it per campaign cost
+    // ~35px x 19 campaigns of pure chrome in the previous card layout.
+    // The leading empty cell holds the caret column so the header tracks the
+    // same 5-column grid the rows use.
+    var listHead = el('div', 'camp-listhead');
+    ['', 'Campaign', 'Status', 'Views', 'ER%'].forEach(function (label, i) {
+      var cell = el('span', i >= 3 ? 'camp-listhead-num' : '');
+      cell.textContent = label;
+      listHead.appendChild(cell);
+    });
+    list.appendChild(listHead);
+
+    campaigns.forEach(function (campaign, cardIdx) {
+      var delivs = campaign.deliverables || [];
+      var item = el('div', 'camp-item');
+      // Capped so the list finishes settling in ~0.4s however many campaigns
+      // land; an uncapped per-row delay made the last row arrive 1.3s late.
+      item.style.animationDelay = Math.min(cardIdx * 0.03, 0.4) + 's';
+
+      var bodyId  = 'camp-body-' + cardIdx;
+      var canOpen = delivs.length > 0;
+
+      var row = el(canOpen ? 'button' : 'div', 'camp-row');
+      if (canOpen) {
+        row.type = 'button';
+        row.setAttribute('aria-expanded', 'false');
+        row.setAttribute('aria-controls', bodyId);
+      }
+
+      // Caret
+      var caret = el('span', 'camp-caret');
+      if (canOpen) caret.appendChild(icon('chevron', 13));
+      row.appendChild(caret);
+
+      // Identity: the sound headlines, dates and post count demote to the sub-line
+      var idCell = el('span', 'camp-id');
+      var sound  = campaignSound(delivs);
+      var startStr = fmtDate(campaign.start_date);
+      var endStr   = fmtDate(campaign.end_date);
+      var dateStr  = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '';
+
+      var title = el('span', 'camp-title');
+      if (sound) {
+        title.appendChild(icon('music', 13, 'camp-title-note'));
+        var trackEl = el('span');
+        trackEl.textContent = sound.track;
+        title.appendChild(trackEl);
+        if (sound.more > 0) {
+          var moreEl = el('span', 'camp-title-more');
+          moreEl.textContent = '+' + sound.more + ' more';
+          title.appendChild(moreEl);
+        }
+        var flag = campaignMusicFlag(delivs);
+        if (flag) {
+          var flagEl = el('span', flag === 'diff' ? 'music-diff' : 'camp-sound-pending');
+          flagEl.textContent = flag === 'diff' ? '≠ Different' : 'Unverified';
+          title.appendChild(flagEl);
+        }
+      } else {
+        title.textContent = dateStr || 'Campaign';
+      }
+      idCell.appendChild(title);
+
+      var subParts = [];
+      if (sound && sound.artist) subParts.push(sound.artist);
+      if (sound && dateStr)      subParts.push(dateStr);
+      if (delivs.length > 0)     subParts.push(delivs.length + ' post' + (delivs.length === 1 ? '' : 's'));
+      else                       subParts.push('No deliverables');
+      var sub = el('span', 'camp-sub');
+      sub.textContent = subParts.join(' · ');
+      idCell.appendChild(sub);
+      row.appendChild(idCell);
+
+      // Badges
+      var badgesWrap = el('span', 'camp-badges');
+      badgesWrap.appendChild(badge(campaign.status));
+      if (campaign.payment) {
+        var payStatus = campaign.payment.is_in_kind ? 'In-Kind' : (campaign.payment.status || 'Not-Invoiced');
+        badgesWrap.appendChild(badge(payStatus));
+      }
+      row.appendChild(badgesWrap);
+
+      // Headline metrics
+      var totals = sumStats(delivs);
+      var viewsEl = el('span', 'camp-metric');
+      viewsEl.textContent = totals.hasStats ? fmtNum(totals.views) : '—';
+      row.appendChild(viewsEl);
+      // Orange is reserved for a real rate; an empty-value dash stays neutral.
+      var erEl = el('span', 'camp-metric camp-metric-er' + (totals.avgER !== null ? '' : ' camp-metric-empty'));
+      erEl.textContent = totals.avgER !== null ? totals.avgER.toFixed(1) + '%' : '—';
+      row.appendChild(erEl);
+
+      item.appendChild(row);
+
+      if (canOpen) {
+        var body = el('div', 'camp-body');
+        body.id = bodyId;
+        body.hidden = true;
+        item.appendChild(body);
+
+        var built = false;
+        row.addEventListener('click', function () {
+          if (!built) {
+            built = true;
+            if (!isMobile) {
+              body.appendChild(buildDeliverablesTable(delivs, cardIdx));
+            } else {
+              var delivCardList = el('div', 'mobile-deliv-list');
+              delivs.forEach(function (d) { delivCardList.appendChild(renderDeliverableMobileCard(d)); });
+              body.appendChild(delivCardList);
+            }
+
+            // Foot band: totals (only where they add something the rows above
+            // do not already state) on the left, copy-URLs on the right.
+            var campUrls = delivs.filter(function (d) { return d.post_url; })
+                                 .map(function (d) { return d.post_url; });
+            var copyBtn  = makeCopyBtn(campUrls, null);
+            var showTotals = totals.hasStats && delivs.length > 1;
+            if (showTotals || copyBtn) {
+              var foot = el('div', 'camp-foot');
+              var pills = el('div', 'camp-foot-stats');
+              if (showTotals) {
+                [
+                  { label: 'Total Views',     value: fmtNum(totals.views) },
+                  { label: 'Total Likes',     value: fmtNum(totals.likes) },
+                  { label: 'Total Comments',  value: fmtNum(totals.comments) },
+                  { label: 'Total Shares',    value: fmtNum(totals.shares) },
+                  { label: 'Engagement Rate', value: totals.avgER !== null ? totals.avgER.toFixed(1) + '%' : '—', highlight: true },
+                ].forEach(function (m) {
+                  var pill  = el('div', m.highlight ? 'stat-pill stat-pill-er' : 'stat-pill');
+                  var valEl = el('div', 'stat-pill-value');
+                  valEl.textContent = m.value;
+                  var lblEl = el('div', 'stat-pill-label');
+                  lblEl.textContent = m.label;
+                  append(pill, valEl, lblEl);
+                  pills.appendChild(pill);
+                });
+              }
+              foot.appendChild(pills);
+              if (copyBtn) foot.appendChild(copyBtn);
+              body.appendChild(foot);
+            }
+          }
+          var open = body.hidden;
+          body.hidden = !open;
+          row.setAttribute('aria-expanded', String(open));
+          item.classList.toggle('camp-item--open', open);
+        });
+      }
+
+      list.appendChild(item);
+    });
+
+    container.appendChild(list);
   }
 
   // ── Render: payment addresses ─────────────────────────────────────────────────
