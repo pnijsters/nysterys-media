@@ -92,6 +92,12 @@
       { t: 'path',   a: { d: 'M8 4.5V8l2.5 1.5' } },
     ],
     bolt:    [ { t: 'path', a: { d: 'M9 1.5 3.5 9H8l-1 5.5L13 7H8.5z' } } ],
+    // Opens-in-a-new-tab affordance: arrow leaving an open-cornered box.
+    'arrow-out': [
+      { t: 'path', a: { d: 'M8.5 3.5h4v4' } },
+      { t: 'path', a: { d: 'M12.5 3.5 7 9' } },
+      { t: 'path', a: { d: 'M10.5 9.5v3.5h-8V5h3.5' } },
+    ],
     chevron: [ { t: 'path', a: { d: 'M6 4l4 4-4 4' } } ], // points right; rotate 90deg when open
     ban:   [
       { t: 'circle', a: { cx: '8', cy: '8', r: '5.5' } },
@@ -1052,6 +1058,60 @@
     return pending ? 'pending' : null;
   }
 
+  /**
+   * Build the campaign identity block: sound headline over a metadata line.
+   *
+   * The single home for what a campaign is CALLED, used by both the campaigns
+   * list and the payments table. Naming a campaign by its sound on one tab and
+   * by its date range on another made the same deal look like two different
+   * things, so neither tab may build this itself.
+   *
+   * @param {object} campaign - the campaign, with its deliverables.
+   * @returns {object} `{cell, title, sub, sound, dateStr, setSub}` where `cell`
+   *          is the ready-to-mount element, `title` is exposed so a caller can
+   *          append tab-specific chips, and `setSub(parts)` writes the
+   *          metadata line from an array joined with the standard separator.
+   */
+  function buildCampaignLabel(campaign) {
+    var delivs   = campaign.deliverables || [];
+    var sound    = campaignSound(delivs);
+    var startStr = fmtDate(campaign.start_date);
+    var endStr   = fmtDate(campaign.end_date);
+    var dateStr  = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '';
+
+    var cell  = el('span', 'camp-id');
+    var title = el('span', 'camp-title');
+    if (sound) {
+      title.appendChild(icon('music', 13, 'camp-title-note'));
+      var trackEl = el('span');
+      trackEl.textContent = sound.track;
+      title.appendChild(trackEl);
+      if (sound.original) {
+        var origEl = el('span', 'camp-title-qual');
+        origEl.textContent = 'Original sound';
+        title.appendChild(origEl);
+      }
+      if (sound.more > 0) {
+        var moreEl = el('span', 'camp-title-more');
+        moreEl.textContent = '+' + sound.more + ' more';
+        title.appendChild(moreEl);
+      }
+    } else {
+      title.textContent = dateStr || 'Campaign';
+    }
+    cell.appendChild(title);
+
+    var sub = el('span', 'camp-sub');
+    cell.appendChild(sub);
+
+    return {
+      cell: cell, title: title, sub: sub, sound: sound, dateStr: dateStr,
+      setSub: function (parts) {
+        sub.textContent = (parts || []).filter(Boolean).join(' · ');
+      },
+    };
+  }
+
   // ── Render: campaigns panel ────────────────────────────────────────────────────
 
   // Creates a copy-URLs button. urls = string[]. Returns null if no urls.
@@ -1397,47 +1457,27 @@
       row.appendChild(caret);
 
       // Identity: the sound headlines, dates and post count demote to the sub-line
-      var idCell = el('span', 'camp-id');
-      var sound  = campaignSound(delivs);
-      var startStr = fmtDate(campaign.start_date);
-      var endStr   = fmtDate(campaign.end_date);
-      var dateStr  = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '';
+      var label   = buildCampaignLabel(campaign);
+      var idCell  = label.cell;
+      var dateStr = label.dateStr;
 
-      var title = el('span', 'camp-title');
-      if (sound) {
-        title.appendChild(icon('music', 13, 'camp-title-note'));
-        var trackEl = el('span');
-        trackEl.textContent = sound.track;
-        title.appendChild(trackEl);
-        if (sound.original) {
-          var origEl = el('span', 'camp-title-qual');
-          origEl.textContent = 'Original sound';
-          title.appendChild(origEl);
-        }
-        if (sound.more > 0) {
-          var moreEl = el('span', 'camp-title-more');
-          moreEl.textContent = '+' + sound.more + ' more';
-          title.appendChild(moreEl);
-        }
+      // Music compliance is a campaigns-tab concern, so the chip is appended by
+      // this caller rather than baked into the shared label.
+      if (label.sound) {
         var flag = campaignMusicFlag(delivs);
         if (flag) {
           var flagEl = el('span', flag === 'diff' ? 'music-diff' : 'camp-sound-pending');
           flagEl.textContent = flag === 'diff' ? '≠ Different' : 'Unverified';
-          title.appendChild(flagEl);
+          label.title.appendChild(flagEl);
         }
-      } else {
-        title.textContent = dateStr || 'Campaign';
       }
-      idCell.appendChild(title);
 
       var subParts = [];
-      if (sound && sound.artist) subParts.push(sound.artist);
-      if (sound && dateStr)      subParts.push(dateStr);
-      if (delivs.length > 0)     subParts.push(delivs.length + ' post' + (delivs.length === 1 ? '' : 's'));
-      else                       subParts.push('No deliverables');
-      var sub = el('span', 'camp-sub');
-      sub.textContent = subParts.join(' · ');
-      idCell.appendChild(sub);
+      if (label.sound && label.sound.artist) subParts.push(label.sound.artist);
+      if (label.sound && dateStr)            subParts.push(dateStr);
+      if (delivs.length > 0)                 subParts.push(delivs.length + ' post' + (delivs.length === 1 ? '' : 's'));
+      else                                   subParts.push('No deliverables');
+      label.setSub(subParts);
       row.appendChild(idCell);
 
       // Badges
@@ -1711,6 +1751,31 @@
       .catch(function () { failed(); });
   }
 
+  /**
+   * Build the "Pay now" link for an outstanding invoice with an active Stripe
+   * Payment Link, or null when there is nothing to pay.
+   *
+   * @param {object} p - the campaign's payment block.
+   * @returns {?HTMLElement} an anchor opening Stripe in a new tab.
+   * @security The URL is only ever present in the payload for a campaign the
+   *           edge function has already confirmed is unpaid and not in-kind,
+   *           so a settled invoice cannot show this control. safeLink is still
+   *           applied here: every outbound href on this page goes through it.
+   * @gotcha Opens in a NEW tab. Checkout must not replace the dashboard, which
+   *         the hub previews inside a chrome-less popup with no back button.
+   */
+  function payNowControl(p) {
+    var href = p && safeLink(p.pay_url);
+    if (!href) return null;
+    var a = el('a', 'pay-now-btn');
+    a.href   = href;
+    a.target = '_blank';
+    a.rel    = 'noopener noreferrer';
+    a.textContent = 'Pay now';
+    a.appendChild(icon('arrow-out', 11, 'pay-now-icon'));
+    return a;
+  }
+
   function renderPayments(campaigns, container, paymentAddresses) {
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
@@ -1805,8 +1870,8 @@
 
     var thead = el('thead');
     var hr    = el('tr');
-    (isMobile ? ['Period', 'Status', 'Amount', 'Date']
-              : ['Period', 'Status', 'Amount', 'Date', 'Invoice']).forEach(function (c) {
+    (isMobile ? ['Campaign', 'Status', 'Amount', 'Date']
+              : ['Campaign', 'Status', 'Amount', 'Date', 'Invoice']).forEach(function (c) {
       var th = el('th');
       th.textContent = c;
       hr.appendChild(th);
@@ -1819,21 +1884,23 @@
       var p   = c.payment;
       var row = el('tr');
 
-      var periodTd = el('td');
-      var startStr = fmtDate(c.start_date);
-      var endStr   = fmtDate(c.end_date);
-      var periodStr = el('div');
-      periodStr.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : '—';
-      periodTd.appendChild(periodStr);
+      // Same identity as the campaigns tab: the sound names the row, the dates
+      // demote to the metadata line. @see buildCampaignLabel
+      var campTd = el('td', 'pay-camp-cell');
+      var label  = buildCampaignLabel(c);
+      label.setSub([label.dateStr || '—']);
+      campTd.appendChild(label.cell);
       if (isMobile) {
         var sub = el('div', 'sub-note invoice-sub');
         sub.appendChild(invoiceControl(p));
-        periodTd.appendChild(sub);
+        campTd.appendChild(sub);
       }
-      row.appendChild(periodTd);
+      row.appendChild(campTd);
 
       var statusTd = el('td');
       statusTd.appendChild(badge(p.status));
+      var payBtn = payNowControl(p);
+      if (payBtn) statusTd.appendChild(payBtn);
       row.appendChild(statusTd);
 
       var amountTd = el('td');

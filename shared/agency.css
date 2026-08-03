@@ -1025,6 +1025,44 @@ tbody tr:hover td { background: var(--surface2); }
 
 .invoice-link-icon { flex: none; opacity: 0.75; }
 
+/* ── Payments: campaign identity + pay control ────────────────
+   The campaign cell reuses .camp-id / .camp-title / .camp-sub from the
+   campaigns list so a deal is called the same thing on both tabs. Only the
+   scale changes: a table row is denser than a list row. */
+
+.pay-camp-cell { white-space: normal; }
+
+.pay-camp-cell .camp-title { font-size: 15px; }
+.pay-camp-cell .camp-sub   { font-size: 10px; }
+
+/* Sits under the status badge, so the row reads "unpaid, and here is the fix".
+   Quiet by default: the agency decides when to pay, the dashboard does not
+   nag. Orange only on hover, where intent is already expressed. */
+.pay-now-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.pay-now-btn:hover {
+  color: var(--orange);
+  border-color: var(--orange);
+}
+
+.pay-now-icon { flex: none; opacity: 0.8; }
+
 /* ── Aggregate stat pills (campaign foot band) ────────────── */
 
 .stat-pill {
