@@ -867,9 +867,15 @@
       var musicRow = el('div', 'mobile-deliv-music');
       musicRow.appendChild(icon('music', 12, 'mobile-deliv-music-note'));
 
-      if (hasBrief && m.contracted_track) {
+      // Name the sound that was USED once the post is live, and fall back to the
+      // brief only before it is. A deviation used to name the contracted track
+      // beside "Different", which told the agency what it asked for and not what
+      // it got. Mirrors the desktop Sound cell. @see soundCell
+      var showTrack  = hasActual ? m.actual_track  : m.contracted_track;
+      var showArtist = hasActual ? m.actual_artist : m.contracted_artist;
+      if (showTrack) {
         var trackEl = el('span', 'mobile-deliv-music-track');
-        trackEl.textContent = fmtTrack(m.contracted_track) + (m.contracted_artist ? ' — ' + m.contracted_artist : '');
+        trackEl.textContent = fmtTrack(showTrack) + (showArtist ? ' — ' + showArtist : '');
         musicRow.appendChild(trackEl);
       }
 
