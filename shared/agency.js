@@ -1460,7 +1460,69 @@
 
   // ── Render: payment addresses ─────────────────────────────────────────────────
 
-  function renderPaymentAddresses(paymentAddresses, container) {
+  /**
+   * The Stripe row that heads the payment list.
+   *
+   * Deliberately carries NO link of its own. The payable thing is an invoice,
+   * not the creator, so the actionable control is the per-campaign Pay now
+   * button already rendered in the table below; a second entry point here would
+   * be a link with no amount attached to it.
+   *
+   * @returns {HTMLElement} the row
+   */
+  function buildStripeRow() {
+    var row = el('div', 'pay-addr-row pay-addr-row--preferred');
+
+    var methodEl = el('span', 'pay-addr-method');
+    methodEl.textContent = 'Stripe';
+
+    var valueEl = el('div', 'pay-addr-value');
+    var tag = el('span', 'pay-addr-tag');
+    tag.textContent = 'Preferred';
+    valueEl.appendChild(tag);
+    var note = el('div', 'pay-addr-note');
+    note.textContent = 'Use Pay now on any unpaid invoice below. Card or bank, and it clears straight away.';
+    valueEl.appendChild(note);
+
+    append(row, methodEl, valueEl);
+    return row;
+  }
+
+  /** True when this method is PayPal, whatever the label says. @see rankMethods */
+  function isPaypal(m) {
+    return /paypal/i.test((m && (m.method || '')) + ' ' + (m && (m.label || '')));
+  }
+
+  /**
+   * Order the ways an agency can pay us, most preferred first.
+   *
+   * @gotcha PayPal always sinks to the bottom, ignoring its `sort_order`. Being
+   *   the last resort is a standing business rule rather than a per-creator
+   *   preference, so it must not depend on a field somebody can set wrong when
+   *   adding the next creator. Every other method keeps the server's order.
+   * @param {Array} methods - one account's payment methods
+   * @returns {Array} a new array; the input is not mutated
+   */
+  function rankMethods(methods) {
+    var rest = [], paypal = [];
+    (methods || []).forEach(function (m) { (isPaypal(m) ? paypal : rest).push(m); });
+    return rest.concat(paypal);
+  }
+
+  /**
+   * "Send Payment To": the ranked list of ways this agency can settle an invoice.
+   *
+   * Stripe leads because it reconciles itself, and it is the one method that is
+   * NOT an address: it lives on the per-campaign Pay now buttons in the table
+   * below, so this block points at them rather than repeating a link. That row
+   * is suppressed when no unpaid invoice actually carries a link, since telling
+   * an agency to use a button that is not on the page is worse than silence.
+   *
+   * @param {Array} paymentAddresses - accounts + methods from the edge function
+   * @param {HTMLElement} container
+   * @param {boolean} hasPayLinks - any unpaid campaign exposes a Stripe link
+   */
+  function renderPaymentAddresses(paymentAddresses, container, hasPayLinks) {
     if (!paymentAddresses || paymentAddresses.length === 0) return;
 
     var section = el('div', 'payment-addresses-section');
@@ -1470,20 +1532,28 @@
     section.appendChild(heading);
 
     var cards = el('div', 'payment-addresses-cards');
+    // The platform header only earns its space when there is more than one
+    // account to tell apart; with a single card it restates the dashboard.
+    var showPlatform = paymentAddresses.length > 1;
 
-    paymentAddresses.forEach(function (acct) {
+    paymentAddresses.forEach(function (acct, acctIdx) {
       var card = el('div', 'payment-address-card');
 
-      var header     = el('div', 'pay-addr-header');
-      var platformEl = el('span', 'pay-addr-platform');
-      platformEl.textContent = acct.platform.charAt(0).toUpperCase() + acct.platform.slice(1);
-      var usernameEl = el('span', 'pay-addr-username');
-      usernameEl.textContent = '@' + acct.username;
-      append(header, platformEl, usernameEl);
-      card.appendChild(header);
+      if (showPlatform) {
+        var header     = el('div', 'pay-addr-header');
+        var platformEl = el('span', 'pay-addr-platform');
+        platformEl.textContent = acct.platform.charAt(0).toUpperCase() + acct.platform.slice(1);
+        var usernameEl = el('span', 'pay-addr-username');
+        usernameEl.textContent = '@' + acct.username;
+        append(header, platformEl, usernameEl);
+        card.appendChild(header);
+      }
 
-      acct.methods.forEach(function (m) {
-        var row = el('div', 'pay-addr-row');
+      // Stripe heads the first card only, so the recommendation is made once.
+      if (hasPayLinks && acctIdx === 0) card.appendChild(buildStripeRow());
+
+      rankMethods(acct.methods).forEach(function (m) {
+        var row = el('div', 'pay-addr-row' + (isPaypal(m) ? ' pay-addr-row--last-resort' : ''));
 
         var methodEl = el('span', 'pay-addr-method');
         methodEl.textContent = m.label || m.method;
@@ -1675,7 +1745,7 @@
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
     if (withPayment.length === 0) {
-      renderPaymentAddresses(paymentAddresses, container);
+      renderPaymentAddresses(paymentAddresses, container, false);
       var empty = el('div', 'empty-msg');
       empty.textContent = 'No payment information available for these campaigns.';
       container.appendChild(empty);
@@ -1696,6 +1766,11 @@
     });
 
     var outstanding = pendingAmt + notInvoiced;
+
+    // Only recommend Stripe when a Pay now button is genuinely on this page. The
+    // edge function withholds pay_url once an invoice is settled, so this goes
+    // false by itself when everything is paid.
+    var hasPayLinks = withPayment.some(function (c) { return !!(c.payment && c.payment.pay_url); });
 
     // ── Payment status hero - outstanding amount leads ──────────────────────────
     // All values set via textContent; style.color uses hardcoded CSS variable strings only
@@ -1750,7 +1825,7 @@
     container.appendChild(heroEl);
 
     // Payment addresses (where to send it)
-    renderPaymentAddresses(paymentAddresses, container);
+    renderPaymentAddresses(paymentAddresses, container, hasPayLinks);
 
     // Per-campaign payments table
     var wrap      = el('div', 'payments-section');

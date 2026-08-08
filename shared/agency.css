@@ -1706,6 +1706,41 @@ a.mobile-deliv-thumb:hover { border-color: var(--orange); }
 
 .pay-addr-row:last-child { border-bottom: none; }
 
+/* The preferred route. A background tint rather than an accent stripe, so the
+   row reads as a different KIND of entry (an instruction, not an address). */
+.pay-addr-row--preferred {
+  background: color-mix(in oklab, var(--orange) 7%, transparent);
+  align-items: flex-start;
+  padding-top: 11px;
+  padding-bottom: 12px;
+}
+
+.pay-addr-row--preferred .pay-addr-method { color: var(--white); }
+
+.pay-addr-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--orange2);
+}
+
+.pay-addr-note {
+  margin-top: 3px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 46ch;
+}
+
+/* Last resort. Demoted, never degraded: the LABEL dims to push the row down the
+   ladder, but the address itself keeps --muted, because an agency that has to
+   use this route still has to be able to read it. */
+.pay-addr-row--last-resort .pay-addr-method { color: var(--dim); }
+.pay-addr-row--last-resort .pay-addr-value,
+.pay-addr-row--last-resort .pay-addr-link   { color: var(--muted); }
+
 .pay-addr-method {
   font-size: 10px;
   font-weight: 700;
