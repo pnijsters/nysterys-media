@@ -1201,13 +1201,15 @@
           });
         }
 
-        // Music sub-row - only when there's a mismatch or unverified brief (not yet posted)
+        // Music sub-row - ONLY for a genuine deviation, where showing the brief
+        // beside what was used is the whole point. It used to also cover the
+        // not-yet-posted and no-brief cases, but the Sound cell now states both
+        // of those, so rendering it there reprinted the cell verbatim one line
+        // lower. @see soundCell
         var m = d.music;
         var hasBrief  = m && (m.contracted_url || m.contracted_track);
         var hasActual = m && (m.actual_url     || m.actual_track);
-        var isMatch = hasBrief && hasActual && musicMatched(m);
-        // Show when: brief exists but not yet verified (no actual data), or there's a confirmed mismatch
-        if ((hasBrief || hasActual) && !(hasBrief && hasActual && isMatch)) {
+        if (hasBrief && hasActual && !musicMatched(m)) {
           var musicRow = el('tr', 'music-row');
           var musicTd  = el('td');
           musicTd.colSpan = 9; // thumb + 7 core columns + caret
@@ -1249,27 +1251,17 @@
             return block;
           }
 
-          if (hasBrief) {
-            detail.appendChild(musicBlock('Brief', m.contracted_track, m.contracted_artist, m.contracted_url));
-          }
+          detail.appendChild(musicBlock('Brief', m.contracted_track, m.contracted_artist, m.contracted_url));
 
-          if (hasBrief && hasActual) {
-            var sep = el('span', 'music-sep');
-            sep.textContent = '·';
-            detail.appendChild(sep);
-          }
+          var sep = el('span', 'music-sep');
+          sep.textContent = '·';
+          detail.appendChild(sep);
 
-          if (hasActual) {
-            detail.appendChild(musicBlock('Used', m.actual_track, m.actual_artist, m.actual_url));
-          }
+          detail.appendChild(musicBlock('Used', m.actual_track, m.actual_artist, m.actual_url));
 
-          if (hasBrief && hasActual) {
-            // Always a mismatch at this point (matches are filtered out above)
-            var indicator = el('span', 'music-diff');
-            indicator.textContent = '≠ Different';
-            detail.appendChild(indicator);
-          }
-
+          // No trailing "Different" marker. The row only exists on a deviation,
+          // and the campaign headline chip plus the orange Sound cell directly
+          // above already say so twice.
           musicTd.appendChild(detail);
           musicRow.appendChild(musicTd);
           tbody.appendChild(musicRow);
