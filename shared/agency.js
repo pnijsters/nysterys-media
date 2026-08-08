@@ -583,8 +583,12 @@
     // states that denominator against the delivered total. Reporting a bare
     // 'All Confirmed' beside '23/23 Posts Delivered' read as all 23 posts
     // verified when only 2 carried a brief, which overclaims to the agency.
-    var agencyType = dash && dash.agency_type ? dash.agency_type : '';
-    if (agencyType.toLowerCase().indexOf('music') !== -1) {
+    // Gated on the agency TYPE's own flag, never on its name. This used to test
+    // whether the type name contained "music", which worked by accident of one
+    // type being called "Music Promo": renaming it would have switched the
+    // compliance KPI off without a word, and a new music type called anything
+    // else would never have shown one.
+    if (dash && dash.music_brief_required === true) {
       var scConfirmed = 0, scMismatched = 0, scTotal = 0, scDelivered = 0, scNoBrief = 0;
       campaigns.forEach(function (c) {
         (c.deliverables || []).forEach(function (d) {
