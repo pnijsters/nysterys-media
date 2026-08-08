@@ -944,9 +944,9 @@
       if (seen.indexOf(key) !== -1) return;
       seen.push(key);
       if (!lead) {
-        lead = original
-          ? { track: artist,          artist: null,   brief: false,      original: true  }
-          : { track: fmtTrack(track), artist: artist, brief: !useActual, original: false };
+        // An original sound is keyed and titled by its credited account, which
+        // is the only thing naming it. @see CLAUDE.md (Agency Dashboard)
+        lead = original ? { track: artist } : { track: fmtTrack(track) };
       }
     });
     if (!lead) return null;
@@ -977,11 +977,11 @@
   }
 
   /**
-   * Build the campaign identity block: sound headline over a metadata line.
+   * Build the campaign identity block: the campaign's name over a metadata line.
    *
-   * The single home for what a campaign is CALLED, used by both the campaigns
-   * list and the payments table. Naming a campaign by its sound on one tab and
-   * by its date range on another made the same deal look like two different
+   * The single home for what a campaign is CALLED here, used by both the
+   * campaigns list and the payments table. Naming a campaign one way on one tab
+   * and another way on the next made the same deal look like two different
    * things, so neither tab may build this itself.
    *
    * @param {object} campaign - the campaign, with its deliverables.
@@ -989,6 +989,16 @@
    *          is the ready-to-mount element, `title` is exposed so a caller can
    *          append tab-specific chips, and `setSub(parts)` writes the
    *          metadata line from an array joined with the standard separator.
+   * @invariant The headline is `campaign.name` VERBATIM: the display name the
+   *            database built (`campaign_display_name()`), the same string the
+   *            hub shows. It already reads "Agency x Creator - Artist - Song",
+   *            so the sound, the artist and the "Original sound" qualifier are
+   *            NOT re-appended here; doing so would print each of them twice.
+   * @gotcha campaignSound survives for the one thing the display name cannot
+   *         express: a campaign that used SEVERAL sounds. Those are the
+   *         multi-deliverable campaigns, whose name is just "Agency x Creator",
+   *         so the sound summary moves to the metadata line rather than being
+   *         lost. It no longer decides what the campaign is CALLED.
    */
   function buildCampaignLabel(campaign) {
     var delivs   = campaign.deliverables || [];
@@ -999,23 +1009,15 @@
 
     var cell  = el('span', 'camp-id');
     var title = el('span', 'camp-title');
-    if (sound) {
-      title.appendChild(icon('music', 13, 'camp-title-note'));
-      var trackEl = el('span');
-      trackEl.textContent = sound.track;
-      title.appendChild(trackEl);
-      if (sound.original) {
-        var origEl = el('span', 'camp-title-qual');
-        origEl.textContent = 'Original sound';
-        title.appendChild(origEl);
-      }
-      if (sound.more > 0) {
-        var moreEl = el('span', 'camp-title-more');
-        moreEl.textContent = '+' + sound.more + ' more';
-        title.appendChild(moreEl);
-      }
-    } else {
-      title.textContent = dateStr || 'Campaign';
+    if (sound) title.appendChild(icon('music', 13, 'camp-title-note'));
+    var nameEl = el('span');
+    nameEl.textContent = campaign.name || dateStr || 'Campaign';
+    title.appendChild(nameEl);
+    // The only sound fact the name cannot carry: this campaign used more than one.
+    if (sound && sound.more > 0) {
+      var moreEl = el('span', 'camp-title-more');
+      moreEl.textContent = '+' + sound.more + ' more';
+      title.appendChild(moreEl);
     }
     cell.appendChild(title);
 
@@ -1383,8 +1385,11 @@
       }
 
       var subParts = [];
-      if (label.sound && label.sound.artist) subParts.push(label.sound.artist);
-      if (label.sound && dateStr)            subParts.push(dateStr);
+      // Multi-sound campaigns are named "Agency x Creator", so the track that
+      // led the campaign is stated here rather than dropped. Single-sound
+      // campaigns already carry artist and track in the headline.
+      if (label.sound && label.sound.more > 0) subParts.push(label.sound.track);
+      if (dateStr)                             subParts.push(dateStr);
       if (delivs.length > 0)                 subParts.push(delivs.length + ' post' + (delivs.length === 1 ? '' : 's'));
       else                                   subParts.push('No deliverables');
       label.setSub(subParts);
