@@ -585,9 +585,14 @@
     // verified when only 2 carried a brief, which overclaims to the agency.
     var agencyType = dash && dash.agency_type ? dash.agency_type : '';
     if (agencyType.toLowerCase().indexOf('music') !== -1) {
-      var scConfirmed = 0, scMismatched = 0, scTotal = 0, scDelivered = 0;
+      var scConfirmed = 0, scMismatched = 0, scTotal = 0, scDelivered = 0, scNoBrief = 0;
       campaigns.forEach(function (c) {
         (c.deliverables || []).forEach(function (d) {
+          // A deal the agency briefed no sound for is not a gap in our records,
+          // so it leaves the checkable universe entirely rather than inflating
+          // the "no contracted sound on file" remainder forever. 'unrecoverable'
+          // and null both stay in, because both ARE gaps.
+          if (d.music_brief_status === 'none_given') { scNoBrief++; return; }
           if (d.status !== 'Cancelled') scDelivered++;
           var mu = d.music;
           if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
@@ -613,14 +618,19 @@
           scColor = null;
         }
         var unbriefed = scDelivered - scTotal;
+        // Both remainders are named, never just the total. "No contracted sound
+        // on file" is our gap; "no sound briefed" is the deal having none, and
+        // conflating them would report a records problem the agency does not
+        // have. @see CLAUDE.md (the KPI must always state its denominator)
+        var notes = [];
+        if (unbriefed > 0) notes.push(unbriefed + (unbriefed === 1 ? ' post has' : ' posts have') + ' no contracted sound on file');
+        if (scNoBrief > 0) notes.push(scNoBrief + (scNoBrief === 1 ? ' post was' : ' posts were') + ' briefed with no sound');
         items.push({
           val:   scVal,
           label: 'Sounds Checked',
           color: scColor,
           tip:   'Posts where the audio used was compared against the contracted track.',
-          note:  unbriefed > 0
-            ? unbriefed + (unbriefed === 1 ? ' post has' : ' posts have') + ' no contracted sound on file'
-            : null,
+          note:  notes.length ? notes.join(' · ') : null,
         });
       }
     }
