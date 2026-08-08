@@ -208,6 +208,9 @@
     return t.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
   }
 
+  /** TikTok's literal track title for creator-uploaded audio. @see musicMatched */
+  var ORIGINAL_SOUND = 'original sound';
+
   function normTrack(t) {
     return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
   }
@@ -216,6 +219,32 @@
     if (!contractedUrl || !actualUrl) return false;
     if (contractedId && actualId) return contractedId === actualId;
     return contractedUrl === actualUrl;
+  }
+
+  /**
+   * True when a deliverable's brief and its live audio are the same sound.
+   *
+   * The single home for that question. Five call sites (the Sounds Checked KPI,
+   * the Sound Check panel, the mobile card, the campaign-row flag and the
+   * expanded music sub-row) each used to inline the same urlMatch||trackMatch
+   * pair, and one of them had already drifted to its own copy of normTrack.
+   *
+   * @gotcha "original sound" is TikTok's label for ANY creator-uploaded audio,
+   *   so it is a category and not a title. Two unrelated posts both carry it,
+   *   which made the track-name comparison report a match on a label collision
+   *   and rendered a real deviation as "Confirmed". When either side is an
+   *   original sound the track name proves nothing and only the music ID can
+   *   decide, so the name test is skipped entirely rather than trusted.
+   * @param {object} m - the deliverable's `music` object from the edge function
+   * @returns {boolean} true only when brief and actual are genuinely the same sound
+   */
+  function musicMatched(m) {
+    if (!m) return false;
+    if (musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id)) return true;
+    if (!m.contracted_track || !m.actual_track) return false;
+    var c = normTrack(m.contracted_track), a = normTrack(m.actual_track);
+    if (c === ORIGINAL_SOUND || a === ORIGINAL_SOUND) return false;
+    return c === a;
   }
 
   // ── Badge ────────────────────────────────────────────────────────────────────
@@ -502,10 +531,7 @@
           if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
           scTotal++;
           var hasActual  = !!(mu.actual_url || mu.actual_track);
-          var urlMatch   = musicUrlMatch(mu.contracted_url, mu.contracted_music_id, mu.actual_url, mu.actual_music_id);
-          var trackMatch = mu.contracted_track && mu.actual_track &&
-            normTrack(mu.contracted_track) === normTrack(mu.actual_track);
-          if (hasActual && (urlMatch || trackMatch)) scConfirmed++;
+          if (hasActual && musicMatched(mu)) scConfirmed++;
           else if (hasActual) scMismatched++;
         });
       });
@@ -770,10 +796,7 @@
         var mu = d.music;
         if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
         var hasActual = !!(mu.actual_url || mu.actual_track);
-        var urlMatch   = musicUrlMatch(mu.contracted_url, mu.contracted_music_id, mu.actual_url, mu.actual_music_id);
-        var trackMatch = mu.contracted_track && mu.actual_track &&
-          normTrack(mu.contracted_track) === normTrack(mu.actual_track);
-        var matched = urlMatch || trackMatch;
+        var matched = musicMatched(mu);
         items.push({
           thumb:       d.cover_image_url || null,
           post_url:    d.post_url || null,
@@ -959,10 +982,7 @@
     var hasBrief  = m && (m.contracted_url || m.contracted_track);
     var hasActual = m && (m.actual_url     || m.actual_track);
     if (hasBrief || hasActual) {
-      var urlMatch   = hasBrief && hasActual && musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id);
-      var trackMatch = hasBrief && hasActual && m.contracted_track && m.actual_track &&
-        normTrack(m.contracted_track) === normTrack(m.actual_track);
-      var isMatch = urlMatch || trackMatch;
+      var isMatch = hasBrief && hasActual && musicMatched(m);
 
       var musicRow = el('div', 'mobile-deliv-music');
       musicRow.appendChild(icon('music', 12, 'mobile-deliv-music-note'));
@@ -1050,10 +1070,7 @@
       var hasActual = !!(m.actual_url     || m.actual_track);
       if (!hasBrief) continue;
       if (!hasActual) { pending = true; continue; }
-      var urlMatch   = musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id);
-      var trackMatch = !!(m.contracted_track && m.actual_track &&
-        normTrack(m.contracted_track) === normTrack(m.actual_track));
-      if (!urlMatch && !trackMatch) return 'diff';
+      if (!musicMatched(m)) return 'diff';
     }
     return pending ? 'pending' : null;
   }
@@ -1305,10 +1322,7 @@
         var m = d.music;
         var hasBrief  = m && (m.contracted_url || m.contracted_track);
         var hasActual = m && (m.actual_url     || m.actual_track);
-        var urlMatch   = hasBrief && hasActual && musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id);
-        var trackMatch = hasBrief && hasActual && m.contracted_track && m.actual_track &&
-          m.contracted_track.toLowerCase().replace(/-/g, ' ').trim() === m.actual_track.toLowerCase().replace(/-/g, ' ').trim();
-        var isMatch = urlMatch || trackMatch;
+        var isMatch = hasBrief && hasActual && musicMatched(m);
         // Show when: brief exists but not yet verified (no actual data), or there's a confirmed mismatch
         if ((hasBrief || hasActual) && !(hasBrief && hasActual && isMatch)) {
           var musicRow = el('tr', 'music-row');
