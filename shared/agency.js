@@ -208,43 +208,6 @@
     return t.replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
   }
 
-  /**
-   * TikTok's track title for creator-uploaded audio, in every language it has
-   * been observed emitting. A CATEGORY, never a title. @see musicMatched
-   *
-   * @gotcha Matching only the English string covered 1,786 of our ~1,910
-   *   original-sound posts. The other 124 arrive in six other languages and were
-   *   treated as real track titles, so two unrelated posts both reporting
-   *   "Originalton" compared equal and a genuine deviation rendered as
-   *   "Confirmed" - the exact failure the guard below exists to prevent.
-   * @invariant Entries come only from labels observed in yt_dlp_metadata, never
-   *   guessed: a wrong entry suppresses a real title, which is worse than the
-   *   miss it fixes. Mirrored in hub-src/src/utils/campaignSound.js.
-   */
-  var ORIGINAL_SOUND_LABELS = [
-    'original sound', 'som original', 'sonido original', 'son original',
-    'originalton', 'оригинальный звук', 'orijinal ses', '오리지널 사운드'
-  ];
-
-  /**
-   * Is this normalised track name the creator-uploaded-audio label?
-   *
-   * @param {string} normalised - a track name already through normTrack.
-   * @gotcha TikTok appends the crediting account to some localisations
-   *   ("오리지널 사운드 - M2"). normTrack has already turned that dash into a
-   *   space, so the test is the label followed by a SPACE, not a dash.
-   * @gotcha The trailing space in that test is load-bearing: a bare startsWith
-   *   would swallow a real title like "Original Sounds Of Summer".
-   */
-  function isOriginalSound(normalised) {
-    if (!normalised) return false;
-    for (var i = 0; i < ORIGINAL_SOUND_LABELS.length; i++) {
-      var label = ORIGINAL_SOUND_LABELS[i];
-      if (normalised === label || normalised.indexOf(label + ' ') === 0) return true;
-    }
-    return false;
-  }
-
   function normTrack(t) {
     return t ? t.toLowerCase().replace(/-/g, ' ').trim() : '';
   }
@@ -269,6 +232,11 @@
    *   and rendered a real deviation as "Confirmed". When either side is an
    *   original sound the track name proves nothing and only the music ID can
    *   decide, so the name test is skipped entirely rather than trusted.
+   * @gotcha This reads the `*_is_original` FLAGS and never inspects a track name
+   *   for the label itself. The label is localised across at least 8 languages,
+   *   and that list has exactly one home (supabase/functions/_shared/originalSound.ts,
+   *   applied by the edge function); a copy of it here would be a second home
+   *   free to drift. @see CLAUDE.md (the label is localised)
    * @param {object} m - the deliverable's `music` object from the edge function
    * @returns {boolean} true only when brief and actual are genuinely the same sound
    */
@@ -276,9 +244,8 @@
     if (!m) return false;
     if (musicUrlMatch(m.contracted_url, m.contracted_music_id, m.actual_url, m.actual_music_id)) return true;
     if (!m.contracted_track || !m.actual_track) return false;
-    var c = normTrack(m.contracted_track), a = normTrack(m.actual_track);
-    if (isOriginalSound(c) || isOriginalSound(a)) return false;
-    return c === a;
+    if (m.contracted_is_original || m.actual_is_original) return false;
+    return normTrack(m.contracted_track) === normTrack(m.actual_track);
   }
 
   /**
