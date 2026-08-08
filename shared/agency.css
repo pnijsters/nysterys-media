@@ -1738,188 +1738,59 @@ a.mobile-deliv-thumb:hover { border-color: var(--orange); }
   font-size: 11px;
 }
 
-/* ── Music Compliance strip (music-promo agencies) ───────────── */
+/* ── Sound cell (deliverables table) ──────────────────────────
+   Per-post sound compliance, replacing the standalone Sound Check
+   panel. A confirmed post is deliberately QUIET: the tick carries the
+   whole claim and the row must not shout, because 20 of 22 are ticks
+   and colouring them all would bury the 2 that are not. Only a
+   deviation takes the accent. */
 
-.sound-check {
-  margin-bottom: 40px;
-  padding: 24px 0 28px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.sound-check-hdr {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.sc-icon {
-  color: var(--orange);
-  font-size: 22px;
-  line-height: 1;
-}
-
-.sc-hdr-label {
-  font-family: var(--font-display);
-  font-size: 28px;
-  letter-spacing: 0.05em;
-  color: var(--white);
-}
-
-.sc-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.sc-campaign-row td {
-  padding: 10px 0 4px;
-  font-size: 9px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: oklch(1 0 0 / 0.35);
-  border-top: 1px solid oklch(1 0 0 / 0.08);
-}
-
-.sc-campaign-row:first-child td {
-  border-top: none;
-  padding-top: 0;
-}
-
-.sc-row {
-  border-bottom: 1px solid oklch(1 0 0 / 0.04);
-}
-
-.sc-row td {
-  padding: 10px 0;
+.sound-cell {
   font-size: 12px;
-  vertical-align: middle;
+  line-height: 1.35;
+  max-width: 230px;
 }
 
-.sc-thumb-cell {
-  width: 130px;
-  padding-right: 14px !important;
-  vertical-align: middle;
+.sound-mark {
+  display: inline-block;
+  width: 11px;
+  margin-right: 5px;
+  font-size: 11px;
+  flex-shrink: 0;
 }
 
-.sc-thumb-inner {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
+.sound-text  { min-width: 0; }
+
+.sound-track {
+  display: inline;
+  overflow-wrap: anywhere;
 }
 
-.sc-thumb-link {
+/* The artist reads as the second line of one label, not a separate datum. */
+.sound-artist {
   display: block;
-  line-height: 0;
-}
-
-.sc-thumb-link:hover .sc-thumb {
-  opacity: 0.8;
-}
-
-.sc-thumb {
-  width: 44px;
-  height: 44px;
-  object-fit: cover;
-  border-radius: 3px;
-  display: block;
-  background: var(--surface3);
-  transition: opacity var(--transition);
-}
-
-.sc-thumb-empty {
-  background: var(--surface3);
-}
-
-.sc-date {
-  font-size: 13px;
-  color: var(--white);
-  white-space: nowrap;
-}
-
-.sc-caption-cell {
-  width: 30%;
-  padding-right: 14px !important;
-  vertical-align: middle;
-}
-
-.sc-caption {
-  font-size: 12px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.sc-track-cell {
-  color: var(--white);
-  padding-right: 12px !important;
-  vertical-align: middle;
-}
-
-.sc-track {
-  font-weight: 500;
-}
-
-.sc-artist {
-  color: var(--muted);
-}
-
-.sc-link {
-  color: var(--orange);
-  text-decoration: none;
   font-size: 10px;
-  transition: color var(--transition);
-}
-
-.sc-link:hover { color: var(--orange2); }
-
-.sc-status {
-  width: 90px;
-  font-size: 11px;
-  font-weight: 600;
-  text-align: right;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.sc-match   { color: var(--green); }
-.sc-diff    { color: var(--orange2); }
-.sc-pending { color: var(--dim); }
-
-/* Mobile merged column — hidden on desktop */
-.sc-content-cell { display: none; }
-
-.sc-content-caption {
-  font-size: 12px;
-  color: var(--white);
-  line-height: 1.4;
-  margin-bottom: 5px;
-  word-break: break-word;
-}
-
-.sc-content-track {
-  font-size: 11px;
   color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: 0.2px;
 }
 
-/* Sound Check mobile overrides — must follow .sc-content-cell { display: none }
-   so the cascade order is correct and table-cell wins on narrow viewports. */
-@media (max-width: 768px) {
-  .sc-table      { table-layout: auto; }
-  .sc-thumb-cell { width: 90px; }
-  .sc-caption-cell,
-  .sc-track-cell { display: none; }
-  .sc-content-cell {
-    display: table-cell;
-    vertical-align: middle;
-    padding: 10px 8px 10px 0 !important;
-  }
-  .sc-status { width: 80px; font-size: 10px; }
+.sound-ok  .sound-mark  { color: var(--green); }
+.sound-ok  .sound-track { color: var(--muted); }
+
+.sound-off .sound-mark  { color: var(--orange2); }
+.sound-off .sound-track { color: var(--orange2); font-weight: 500; }
+
+.sound-pending .sound-track,
+.sound-unbriefed .sound-track { color: var(--dim); }
+
+.sound-none { color: var(--dim); }
+
+.sound-nobrief {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--dim);
 }
 
 /* ── Keyboard focus ───────────────────────────────────────────

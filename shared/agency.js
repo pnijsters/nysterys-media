@@ -247,6 +247,67 @@
     return c === a;
   }
 
+  /**
+   * The Sound cell of one deliverable row: what this post used, and whether that
+   * is what the brief asked for.
+   *
+   * This is where sound compliance LIVES. It replaced a standalone Sound Check
+   * panel that re-listed every post in its own table below the campaign list.
+   * That panel cost 2,049px (43% of the page) to say "Confirmed" 20 times, and
+   * its weekly date-range group headers alone were 619px, which is the same
+   * failure the campaign list was rebuilt to remove. Proof now reads in three
+   * layers instead: the KPI states the rate, the campaign row flags a deviation
+   * without being expanded, and this cell carries the per-post evidence.
+   *
+   * @gotcha A deviation shows the sound ACTUALLY used, not the briefed one. The
+   *   brief is the known quantity; what the agency does not know is what it got
+   *   instead. The full brief-vs-used pair stays in the `music-row` sub-row
+   *   directly beneath, which renders on exactly this condition.
+   * @param {object|null} m - the deliverable's `music` object
+   * @returns {HTMLElement} a `<td>`, never null, so column counts stay aligned
+   */
+  function soundCell(m) {
+    var td = el('td', 'sound-cell');
+    var hasBrief  = !!(m && (m.contracted_url || m.contracted_track));
+    var hasActual = !!(m && (m.actual_url     || m.actual_track));
+
+    if (!hasBrief && !hasActual) { td.className = 'sound-cell sound-none'; td.textContent = '—'; return td; }
+
+    // Not posted yet: the brief is all there is, and nothing is claimed about it.
+    if (!hasActual) {
+      td.className = 'sound-cell sound-pending';
+      td.appendChild(soundText(m.contracted_track, m.contracted_artist));
+      return td;
+    }
+
+    var mark = el('span', 'sound-mark');
+    if (!hasBrief)                 { td.className = 'sound-cell sound-unbriefed'; }
+    else if (musicMatched(m))      { td.className = 'sound-cell sound-ok';  mark.textContent = '✓'; }
+    else                           { td.className = 'sound-cell sound-off'; mark.textContent = '≠'; }
+    if (mark.textContent) td.appendChild(mark);
+    td.appendChild(soundText(m.actual_track, m.actual_artist));
+    if (!hasBrief) {
+      var note = el('span', 'sound-nobrief');
+      note.textContent = 'no brief';
+      td.appendChild(note);
+    }
+    return td;
+  }
+
+  /** Track + artist as one inline fragment. @see soundCell */
+  function soundText(track, artist) {
+    var frag = el('span', 'sound-text');
+    var t = el('span', 'sound-track');
+    t.textContent = track ? fmtTrack(track) : '—';
+    frag.appendChild(t);
+    if (artist) {
+      var a = el('span', 'sound-artist');
+      a.textContent = artist;
+      frag.appendChild(a);
+    }
+    return frag;
+  }
+
   // ── Badge ────────────────────────────────────────────────────────────────────
 
   function badge(status) {
@@ -725,187 +786,6 @@
     totals.avgER = totals.erCount > 0 ? totals.erSum / totals.erCount : null;
     return totals;
   }
-
-  // ── Sound Check DOM builders (shared by desktop cells and mobile merged cell) ──
-
-  function buildCaptionContent(item, container) {
-    if (item.caption) {
-      var raw = item.caption.trim();
-      var stripped = raw.replace(/#\S+/g, '').replace(/\s+/g, ' ').trim();
-      var display = stripped.length > 90 ? stripped.slice(0, 90) + '…' : stripped;
-      var capEl = el('span', 'sc-caption');
-      capEl.textContent = display || raw.slice(0, 90);
-      container.appendChild(capEl);
-      var safePost = item.post_url ? safeLink(item.post_url) : null;
-      if (safePost) {
-        var lnk = el('a', 'sc-link');
-        lnk.href = safePost;
-        lnk.target = '_blank';
-        lnk.rel = 'noopener noreferrer';
-        lnk.textContent = ' ↗';
-        container.appendChild(lnk);
-      }
-    } else {
-      container.textContent = '—';
-    }
-  }
-
-  function buildTrackContent(item, container) {
-    if (item.track) {
-      var trackEl = el('span', 'sc-track');
-      trackEl.textContent = fmtTrack(item.track);
-      container.appendChild(trackEl);
-      if (item.artist) {
-        container.appendChild(document.createTextNode(' — '));
-        var artistEl = el('span', 'sc-artist');
-        artistEl.textContent = item.artist;
-        container.appendChild(artistEl);
-      }
-      var musicHref = item.url ? safeLink(item.url) : null;
-      if (musicHref) {
-        var lnk = el('a', 'sc-link');
-        lnk.href = musicHref;
-        lnk.target = '_blank';
-        lnk.rel = 'noopener noreferrer';
-        lnk.textContent = ' ↗';
-        container.appendChild(lnk);
-      }
-    } else {
-      container.textContent = '—';
-    }
-  }
-
-  // ── Render: music compliance strip (music-promo agencies only) ────────────────
-
-  /**
-   * Render the Sound Check table comparing contracted vs actual audio per post.
-   * No-op unless agencyType contains 'music' (case-insensitive) and at least
-   * one deliverable carries a music brief.
-   *
-   * @gotcha A row counts as a match on either a music-id/URL match (musicUrlMatch)
-   *         OR a normalized track-name match (normTrack); status is 'pending'
-   *         until the actual audio data arrives.
-   */
-  function renderSoundCheck(campaigns, agencyType, container) {
-    if (!agencyType || agencyType.toLowerCase().indexOf('music') === -1) return;
-
-    var groups = [];
-    campaigns.forEach(function(c) {
-      var items = [];
-      (c.deliverables || []).forEach(function(d) {
-        var mu = d.music;
-        if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
-        var hasActual = !!(mu.actual_url || mu.actual_track);
-        var matched = musicMatched(mu);
-        items.push({
-          thumb:       d.cover_image_url || null,
-          post_url:    d.post_url || null,
-          posted_date: d.posted_date || null,
-          caption:     d.caption || null,
-          track:       mu.contracted_track || null,
-          artist:      mu.contracted_artist || null,
-          url:         mu.contracted_url || null,
-          status:      !hasActual ? 'pending' : matched ? 'match' : 'diff',
-        });
-      });
-      if (items.length > 0) groups.push({ campaign: c, items: items });
-    });
-
-    if (groups.length === 0) return;
-
-    var multiCampaign = groups.length > 1;
-
-    var wrap = el('div', 'sound-check');
-
-    var hdr = el('div', 'sound-check-hdr');
-    var hdrIcon = icon('music', 22, 'sc-icon');
-    var lbl = el('span', 'sc-hdr-label');
-    lbl.textContent = 'Sound Check';
-    append(hdr, hdrIcon, lbl);
-    wrap.appendChild(hdr);
-
-    var table = el('table', 'sc-table');
-    var tbody = el('tbody');
-
-    groups.forEach(function(group) {
-      if (multiCampaign) {
-        var campRow = el('tr', 'sc-campaign-row');
-        var campTd  = el('td', 'sc-campaign-cell');
-        campTd.colSpan = 5;
-        var startStr = fmtDate(group.campaign.start_date);
-        var endStr   = fmtDate(group.campaign.end_date);
-        campTd.textContent = (startStr !== '—' || endStr !== '—') ? startStr + ' – ' + endStr : (group.campaign.name || '');
-        campRow.appendChild(campTd);
-        tbody.appendChild(campRow);
-      }
-
-      group.items.forEach(function(item) {
-        var row = el('tr', 'sc-row');
-
-      // Column 1: thumbnail + post date
-      var thumbTd = el('td', 'sc-thumb-cell');
-      var thumbInner = el('div', 'sc-thumb-inner');
-      var safeThumb = item.thumb ? safeLink(item.thumb) : null;
-      var safePostHref = item.post_url ? safeLink(item.post_url) : null;
-      if (safeThumb) {
-        var img = document.createElement('img');
-        img.className = 'sc-thumb';
-        img.src = safeThumb;
-        img.alt = '';
-        if (safePostHref) {
-          var thumbLink = el('a', 'sc-thumb-link');
-          thumbLink.href = safePostHref;
-          thumbLink.target = '_blank';
-          thumbLink.rel = 'noopener noreferrer';
-          thumbLink.appendChild(img);
-          thumbInner.appendChild(thumbLink);
-        } else {
-          thumbInner.appendChild(img);
-        }
-      } else {
-        var placeholder = el('div', 'sc-thumb sc-thumb-empty');
-        thumbInner.appendChild(placeholder);
-      }
-      var dateEl = el('div', 'sc-date');
-      dateEl.textContent = fmtDateShort(item.posted_date) || '—';
-      thumbInner.appendChild(dateEl);
-      thumbTd.appendChild(thumbInner);
-      row.appendChild(thumbTd);
-
-      // Column 2: caption (desktop only - hidden on mobile via CSS)
-      var captionTd = el('td', 'sc-caption-cell');
-      buildCaptionContent(item, captionTd);
-      row.appendChild(captionTd);
-
-      // Column 3: contracted track (desktop only - hidden on mobile via CSS)
-      var trackTd = el('td', 'sc-track-cell');
-      buildTrackContent(item, trackTd);
-      row.appendChild(trackTd);
-
-      // Column 4: caption + track stacked (mobile only - hidden on desktop via CSS)
-      var contentTd = el('td', 'sc-content-cell');
-      var capDiv = el('div', 'sc-content-caption');
-      buildCaptionContent(item, capDiv);
-      contentTd.appendChild(capDiv);
-      var trackDiv = el('div', 'sc-content-track');
-      buildTrackContent(item, trackDiv);
-      contentTd.appendChild(trackDiv);
-      row.appendChild(contentTd);
-
-      // Column 5: status
-      var statusTd = el('td', 'sc-status sc-' + item.status);
-      statusTd.textContent = item.status === 'match' ? '✓ Confirmed' : item.status === 'diff' ? '≠ Different' : 'Pending';
-      row.appendChild(statusTd);
-
-        tbody.appendChild(row);
-      });
-    });
-
-    table.appendChild(tbody);
-    wrap.appendChild(table);
-    container.appendChild(wrap);
-  }
-
   // ── Mobile deliverable card ───────────────────────────────────────────────────
 
   /**
@@ -1184,8 +1064,9 @@
       // Core columns only. Per-post Likes/Comments/Shares moved into a per-row
       // expand so the table scans without horizontal scroll; the campaign-stats
       // bar below already carries those totals.
-      var cols  = ['Platform', 'Status', 'Due', 'Views', 'Completion', 'ER%'];
+      var cols  = ['Platform', 'Status', 'Due', 'Sound', 'Views', 'Completion', 'ER%'];
       var colTips = {
+        'Sound':      'The audio this post used, checked against the sound the brief asked for.',
         'Completion': 'Average share of the video watched to the end.',
         'ER%':        'Engagement rate: likes, comments and shares as a percent of views.',
       };
@@ -1253,6 +1134,8 @@
 
         row.appendChild(tdTxt(fmtDate(d.due_date), 'muted-cell'));
 
+        row.appendChild(soundCell(d.music));
+
         var s = d.stats;
 
         // Views cell - complete views shown as a muted sub-note when available
@@ -1295,7 +1178,7 @@
           engRow.id = detailId;
           engRow.hidden = true;
           var engTd = el('td');
-          engTd.colSpan = 8; // thumb + 6 core columns + caret
+          engTd.colSpan = 9; // thumb + 7 core columns + caret
           var engWrap = el('div', 'engagement-detail');
           [['Likes', s.likes], ['Comments', s.comments], ['Shares', s.shares]].forEach(function (pair) {
             var eItem = el('div', 'engagement-item');
@@ -1327,7 +1210,7 @@
         if ((hasBrief || hasActual) && !(hasBrief && hasActual && isMatch)) {
           var musicRow = el('tr', 'music-row');
           var musicTd  = el('td');
-          musicTd.colSpan = 8; // thumb + 6 core columns + caret
+          musicTd.colSpan = 9; // thumb + 7 core columns + caret
 
           var detail = el('div', 'music-detail');
 
@@ -2199,7 +2082,6 @@
       // positive test rather than a "not payments_only" that a rates_only link
       // would sail straight through.
       renderPerfChart(campaigns);
-      renderSoundCheck(campaigns, dash.agency_type, campPanel);
       renderCampaigns(campaigns, campPanel);
       panels.push({ tab: document.getElementById('tab-campaigns'), panel: campPanel });
     }
