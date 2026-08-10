@@ -20,7 +20,13 @@
  *
  * @gotcha Every feed here is read as an unauthenticated visitor, so each view
  *         needs its own `grant select ... to anon`. Recreating a view drops the
- *         grant and silently blanks the public site.
+ *         grant. That now surfaces as a failed load rather than as zeros: see
+ *         the guards in get() and getAll().
+ * @invariant A feed that errors must never be averaged in as zero. Every
+ *            headline figure on this site is a cross-platform SUM, so one dead
+ *            view does not blank the page, it quietly understates a creator to
+ *            the brands the page exists to win. Showing nothing beats showing a
+ *            five-figure creator as a zero.
  * @gotcha YouTube like/comment/share counts are DAILY deltas, not lifetime
  *         per-video counters like TikTok's. See buildYouTube.
  */
@@ -30,18 +36,35 @@
   var HDRS = { 'apikey': KEY, 'Authorization': 'Bearer ' + KEY };
   var PAGE = 1000; // PostgREST caps a single response at 1000 rows.
 
+  /* The view name, for an error a reader can act on without a network tab. */
+  function feedName(path) { return path.split('?')[0]; }
+
+  /* @gotcha A failed PostgREST call still carries a JSON body, an error OBJECT
+   *         rather than a row array, so `r.json()` resolves happily and the
+   *         failure looks like data. Rejecting here is what lets every caller's
+   *         catch fire instead of a dead feed being averaged in as zero. */
   function get(path) {
-    return fetch(URL + '/rest/v1/' + path, { headers: HDRS }).then(function (r) { return r.json(); });
+    return fetch(URL + '/rest/v1/' + path, { headers: HDRS }).then(function (r) {
+      if (!r.ok) throw new Error('Feed ' + feedName(path) + ' failed: HTTP ' + r.status);
+      return r.json();
+    });
   }
 
   /* Page through a feed until a short page proves the end. Used for anything
-   * whose row count grows without bound (every video ever, every sync day). */
+   * whose row count grows without bound (every video ever, every sync day).
+   *
+   * @gotcha The Array.isArray guard is load bearing, not defensive padding. An
+   *         error object has no `length`, so the old emptiness test read it as
+   *         an exhausted page and returned the rows collected so far: a revoked
+   *         grant on one view silently became 0 views and 0 likes on a live
+   *         sales page. A non-array here is a broken feed, never an empty one. */
   function getAll(path, offset, acc) {
     offset = offset || 0;
     acc    = acc    || [];
     var sep = path.indexOf('?') === -1 ? '?' : '&';
     return get(path + sep + 'limit=' + PAGE + '&offset=' + offset).then(function (rows) {
-      if (!rows || !rows.length) return acc;
+      if (!Array.isArray(rows)) throw new Error('Feed ' + feedName(path) + ' returned no rows');
+      if (!rows.length) return acc;
       var all = acc.concat(rows);
       return rows.length < PAGE ? all : getAll(path, offset + PAGE, all);
     });

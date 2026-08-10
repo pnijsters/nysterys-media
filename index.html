@@ -1088,9 +1088,15 @@
    </div>
   </section>
 
-  <!-- Marquee ticker: static fallback replaced by live data on load -->
+  <!-- Marquee ticker: static fallback replaced by live data on load.
+       Carries no figure, only evergreen positioning copy. It used to lead with
+       a hand-typed "1.6M+ Combined Followers", which the roster load overwrites
+       on success but which SURVIVES the failure path, so a dead feed left one
+       stale number on screen reading as live next to a "could not load" roster.
+       Keep it figure-free: every number on this site comes from a feed. -->
+
   <div class="marquee-wrap" aria-hidden="true" id="marquee-wrap">
-    <div class="marquee-track" id="marquee-track"><span class="marquee-item">1.6M+ Combined Followers<span class="marquee-dot">·</span></span><span class="marquee-item">TikTok · YouTube · Instagram<span class="marquee-dot">·</span></span><span class="marquee-item">Family &amp; Lifestyle Content<span class="marquee-dot">·</span></span><span class="marquee-item">Brand Partnerships<span class="marquee-dot">·</span></span><span class="marquee-item">Authentic Storytelling<span class="marquee-dot">·</span></span><span class="marquee-item">1.6M+ Combined Followers<span class="marquee-dot">·</span></span><span class="marquee-item">TikTok · YouTube · Instagram<span class="marquee-dot">·</span></span><span class="marquee-item">Family &amp; Lifestyle Content<span class="marquee-dot">·</span></span><span class="marquee-item">Brand Partnerships<span class="marquee-dot">·</span></span><span class="marquee-item">Authentic Storytelling<span class="marquee-dot">·</span></span></div>
+    <div class="marquee-track" id="marquee-track"><span class="marquee-item">TikTok · YouTube · Instagram<span class="marquee-dot">·</span></span><span class="marquee-item">Family &amp; Lifestyle Content<span class="marquee-dot">·</span></span><span class="marquee-item">Brand Partnerships<span class="marquee-dot">·</span></span><span class="marquee-item">Authentic Storytelling<span class="marquee-dot">·</span></span><span class="marquee-item">TikTok · YouTube · Instagram<span class="marquee-dot">·</span></span><span class="marquee-item">Family &amp; Lifestyle Content<span class="marquee-dot">·</span></span><span class="marquee-item">Brand Partnerships<span class="marquee-dot">·</span></span><span class="marquee-item">Authentic Storytelling<span class="marquee-dot">·</span></span></div>
   </div>
 
   <div class="divider"></div>
