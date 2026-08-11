@@ -1034,6 +1034,90 @@ tbody tr:hover td { background: var(--surface2); }
 .pay-camp-cell .camp-title { font-size: 15px; }
 .pay-camp-cell .camp-sub   { font-size: 10px; }
 
+/* ── Payments: what arrived instead of money ──────────────────
+   The Amount column on an in-kind row names the goods rather than reprinting
+   the status badge beside it. A short one is the cell's whole text; a long or
+   multi-line one is a summary that opens a full-width sub-row, because a
+   four-item clothing list cannot be read in the narrowest column on the page.
+   The description used to live in a `title` attribute, which is hover-only on a
+   desktop and unreachable on a phone. */
+
+.inkind-cell {
+  white-space: normal;
+  max-width: 22ch;          /* keeps a long summary from stretching the table */
+  color: var(--white);
+  font-weight: 400;
+}
+
+/* No description on file. The words carry no information, so they sit back at
+   the same weight as the other muted cells rather than posing as a figure. */
+.inkind-cell--bare { color: var(--muted); }
+
+.inkind-more {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color var(--transition);
+}
+.inkind-more:hover { color: var(--orange); }
+.inkind-more:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+.inkind-more .row-expand-icon { flex: none; align-self: center; opacity: 0.7; }
+.inkind-more--open .row-expand-icon { transform: rotate(90deg); }
+
+.inkind-row td {
+  background: var(--black) !important;
+  padding: 2px 20px 14px !important;
+  white-space: normal;
+}
+.inkind-row:hover td { background: var(--black) !important; }
+
+/* pre-wrap is load bearing: it is what preserves the author's line breaks and
+   the blank line between "From New Drops:" and "From Popular Items:", which is
+   the only thing making a 4-item list scannable. */
+.inkind-detail {
+  white-space: pre-wrap;
+  max-width: 68ch;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.inkind-link {
+  color: var(--dim);
+  text-decoration: underline;
+  text-decoration-color: var(--surface3);
+  text-underline-offset: 2px;
+  transition: color var(--transition), text-decoration-color var(--transition);
+  word-break: break-all;
+}
+.inkind-link:hover {
+  color: var(--orange);
+  text-decoration-color: currentColor;
+}
+
+@media (max-width: 768px) {
+  /* min-width is the load-bearing half. The Amount column is whatever is left
+     after Campaign and Status, and without a floor the table crushed it until
+     "4 pieces of clothing items" wrapped to one word per line and the row stood
+     five lines tall. The floor makes it wrap like prose; the ceiling stops a
+     summary stretching the table. The summary threshold drops to match
+     (INKIND_SUMMARY_MAX_MOBILE), so nothing is clipped out of reach. */
+  .inkind-cell { min-width: 14ch; max-width: 18ch; }
+  .inkind-row td { padding: 2px 14px 12px !important; }
+  .inkind-detail { font-size: 11px; max-width: none; }
+}
+
 /* Sits under the status badge, so the row reads "unpaid, and here is the fix".
    Quiet by default: the agency decides when to pay, the dashboard does not
    nag. Orange only on hover, where intent is already expressed. */
