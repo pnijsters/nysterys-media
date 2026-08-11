@@ -1146,6 +1146,27 @@ tbody tr:hover td { background: var(--surface2); }
 
 .pay-now-icon { flex: none; opacity: 0.8; }
 
+/* The exception state. A Stripe Price is immutable, so an invoice edited after
+   its link was made leaves an active link charging the old figure, and the
+   agency would otherwise meet that surprise at the checkout page rather than
+   here. The button stops being quiet: it carries the amount it will actually
+   charge and takes the orange it normally only reaches on hover. The note below
+   it states both figures, because "this is wrong" is useless without "wrong how".
+   Reserved for real disagreement; all six live links agree today. */
+.pay-now-btn--differs {
+  color: var(--orange);
+  border-color: color-mix(in oklch, var(--orange) 55%, transparent);
+}
+
+.pay-now-note {
+  margin-top: 4px;
+  max-width: 26ch;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
 /* ── Aggregate stat pills (campaign foot band) ────────────── */
 
 .stat-pill {
