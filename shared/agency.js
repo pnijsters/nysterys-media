@@ -30,18 +30,12 @@
    */
   var AUTH_TOKEN = '';
 
-  /**
-   * Static creator bios keyed by creator_name. There is no bio column in the
-   * DB, so update these by hand when the copy changes. handle, follower_count,
-   * and avatar_url come from the API payload (not here).
-   *
-   * @gotcha The wider CREATORS name->handle/bio/followers/avatar mapping lives
-   *         in CLAUDE.md "Agency Dashboard"; keep both in sync when stats move.
-   */
-  var CREATOR_BIOS = {
-    'Mys Nijsters': 'Breakout lifestyle and trend creator. Known for her magnetic energy, swag-forward content, and deeply personal storytelling — she has built one of the most engaged young audiences on the platform.',
-    'Kym Nijsters': 'Lifestyle and fashion creator known for her fit checks, authentic storytelling, and relatable everyday content. With a natural presence on camera and a growing, engaged community, she consistently connects with her audience on a personal level.',
-  };
+  // Nothing about a creator is hard-coded here. handle, follower_count,
+  // avatar_url and the bio all arrive on the API payload. The bio was a
+  // two-key object keyed by creator_name until 2026-08-10, which meant renaming
+  // a creator in the hub, or onboarding a third, blanked the hero bio silently;
+  // it is now profiles.agency_bio, authored in Creator Setup and emitted as
+  // dashboard.creator_bio. @see review/07-plan.md W-40
 
   // ── DOM helpers ─────────────────────────────────────────────────────────────
 
@@ -345,26 +339,29 @@
    *
    * @returns {object} totalViews, totalLikes, avgER, avgCompletion (null when
    *          no watch-time data), campaignCount, postsDelivered, totalPosts.
-   * @gotcha Cancelled deliverables are skipped entirely (not counted in
-   *         totalPosts or any total). Status strings must be exact title-case
-   *         ('Cancelled', 'Posted'); a casing change in the payload silently
-   *         drops the row from the count. @see the payment-bucket title-case
-   *         rule in renderPayments.
+   * @gotcha Cancellation is a CAMPAIGN state, not a deliverable one: the
+   *         deliverable vocabulary is Not Started / Draft Submitted / Revisions
+   *         Requested / Approved / Scheduled / Posted, and the edge function
+   *         already drops cancelled campaigns before the payload is built. So
+   *         there is deliberately no per-deliverable Cancelled guard here; one
+   *         existed until 2026-08-10 and could never fire.
+   * @gotcha 'Posted' must stay exact title-case; a casing change in the payload
+   *         silently drops the row from postsDelivered. @see the payment-bucket
+   *         title-case rule in renderPayments.
    */
   function computeSummary(campaigns) {
-    var totalViews = 0, totalLikes = 0, totalER = 0, erCount = 0;
+    var totalViews = 0, totalLikes = 0, totalComments = 0, totalShares = 0;
     var totalCompletion = 0, completionCount = 0;
     var postsDelivered = 0, totalPosts = 0;
     campaigns.forEach(function (c) {
       c.deliverables.forEach(function (d) {
-        if (d.status === 'Cancelled') return;
         totalPosts++;
         if (d.status === 'Posted') postsDelivered++;
         if (d.stats) {
-          totalViews += d.stats.views    || 0;
-          totalLikes += d.stats.likes    || 0;
-          totalER    += d.stats.engagement_rate || 0;
-          erCount++;
+          totalViews    += d.stats.views    || 0;
+          totalLikes    += d.stats.likes    || 0;
+          totalComments += d.stats.comments || 0;
+          totalShares   += d.stats.shares   || 0;
           if (d.stats.completion_pct != null) {
             totalCompletion += d.stats.completion_pct;
             completionCount++;
@@ -375,7 +372,7 @@
     return {
       totalViews:     totalViews,
       totalLikes:     totalLikes,
-      avgER:          erCount > 0 ? (totalER / erCount) : 0,
+      avgER:          aggregateER({ views: totalViews, likes: totalLikes, comments: totalComments, shares: totalShares }) || 0,
       avgCompletion:  completionCount > 0 ? (totalCompletion / completionCount) : null,
       campaignCount:  campaigns.length,
       postsDelivered: postsDelivered,
@@ -488,7 +485,13 @@
     // All text via textContent - no innerHTML
     document.getElementById('hero-handle').textContent      = dash.handle || '';
     document.getElementById('hero-name').textContent        = (dash.creator_name || '').split(' ')[0];
-    document.getElementById('hero-bio').textContent         = CREATOR_BIOS[dash.creator_name] || '';
+    // An absent bio HIDES the line rather than emptying it, so the hero closes
+    // up instead of leaving a gap where prose should be. A creator with no bio
+    // written yet is a normal state, not a broken one.
+    var bioEl = document.getElementById('hero-bio');
+    bioEl.textContent = dash.creator_bio || '';
+    bioEl.hidden      = !dash.creator_bio;
+
     document.getElementById('hero-agency-name').textContent = dash.agency_name || '';
 
     // Followers - from live DB value via API, shown inline on the handle line
@@ -514,8 +517,12 @@
    * plus optional completion / CPM / music-compliance cells when their data
    * exists). No-op when there are no campaigns.
    *
-   * @gotcha The music-compliance cell appears only when agency_type contains
-   *         'music' (case-insensitive). CPM appears only when non-in-kind
+   * @gotcha The music-compliance cell appears only when the payload's
+   *         `music_brief_required` flag is true, which comes from
+   *         `agency_types.requires_music_brief`. It used to sniff the agency
+   *         type NAME for 'music', which worked only by accident of one type
+   *         being called "Music Promo": renaming it would have switched the
+   *         compliance KPI off without a word. CPM appears only when non-in-kind
    *         invoice amounts and views are both present.
    */
   function renderKpiStrip(campaigns, summary, dash) {
@@ -597,7 +604,7 @@
           // the "no contracted sound on file" remainder forever. 'unrecoverable'
           // and null both stay in, because both ARE gaps.
           if (d.music_brief_status === 'none_given') { scNoBrief++; return; }
-          if (d.status !== 'Cancelled') scDelivered++;
+          scDelivered++;
           var mu = d.music;
           if (!mu || (!mu.contracted_url && !mu.contracted_track)) return;
           scTotal++;
@@ -781,24 +788,42 @@
     topPanel.removeAttribute('hidden');
   }
 
+  /**
+   * Aggregate engagement rate: interactions as a percent of views, over TOTALS.
+   *
+   * This is the ratio the KPI's own tooltip prints ("likes, comments and shares
+   * as a percent of views"), and until 2026-08-10 the dashboard did not compute
+   * it: computeSummary averaged the per-post rates and sumStats averaged a
+   * DIFFERENT subset of them (only posts with a non-zero rate), so a post with
+   * no engagement lowered the headline and not the campaign total. An unweighted
+   * mean of ratios equals a ratio of sums only when every post has the same view
+   * count, so all seven live dashboards understated, by 0.59 to 7.66 points.
+   *
+   * @gotcha The PER-POST rate keeps its own home in SQL (video_stats), and this
+   *         must not be used to recompute it. Only the aggregate was ever in
+   *         dispute. @see review/03-duplication.md D-05, review/07-plan.md W-27
+   * @param {object} t totals carrying views, likes, comments and shares.
+   * @returns {?number} the percentage, or null when there are no views to divide by.
+   */
+  function aggregateER(t) {
+    if (!t || !t.views) return null;
+    return ((t.likes + t.comments + t.shares) / t.views) * 100;
+  }
+
   // ── Campaign stats aggregate ───────────────────────────────────────────────────
 
   function sumStats(deliverables) {
-    var totals = { views: 0, likes: 0, comments: 0, shares: 0, erSum: 0, erCount: 0, hasStats: false };
+    var totals = { views: 0, likes: 0, comments: 0, shares: 0, hasStats: false };
     deliverables.forEach(function (d) {
       if (d.stats) {
         totals.views    += d.stats.views    || 0;
         totals.likes    += d.stats.likes    || 0;
         totals.comments += d.stats.comments || 0;
         totals.shares   += d.stats.shares   || 0;
-        if (d.stats.engagement_rate > 0) {
-          totals.erSum   += d.stats.engagement_rate;
-          totals.erCount += 1;
-        }
         totals.hasStats = true;
       }
     });
-    totals.avgER = totals.erCount > 0 ? totals.erSum / totals.erCount : null;
+    totals.avgER = aggregateER(totals);
     return totals;
   }
   // ── Mobile deliverable card ───────────────────────────────────────────────────
@@ -1925,10 +1950,10 @@
 
   function renderExpiryBanner(expiresAt) {
     var msLeft = new Date(expiresAt) - new Date();
-    if (msLeft <= 0) return; // already expired — full error state handles it
+    if (msLeft <= 0) return; // already expired: full error state handles it
 
     var sevenDays = 7 * 24 * 60 * 60 * 1000;
-    if (msLeft >= sevenDays) return; // more than 7 days — no banner
+    if (msLeft >= sevenDays) return; // more than 7 days: no banner
 
     var isUrgent = msLeft < 24 * 60 * 60 * 1000;
     var banner = el('div', 'expiry-banner' + (isUrgent ? ' expiry-banner--urgent' : ''));

@@ -1,5 +1,5 @@
 /* ============================================================
-   Nysterys Agency Dashboard — standalone stylesheet
+   Nysterys Agency Dashboard: standalone stylesheet
    No shared imports with hub-src. Uses same brand variables.
    ============================================================ */
 
@@ -39,7 +39,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Grain texture — matches nysterys.com brand identity */
+/* Grain texture: matches nysterys.com brand identity */
 body::before {
   content: '';
   position: fixed;
@@ -252,7 +252,7 @@ body::before {
   animation: fadeIn 0.5s ease;
 }
 
-/* "Prepared for" — agency name leads the hero */
+/* "Prepared for": agency name leads the hero */
 .hero-prepared {
   margin-bottom: 18px;
   padding-bottom: 16px;
@@ -409,7 +409,7 @@ body::before {
   animation: fadeIn 0.4s ease;
 }
 
-/* ── KPI strip — campaign-scoped performance numbers ──────── */
+/* ── KPI strip: campaign-scoped performance numbers ──────── */
 
 .kpi-strip {
   display: grid;
@@ -1101,7 +1101,7 @@ tbody tr:hover td { background: var(--surface2); }
   color: var(--muted);
 }
 
-/* ── Payment status hero — outstanding amount leads ───────── */
+/* ── Payment status hero: outstanding amount leads ───────── */
 
 .payment-status-hero {
   background: var(--surface);
