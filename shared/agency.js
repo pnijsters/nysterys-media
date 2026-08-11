@@ -14,6 +14,14 @@
  * @security All user-supplied content is written via textContent, never
  *           innerHTML. Every outbound link runs through safeLink (http/https
  *           only) so a stored javascript: URL cannot execute.
+ * @invariant every field this file reads off the payload is declared in
+ *            supabase/functions/agency-dashboard/payload.schema.json. There is no
+ *            import between the two (a static IIFE cannot reach a Deno module), so
+ *            scripts/tests/payload-contract.spec.js is what holds them together,
+ *            along with the Playwright fixture that stands in for the payload.
+ *            Reading a field the schema does not declare means the fixture does not
+ *            carry it either, and no test on any browser project has ever rendered
+ *            that code. @see review/07-plan.md W-19
  * @see docs/CODEBASE.md, CLAUDE.md "Agency Dashboard"
  */
 (function () {
