@@ -1791,6 +1791,37 @@
     a.rel    = 'noopener noreferrer';
     a.textContent = 'Pay now';
     a.appendChild(icon('arrow-out', 11, 'pay-now-icon'));
+
+    /* The amount is NOT printed here when it agrees with the invoice, and the
+     * restraint is the design. The Amount column sits one cell away on the same
+     * row, so a figure on the button repeats what the reader has just read and
+     * spends weight on a control that is meant to stay quiet. All six live links
+     * agree with their invoice today (verified 2026-08-11).
+     *
+     * It is printed when it DISAGREES, which is the case worth a person's
+     * attention: a Stripe Price is immutable, so changing an amount means
+     * archiving the link and making a new one, and an invoice edited afterwards
+     * leaves an active link that charges the old figure. Without this the agency
+     * clicks Pay now on a $550 invoice and Stripe asks for $400, with nothing on
+     * the page having said so. Same shape as campaignMusicFlag on the campaigns
+     * tab: the flag is the exception and never a per-row badge. The note states
+     * only the figure the button does NOT carry, since printing both repeats the
+     * amount one line above it.
+     */
+    var linkAmt = Number(p.pay_amount);
+    var invAmt  = Number(p.amount);
+    if (isFinite(linkAmt) && isFinite(invAmt) && Math.round((linkAmt - invAmt) * 100) !== 0) {
+      a.firstChild.nodeValue = 'Pay ' + fmtMoney(linkAmt);
+      a.classList.add('pay-now-btn--differs');
+      var note = el('div', 'pay-now-note');
+      note.textContent = 'Invoice is ' + fmtMoney(invAmt);
+      // A fragment, so the caller still appends ONE thing and no wrapper element
+      // lands in the cell to disturb the spacing when the amounts agree.
+      var frag = document.createDocumentFragment();
+      frag.appendChild(a);
+      frag.appendChild(note);
+      return frag;
+    }
     return a;
   }
 
