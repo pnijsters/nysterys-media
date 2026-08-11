@@ -1,29 +1,29 @@
 {
   "files": {
-    "main.css": "/hub/static/css/main.2d8293f5.css",
-    "main.js": "/hub/static/js/main.3e30c80f.js",
-    "static/js/66.df7adb6e.chunk.js": "/hub/static/js/66.df7adb6e.chunk.js",
-    "static/js/498.ca61b826.chunk.js": "/hub/static/js/498.ca61b826.chunk.js",
-    "static/js/943.2e25eda2.chunk.js": "/hub/static/js/943.2e25eda2.chunk.js",
+    "main.css": "/hub/static/css/main.51bf6b7d.css",
+    "main.js": "/hub/static/js/main.9b9a5fce.js",
+    "static/js/66.eec664df.chunk.js": "/hub/static/js/66.eec664df.chunk.js",
+    "static/js/498.d61b5631.chunk.js": "/hub/static/js/498.d61b5631.chunk.js",
+    "static/js/943.b7533108.chunk.js": "/hub/static/js/943.b7533108.chunk.js",
     "static/js/954.0f0e6223.chunk.js": "/hub/static/js/954.0f0e6223.chunk.js",
     "static/js/695.91e8e4bd.chunk.js": "/hub/static/js/695.91e8e4bd.chunk.js",
-    "static/js/16.a467c0de.chunk.js": "/hub/static/js/16.a467c0de.chunk.js",
+    "static/js/16.1ad9f026.chunk.js": "/hub/static/js/16.1ad9f026.chunk.js",
     "static/js/861.6b975070.chunk.js": "/hub/static/js/861.6b975070.chunk.js",
-    "static/js/78.305125f9.chunk.js": "/hub/static/js/78.305125f9.chunk.js",
-    "static/js/380.722d9f4b.chunk.js": "/hub/static/js/380.722d9f4b.chunk.js",
-    "static/js/242.a7fcd467.chunk.js": "/hub/static/js/242.a7fcd467.chunk.js",
+    "static/js/78.415c6c59.chunk.js": "/hub/static/js/78.415c6c59.chunk.js",
+    "static/js/380.304847ed.chunk.js": "/hub/static/js/380.304847ed.chunk.js",
+    "static/js/242.3ded9f88.chunk.js": "/hub/static/js/242.3ded9f88.chunk.js",
     "static/js/648.7e23b180.chunk.js": "/hub/static/js/648.7e23b180.chunk.js",
     "static/js/178.e759aa4d.chunk.js": "/hub/static/js/178.e759aa4d.chunk.js",
     "static/js/718.96a9ea68.chunk.js": "/hub/static/js/718.96a9ea68.chunk.js",
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/442.d7828891.chunk.js": "/hub/static/js/442.d7828891.chunk.js",
     "static/js/841.5723cce0.chunk.js": "/hub/static/js/841.5723cce0.chunk.js",
-    "static/js/375.6651d0e7.chunk.js": "/hub/static/js/375.6651d0e7.chunk.js",
+    "static/js/375.bfafb5f2.chunk.js": "/hub/static/js/375.bfafb5f2.chunk.js",
     "static/media/bebas-neue-latin-400-normal.woff": "/hub/static/media/bebas-neue-latin-400-normal.e07bf68c2e56920dd40b.woff",
     "index.html": "/hub/index.html"
   },
   "entrypoints": [
-    "static/css/main.2d8293f5.css",
-    "static/js/main.3e30c80f.js"
+    "static/css/main.51bf6b7d.css",
+    "static/js/main.9b9a5fce.js"
   ]
 }
