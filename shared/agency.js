@@ -1794,6 +1794,157 @@
     return a;
   }
 
+  /* An in-kind description longer than this, or carrying a line break, gets a
+   * summary line plus a disclosure rather than being printed into the Amount
+   * column whole. Set from the live spread: six of the eight in-kind invoices are
+   * one-liners of 12 to 77 characters ("2 swim suits"), and two are 579 and 824
+   * character numbered clothing lists with a product URL per item. A single rule
+   * has to serve both, so the threshold sits above the short ones and below the
+   * 77-character outlier, which is the one that would otherwise stretch the
+   * column across the table. */
+  var INKIND_SUMMARY_MAX = 48;
+
+  /* On a phone the Amount column is whatever is left after Campaign and Status, so
+   * the same 48 characters wrapped to one word per line and made a table row five
+   * lines tall. The threshold drops rather than the text being clipped: clipping a
+   * short description would put it back behind an interaction, which is the whole
+   * defect this replaced. At 28 the five shortest live descriptions still render
+   * whole and the three long ones get the sub-row. */
+  var INKIND_SUMMARY_MAX_MOBILE = 28;
+
+  /** Trim to the last word boundary at or before `max`, adding an ellipsis. */
+  function truncateWords(text, max) {
+    if (text.length <= max) return text;
+    var cut = text.slice(0, max);
+    var sp  = cut.lastIndexOf(' ');
+    return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,.;:-]+$/, '') + '…';
+  }
+
+  /** A URL shown as a label: no scheme, no `www.`, truncated from the right. */
+  function linkLabel(url) {
+    var bare = url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+    return bare.length <= 44 ? bare : bare.slice(0, 44).replace(/[/?#&=-]+$/, '') + '…';
+  }
+
+  var URL_RE = /https?:\/\/[^\s<>"']+/g;
+
+  /**
+   * Render free text into `host`, turning bare URLs into real links.
+   *
+   * @security every href goes through safeLink, so a javascript: or data: URL in
+   *           the description cannot become a live link. Text is written with
+   *           textContent throughout; nothing here touches innerHTML.
+   * @gotcha the caller sets `white-space: pre-wrap`, which is what preserves the
+   *         author's line breaks and blank lines. Splitting into elements per line
+   *         instead would flatten the grouping ("From New Drops:" and its four
+   *         indented items) that makes a long list readable at all.
+   */
+  function appendLinkedText(host, text) {
+    var last = 0;
+    var m;
+    URL_RE.lastIndex = 0;
+    while ((m = URL_RE.exec(text)) !== null) {
+      if (m.index > last) host.appendChild(document.createTextNode(text.slice(last, m.index)));
+      var href = safeLink(m[0]);
+      if (href) {
+        var a = el('a', 'inkind-link');
+        a.href = href;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = linkLabel(m[0]);
+        host.appendChild(a);
+      } else {
+        host.appendChild(document.createTextNode(m[0]));
+      }
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) host.appendChild(document.createTextNode(text.slice(last)));
+  }
+
+  /**
+   * Fill an in-kind Amount cell, and build the expanded sub-row when there is one.
+   *
+   * The cell states what was received instead of repeating the status badge. A
+   * short description is simply the cell's text; a long or multi-line one becomes a
+   * summary line that toggles a full-width sub-row underneath, because the Amount
+   * column is the narrowest place on the page to read a four-item clothing list.
+   *
+   * @param {HTMLElement} td the Amount cell, filled in place.
+   * @param {string|null} description payment.in_kind_description.
+   * @param {number} colSpan columns in this table (4 on mobile, 5 on desktop).
+   * @param {number} idx row index, for a unique aria-controls target.
+   * @param {boolean} isMobile narrower column, so a lower summary threshold.
+   * @returns {HTMLElement|null} the sub-row to append after this row, or null.
+   * @gotcha falls back to the words "In Kind" when there is no description at all.
+   *         An empty Amount cell reads as a missing figure rather than as a deal
+   *         that had no figure, which is the opposite of what this column means.
+   */
+  function inKindAmount(td, description, colSpan, idx, isMobile) {
+    var max = isMobile ? INKIND_SUMMARY_MAX_MOBILE : INKIND_SUMMARY_MAX;
+    var desc = (description || '').trim();
+    if (!desc) {
+      td.textContent = 'In Kind';
+      td.classList.add('inkind-cell--bare');
+      return null;
+    }
+
+    var firstLine = desc.split('\n')[0].trim();
+    if (desc.indexOf('\n') === -1 && desc.length <= max) {
+      td.textContent = desc;
+      return null;
+    }
+
+    var detailId = 'inkind-' + idx;
+    var btn = el('button', 'inkind-more');
+    btn.type = 'button';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-controls', detailId);
+    var label = el('span', 'inkind-summary');
+    label.textContent = truncateWords(firstLine, max);
+    btn.appendChild(label);
+    btn.appendChild(icon('chevron', 12, 'row-expand-icon'));
+    td.appendChild(btn);
+
+    var subRow = el('tr', 'inkind-row');
+    subRow.id = detailId;
+    subRow.hidden = true;
+    var subTd = el('td');
+    subTd.colSpan = colSpan;
+    var body = el('div', 'inkind-detail');
+    appendLinkedText(body, desc);
+    subTd.appendChild(body);
+    subRow.appendChild(subTd);
+
+    /* The summary stays truncated when the row opens. Un-truncating it printed the
+     * whole sentence in the cell and then again in the sub-row directly beneath,
+     * which is the same defect the music sub-row was cut back for: it reprinted the
+     * cell verbatim one line lower. Holding the cell still also stops the row
+     * reflowing under the pointer at the moment of the click. */
+    btn.addEventListener('click', function () {
+      var open = subRow.hidden;
+      subRow.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.classList.toggle('inkind-more--open', open);
+
+      /* On a phone the table scrolls horizontally, and tapping this control has
+       * just scrolled it RIGHT to bring the Amount column into view. The sub-row
+       * spans the table and reads from its left edge, so without this the text the
+       * reader asked for opens starting off-screen and they have to scroll back to
+       * find its beginning. Returning to the left is what makes the disclosure
+       * legible, not a flourish. */
+      if (open) {
+        var wrap = subRow.closest('.table-wrap');
+        if (wrap && wrap.scrollLeft > 0) {
+          var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (wrap.scrollTo) wrap.scrollTo({ left: 0, behavior: calm ? 'auto' : 'smooth' });
+          else wrap.scrollLeft = 0;
+        }
+      }
+    });
+
+    return subRow;
+  }
+
   function renderPayments(campaigns, container, paymentAddresses) {
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
@@ -1880,6 +2031,7 @@
     // Payment addresses (where to send it)
     renderPaymentAddresses(paymentAddresses, container, hasPayLinks);
 
+
     // Per-campaign payments table
     var wrap      = el('div', 'payments-section');
     var tableWrap = el('div', 'table-wrap');
@@ -1903,6 +2055,7 @@
     table.appendChild(thead);
 
     var tbody = el('tbody');
+    var payIdx = 0;
     withPayment.forEach(function (c) {
       var p   = c.payment;
       var row = el('tr');
@@ -1926,10 +2079,17 @@
       if (payBtn) statusTd.appendChild(payBtn);
       row.appendChild(statusTd);
 
-      var amountTd = el('td');
+      /* On an in-kind row the Amount column carries WHAT arrived, not the words
+       * "In Kind" again: the status badge one cell to the left already says that,
+       * so repeating it spent the only column with room for a fact on a word the
+       * reader has just read. The description used to be a `title` attribute here,
+       * which is hover-only on a desktop and unreachable on a phone, so the one
+       * thing an agency wants from an in-kind row was the one thing it could not
+       * read. @see review/07-plan.md W-19 */
+      var amountTd = el('td', p.is_in_kind ? 'inkind-cell' : null);
+      var descRow = null;
       if (p.is_in_kind) {
-        amountTd.textContent = 'In Kind';
-        if (p.in_kind_description) amountTd.title = p.in_kind_description;
+        descRow = inKindAmount(amountTd, p.in_kind_description, isMobile ? 4 : 5, payIdx, isMobile);
       } else {
         amountTd.textContent = fmtMoney(p.amount);
       }
@@ -1946,6 +2106,10 @@
       }
 
       tbody.appendChild(row);
+      // Full-width sub-row, so a 4-item clothing list is not squeezed into the
+      // narrowest column. Only built when there is more than the summary line.
+      if (descRow) tbody.appendChild(descRow);
+      payIdx++;
     });
 
     table.appendChild(tbody);
