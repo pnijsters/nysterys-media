@@ -4,6 +4,31 @@
    ============================================================= */
 
 /**
+ * Escape a value for interpolation into an HTML string.
+ *
+ * @security `security/11-plan.md` T2-13, from `05 F-15`. Every one of these pages builds its
+ *           markup by concatenation and assigns it with innerHTML, and the labels come from
+ *           feed tables that Coupler.io writes: bare `text`, no CHECK, no length limit. An
+ *           innerHTML assignment does not run a `<script>` tag, but it does run an inline
+ *           event-handler attribute, and `script-src` on these pages carries `'unsafe-inline'`.
+ *           So HTML injection here is script execution on `nysterys.com`, which is the origin
+ *           whose localStorage holds the hub session.
+ * @gotcha the quote characters are not optional. Most of these interpolations land inside an
+ *         attribute, where `"` alone ends the value and opens the door to `onerror=`.
+ * @param {*} value  anything; null and undefined render as an empty string
+ * @returns {string} safe to concatenate into markup, in text or in an attribute
+ */
+function escapeHtml(value) {
+  if (value === null || value === undefined) return '';
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * Email obfuscation: assembles the contact address in JS only
  * so it is never present in static HTML source where crawlers
  * and Cloudflare email-rewrite rules could intercept it.
@@ -121,9 +146,37 @@ function buildGenderLegend(elId, data) {
     return '<div class="legend-row">'
       + '<div class="legend-left">'
       +   '<div class="legend-dot" style="background:' + (GENDER_COLORS[i] || '#333') + '"></div>'
-      +   '<span class="legend-label">' + seg.label + '</span>'
+      +   '<span class="legend-label">' + escapeHtml(seg.label) + '</span>'
       + '</div>'
-      + '<span class="legend-val">' + seg.value + '%</span>'
+      + '<span class="legend-val">' + escapeHtml(seg.value) + '%</span>'
       + '</div>';
+  }).join('');
+}
+
+/**
+ * Lay out a horizontal bar chart: find the widest value, then hand each row its
+ * width as a percentage of it.
+ *
+ * The two pages that draw these use different markup and different class names,
+ * so only the RULE lives here and each caller still writes its own row. Before
+ * `W-32` there were two copies: `buildCountryBars` in creator.html took the max
+ * as `data[0].value` on the assumption the feed arrives sorted, and
+ * `buildBarRows` in media-kit.html scanned for it. An unsorted feed rendered
+ * bars wider than their own track on one page and correctly on the other.
+ *
+ * @param {Array<{label:string,value:number}>} data  Rows, in the order to draw them.
+ * @param {function(object, number): string} renderRow  Given a row and its width
+ *        percentage, return that row's HTML.
+ * @returns {string} the joined HTML, or '' for an empty or absent feed.
+ *
+ * @gotcha An empty feed returns '' rather than throwing. Reading data[0].value
+ *         before a guard is what took the whole profile page down over one
+ *         missing chart, so the guard belongs here and not at each call site.
+ */
+function buildBarChart(data, renderRow) {
+  if (!data || !data.length) return '';
+  var max = data.reduce(function (m, d) { return d.value > m ? d.value : m; }, 0);
+  return data.map(function (d) {
+    return renderRow(d, max ? (d.value / max) * 100 : 0);
   }).join('');
 }

@@ -30,6 +30,7 @@
  * @gotcha YouTube like/comment/share counts are DAILY deltas, not lifetime
  *         per-video counters like TikTok's. See buildYouTube.
  */
+/* global SITE_CONFIG */
 (function () {
   var URL  = 'https://rnntuxabccnphfvvvaks.supabase.co';
   var KEY  = 'sb_publishable_uTUIIpWaYYgke_5rtyhUnw_0lMfHI3c';
