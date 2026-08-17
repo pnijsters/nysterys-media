@@ -21,7 +21,7 @@
  *            along with the Playwright fixture that stands in for the payload.
  *            Reading a field the schema does not declare means the fixture does not
  *            carry it either, and no test on any browser project has ever rendered
- *            that code. @see review/07-plan.md W-19
+ *            that code.
  * @see docs/CODEBASE.md, CLAUDE.md "Agency Dashboard"
  */
 (function () {
@@ -43,7 +43,7 @@
   // two-key object keyed by creator_name until 2026-08-10, which meant renaming
   // a creator in the hub, or onboarding a third, blanked the hero bio silently;
   // it is now profiles.agency_bio, authored in Creator Setup and emitted as
-  // dashboard.creator_bio. @see review/07-plan.md W-40
+  // dashboard.creator_bio.
 
   // ── DOM helpers ─────────────────────────────────────────────────────────────
 
@@ -809,7 +809,7 @@
    *
    * @gotcha The PER-POST rate keeps its own home in SQL (video_stats), and this
    *         must not be used to recompute it. Only the aggregate was ever in
-   *         dispute. @see review/03-duplication.md D-05, review/07-plan.md W-27
+   *         dispute.
    * @param {object} t totals carrying views, likes, comments and shares.
    * @returns {?number} the percentage, or null when there are no views to divide by.
    */
@@ -2116,7 +2116,7 @@
        * reader has just read. The description used to be a `title` attribute here,
        * which is hover-only on a desktop and unreachable on a phone, so the one
        * thing an agency wants from an in-kind row was the one thing it could not
-       * read. @see review/07-plan.md W-19 */
+       * read. */
       var amountTd = el('td', p.is_in_kind ? 'inkind-cell' : null);
       var descRow = null;
       if (p.is_in_kind) {

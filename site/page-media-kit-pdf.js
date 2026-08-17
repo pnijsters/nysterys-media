@@ -9,6 +9,13 @@
    @security security/11-plan.md T2-13, from 05 F-15. @see site/page-media-kit.js
    ============================================================= */
 
+/* The cross-file globals this page uses, declared the way site/supabase-data.js
+   already declares SITE_CONFIG. site/ is five classic <script> tags sharing one
+   global scope at runtime and eslint reads one file at a time, so without this the
+   `Lint site/` CI step calls every one of them undefined. It did: the step went red
+   when these files landed and stayed red for seven pushes. */
+/* global initEmail, loadSiteData */
+
     function fmtNumPdf(n) {
       if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
       if (n >= 1000)    return Math.round(n / 1000) + 'K';
