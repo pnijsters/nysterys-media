@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/hub/static/css/main.b3d2ecea.css",
-    "main.js": "/hub/static/js/main.a44e5380.js",
+    "main.js": "/hub/static/js/main.7bbdfccb.js",
     "static/js/66.a7083623.chunk.js": "/hub/static/js/66.a7083623.chunk.js",
     "static/js/498.b04c21d4.chunk.js": "/hub/static/js/498.b04c21d4.chunk.js",
     "static/js/943.5794f8b8.chunk.js": "/hub/static/js/943.5794f8b8.chunk.js",
@@ -18,7 +18,7 @@
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/442.d7828891.chunk.js": "/hub/static/js/442.d7828891.chunk.js",
     "static/js/968.dfe3c90b.chunk.js": "/hub/static/js/968.dfe3c90b.chunk.js",
-    "static/js/375.405ac89e.chunk.js": "/hub/static/js/375.405ac89e.chunk.js",
+    "static/js/375.4ff34a04.chunk.js": "/hub/static/js/375.4ff34a04.chunk.js",
     "static/media/dm-sans-latin-wght-italic.woff2": "/hub/static/media/dm-sans-latin-wght-italic.2dd40fb940cdfa124ce3.woff2",
     "static/media/dm-sans-latin-wght-normal.woff2": "/hub/static/media/dm-sans-latin-wght-normal.09cead2724b8d8c7e453.woff2",
     "static/media/dm-sans-latin-ext-wght-italic.woff2": "/hub/static/media/dm-sans-latin-ext-wght-italic.4ab7351a85c7b8ec6e89.woff2",
@@ -31,6 +31,6 @@
   },
   "entrypoints": [
     "static/css/main.b3d2ecea.css",
-    "static/js/main.a44e5380.js"
+    "static/js/main.7bbdfccb.js"
   ]
 }
