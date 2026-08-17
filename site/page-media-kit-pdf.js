@@ -258,4 +258,10 @@
       btn.disabled = false;
     }
 
+    /* Bound here, never as an `onclick=` attribute on the button. This page's script-src
+       is 'self' plus the jsPDF CDN and carries no 'unsafe-inline', so an inline handler is
+       refused by the browser and the button silently does nothing. */
+    var dlBtn = document.getElementById('download-btn');
+    if (dlBtn) dlBtn.addEventListener('click', downloadPDF);
+
     initEmail('#mk-email-link');

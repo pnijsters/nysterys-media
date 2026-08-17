@@ -110,7 +110,7 @@ function buildTalentCard(creator) {
   var socials = Object.entries(creator.socials)
     .map(function(entry) { return buildSocialLink(entry[0], entry[1]); })
     .join('');
-  return '<div class="talent-card" onclick="window.location=\'creator.html?id=' + escapeHtml(encodeURIComponent(creator.id)) + '\'">' +
+  return '<div class="talent-card" data-creator-id="' + escapeHtml(encodeURIComponent(creator.id)) + '">' +
     '<div class="talent-photo">' +
       '<img src="' + escapeHtml(creator.photo) + '" loading="lazy" decoding="async" alt="' + escapeHtml(creator.name) + '" />' +
     '</div>' +
@@ -146,6 +146,20 @@ loadSiteData()
     var grid = document.getElementById('roster-grid');
     if (grid) {
       grid.innerHTML = data.roster.map(buildTalentCard).join('');
+
+      /* The card opens its creator page. ONE delegated listener rather than an
+         `onclick=` attribute on each card: index.html's script-src is 'self' with no
+         'unsafe-inline', and an inline handler needs exactly that directive, so an
+         attribute here does nothing at all and the card is dead with no error anywhere.
+         @see the @security note at the top of this file. */
+      grid.addEventListener('click', function(ev) {
+        // A social link is its own destination. Without this it opens the platform AND
+        // navigates the page underneath it, because the click bubbles to the card.
+        if (ev.target.closest('a')) return;
+        var card = ev.target.closest('.talent-card[data-creator-id]');
+        if (card) window.location = 'creator.html?id=' + card.dataset.creatorId;
+      });
+
       grid.querySelectorAll('.talent-card').forEach(function(el) {
         el.style.opacity = '0';
         el.style.transform = 'translateY(32px)';
