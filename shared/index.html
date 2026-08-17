@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#080808" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Agency Dashboard — Nysterys</title>
+    <title>Agency Dashboard: Nysterys</title>
 
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'none';
       script-src 'self';
-      style-src 'self' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: https:;
+      style-src 'self';
+      font-src 'self';
+      img-src 'self' data: https://rnntuxabccnphfvvvaks.supabase.co https://i.ytimg.com https://*.ytimg.com https://*.tiktokcdn.com https://*.tiktokcdn-us.com https://*.cdninstagram.com https://*.fbcdn.net;
       connect-src 'self' https://rnntuxabccnphfvvvaks.supabase.co;
       frame-ancestors 'none';
       object-src 'none';
@@ -20,14 +20,19 @@
       form-action 'none';
     " />
 
-    <meta http-equiv="X-Frame-Options" content="DENY" />
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <!-- security/11-plan.md T3-1 and T3-4, from 10 C-02, 10 C-05 and 10 C-07. Three tags
+         stood here and two of them did nothing. X-Frame-Options and X-Content-Type-Options
+         are response headers with no meta form, so this page, which is the anonymous
+         bearer-token surface and the one most worth framing, READ as clickjacking-protected
+         and was not. Both measured in Chrome, not assumed: the nosniff tag did not stop a
+         script served as text/plain from executing. They are deleted, and the frame-ancestors
+         directive in the CSP above is inert for the same reason and is left only because the
+         policy is one string. Real framing protection needs the front proxy (deferred M1).
+         The referrer policy is a genuine control and is kept, moved to the spec form: with
+         http-equiv it was ignored and this page fell back to the browser default. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="agency.css?v=2" />
   </head>
   <body>
@@ -64,7 +69,7 @@
         <div class="creator-hero">
           <div class="container">
 
-            <!-- "Prepared for" leads — agency name is the headline -->
+            <!-- "Prepared for" leads: agency name is the headline -->
             <div class="hero-prepared">
               <div class="hero-prepared-label">Prepared for</div>
               <div id="hero-agency-name" class="hero-prepared-agency"></div>
@@ -89,7 +94,7 @@
         <!-- Main content -->
         <div class="container main-content">
 
-          <!-- KPI strip — campaign-scoped numbers, filled by JS -->
+          <!-- KPI strip: campaign-scoped numbers, filled by JS -->
           <div id="kpi-strip" class="kpi-strip" hidden></div>
 
           <!-- Performance charts (conditional) -->

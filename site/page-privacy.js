@@ -14,4 +14,11 @@
    icons.js and utils.js all come first, and this runs against their globals.
    ============================================================= */
 
+/* The cross-file globals this page uses, declared the way site/supabase-data.js
+   already declares SITE_CONFIG. site/ is five classic <script> tags sharing one
+   global scope at runtime and eslint reads one file at a time, so without this the
+   `Lint site/` CI step calls every one of them undefined. It did: the step went red
+   when these files landed and stayed red for seven pushes. */
+/* global initEmail */
+
     initEmail('.obf-email', false);
