@@ -1,12 +1,12 @@
 /* =============================================================
-   site/page-media-kit-pdf.js : Nysterys Media
+   site/page-media-kit-pdf.js: Nysterys Media
    The media kit's "Download PDF" button, extracted from the page itself.
 
    Split from site/page-media-kit.js only because the two together are over the
    500 line gate. This half is self contained: it reads the same globals and
    draws the deck with jsPDF, which the page loads before it.
 
-   @security security/11-plan.md T2-13, from 05 F-15. @see site/page-media-kit.js
+   @security @see site/page-media-kit.js
    ============================================================= */
 
 /* The cross-file globals this page uses, declared the way site/supabase-data.js

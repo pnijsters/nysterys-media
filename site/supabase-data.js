@@ -1,34 +1,18 @@
 /**
  * site/supabase-data.js - live creator stats for the public marketing pages.
  *
- * Fetches every platform feed with the ANON key and returns the data shape the
- * pages previously read from data.json. Requires config.js (SITE_CONFIG) first.
+ * Fetches every platform feed with the ANON key and returns the shape the pages read. Requires
+ * config.js first. Used by index.html, creator.html and media-kit.html.
  *
- * Used by: index.html, creator.html, media-kit.html.
+ * Headline figures (followers, likes, engagement) and the About tiles are CROSS-PLATFORM totals
+ * over TikTok, YouTube and Instagram. Per-platform detail stays in `platforms`, and the
+ * TikTok-only deep dive stays in `tiktokStats` because two pages chart it. Pricing is NOT here:
+ * rates live per agency in the token-gated dashboard.
  *
- * The headline creator fields (followers / likes / engagementRate) and the
- * About tiles are CROSS-PLATFORM totals across TikTok, YouTube and Instagram.
- * A creator whose importers have not run for a platform contributes zero to
- * those totals rather than breaking them. Per-platform detail stays in
- * `platforms`, and the
- * TikTok-only deep dive (view distribution, audience, watch time) stays in
- * `tiktokStats` because the media kit and the creator page chart it.
- *
- * Pricing is NOT here. The public rate card was removed 2026-08-01; rates now
- * live per agency in the token-gated dashboard, so the public site never
- * carries a price. @see CLAUDE.md "Agency rate cards"
- *
- * @gotcha Every feed here is read as an unauthenticated visitor, so each view
- *         needs its own `grant select ... to anon`. Recreating a view drops the
- *         grant. That now surfaces as a failed load rather than as zeros: see
- *         the guards in get() and getAll().
- * @invariant A feed that errors must never be averaged in as zero. Every
- *            headline figure on this site is a cross-platform SUM, so one dead
- *            view does not blank the page, it quietly understates a creator to
- *            the brands the page exists to win. Showing nothing beats showing a
- *            five-figure creator as a zero.
- * @gotcha YouTube like/comment/share counts are DAILY deltas, not lifetime
- *         per-video counters like TikTok's. See buildYouTube.
+ * @invariant a feed that errors must NEVER be averaged in as zero. Every headline is a
+ *            cross-platform SUM, so one dead view does not blank the page, it quietly
+ *            understates a creator to the brands the page exists to win. Showing nothing beats
+ *            showing a five-figure creator as a zero.
  */
 /* global SITE_CONFIG */
 (function () {
@@ -41,7 +25,7 @@
   function feedName(path) { return path.split('?')[0]; }
 
   /* @gotcha A failed PostgREST call still carries a JSON body, an error OBJECT
-   *         rather than a row array, so `r.json()` resolves happily and the
+   *         rather than a row array, so `r.json` resolves happily and the
    *         failure looks like data. Rejecting here is what lets every caller's
    *         catch fire instead of a dead feed being averaged in as zero. */
   function get(path) {
@@ -106,7 +90,7 @@
     });
   }
 
-  /* An empty platform: the shape every build*() returns, so a creator with no
+  /* An empty platform: the shape every build* returns, so a creator with no
    * account on a platform (or a feed that has not landed yet) sums to zero
    * instead of poisoning the totals with NaN. */
   function emptyPlatform() {
@@ -203,7 +187,7 @@
    * @gotcha Wrapped in a catch that degrades to an empty array. A creator whose
    *         Coupler importers have never run has no rows, which is fine, but a
    *         feed VIEW that does not exist yet returns a PostgREST error OBJECT
-   *         rather than an array, and handing that to .filter() would throw and
+   *         rather than an array, and handing that to.filter would throw and
    *         take the whole page down over one absent platform. */
   function safeGet(path) {
     return get(path).then(function (rows) {
@@ -279,7 +263,7 @@
    *         deltas (sum them). Mixing the two bases understates any rate built
    *         from them, so engagement pairs the daily interactions with the
    *         daily views (engViews), never with lifetime views.
-   * @gotcha The daily feed starts 2026-02-20, so YouTube likes are a floor, not
+   * @gotcha The daily feed starts so YouTube likes are a floor, not
    *         a true lifetime count. It covers 98%+ of both channels' lifetime
    *         views, so the gap is small, and the About tiles read "+".
    */
@@ -412,16 +396,14 @@
       /* Measured audience only. Every field here comes from a live feed.
        *
        * @gotcha There is no `age` bracket and there must not be one until a feed
-       *         supplies it. config.js used to carry a hand-typed age
-       *         distribution that was byte-identical for both creators, and it
-       *         rendered on the creator page, the media kit AND the media-kit
-       *         PDF as measured analytics. No age demographic exists anywhere in
-       *         the database; neither TikTok nor YouTube supplies one today.
-       * @gotcha The old `cfg.audience.*` fallbacks were removed with it: they
-       *         named keys config.js never defined, so an empty feed would have
-       *         handed `undefined` to the chart builders rather than degrading.
-       *         An empty array renders an empty chart, which is the honest
-       *         result and what every builder here already handles.
+       *         supplies it. A hand-typed age distribution in config.js renders on
+       *         the creator page, the media kit AND the media-kit PDF as measured
+       *         analytics. No age demographic exists anywhere in the database, and
+       *         neither TikTok nor YouTube supplies one.
+       * @gotcha No `cfg.audience.*` fallbacks either: they name keys config.js does
+       *         not define, so an empty feed hands `undefined` to the chart builders
+       *         rather than degrading. An empty array renders an empty chart, which
+       *         is the honest result and what every builder here handles.
        */
       audience: {
         gender:       genderData,

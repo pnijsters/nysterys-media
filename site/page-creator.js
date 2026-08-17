@@ -1,8 +1,8 @@
 /* =============================================================
-   site/page-creator.js : Nysterys Media
+   site/page-creator.js: Nysterys Media
    The creator.html page's own script, extracted from the page itself.
 
-   @security security/11-plan.md T2-13, from 05 F-15. This file exists so
+   @security This file exists so
    script-src on creator.html can drop 'unsafe-inline'. An innerHTML assignment does not
    run a <script> tag but it does run an inline event-handler attribute, and that
    attribute needs exactly 'unsafe-inline', so leaving the directive in place made
@@ -60,7 +60,7 @@
       var el = document.getElementById('country-bars');
       if (!el) return;
       // The empty-feed guard and the max both live in site/utils.js
-      // buildBarChart; only this page's markup is local. @see W-32
+      // buildBarChart; only this page's markup is local. @see
       el.innerHTML = buildBarChart(data, function (country, widthPct) {
         return '<div class="country-row">'
           + '<div class="country-meta">'

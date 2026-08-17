@@ -9,12 +9,11 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="/favicon.ico" />
   <style>
-    /* security/11-plan.md T3-3 (08 S-11). This page is the one public page that does NOT
-       load site/global.css, so the four @font-face blocks that live there are repeated here
-       rather than inherited. The files are the same vendored @fontsource woff2s; the paths
-       are absolute because 404.html is served at an arbitrary URL and a relative one would
-       resolve against whatever path the visitor mistyped. No italic face: this page has no
-       italic text. */
+    /* The one public page that does NOT load site/global.css, so the four @font-face blocks
+       living there are repeated here rather than inherited. Same vendored @fontsource woff2s.
+       The paths are absolute because 404.html is served at an arbitrary URL and a relative
+       one would resolve against whatever path the visitor mistyped. No italic face: this
+       page has no italic text. */
     @font-face {
       font-family: 'Bebas Neue';
       font-style: normal;

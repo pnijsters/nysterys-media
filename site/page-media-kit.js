@@ -1,8 +1,8 @@
 /* =============================================================
-   site/page-media-kit.js : Nysterys Media
+   site/page-media-kit.js: Nysterys Media
    The media-kit.html page's own script, extracted from the page itself.
 
-   @security security/11-plan.md T2-13, from 05 F-15. This file exists so
+   @security This file exists so
    script-src on media-kit.html can drop 'unsafe-inline'. An innerHTML assignment does not
    run a <script> tag but it does run an inline event-handler attribute, and that
    attribute needs exactly 'unsafe-inline', so leaving the directive in place made

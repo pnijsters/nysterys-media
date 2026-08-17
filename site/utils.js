@@ -1,12 +1,12 @@
 /* =============================================================
-   utils.js : Nysterys Media
+   utils.js: Nysterys Media
    Shared utility functions loaded by every page on the site.
    ============================================================= */
 
 /**
  * Escape a value for interpolation into an HTML string.
  *
- * @security `security/11-plan.md` T2-13, from `05 F-15`. Every one of these pages builds its
+ * @security Every one of these pages builds its
  *           markup by concatenation and assigns it with innerHTML, and the labels come from
  *           feed tables that Coupler.io writes: bare `text`, no CHECK, no length limit. An
  *           innerHTML assignment does not run a `<script>` tag, but it does run an inline
@@ -157,12 +157,10 @@ function buildGenderLegend(elId, data) {
  * Lay out a horizontal bar chart: find the widest value, then hand each row its
  * width as a percentage of it.
  *
- * The two pages that draw these use different markup and different class names,
- * so only the RULE lives here and each caller still writes its own row. Before
- * `W-32` there were two copies: `buildCountryBars` in creator.html took the max
- * as `data[0].value` on the assumption the feed arrives sorted, and
- * `buildBarRows` in media-kit.html scanned for it. An unsorted feed rendered
- * bars wider than their own track on one page and correctly on the other.
+ * The two pages that draw these use different markup and different class names, so only
+ * the RULE lives here and each caller still writes its own row. A per-page copy drifts on
+ * exactly one detail: taking the max as `data[0].value` assumes the feed arrives sorted,
+ * and an unsorted feed then renders bars wider than their own track.
  *
  * @param {Array<{label:string,value:number}>} data  Rows, in the order to draw them.
  * @param {function(object, number): string} renderRow  Given a row and its width

@@ -20,16 +20,14 @@
       form-action 'none';
     " />
 
-    <!-- security/11-plan.md T3-1 and T3-4, from 10 C-02, 10 C-05 and 10 C-07. Three tags
-         stood here and two of them did nothing. X-Frame-Options and X-Content-Type-Options
-         are response headers with no meta form, so this page, which is the anonymous
-         bearer-token surface and the one most worth framing, READ as clickjacking-protected
-         and was not. Both measured in Chrome, not assumed: the nosniff tag did not stop a
-         script served as text/plain from executing. They are deleted, and the frame-ancestors
-         directive in the CSP above is inert for the same reason and is left only because the
-         policy is one string. Real framing protection needs the front proxy (deferred M1).
-         The referrer policy is a genuine control and is kept, moved to the spec form: with
-         http-equiv it was ignored and this page fell back to the browser default. -->
+    <!-- ONE real control here, and it is the referrer policy, in the `name` form. With
+         `http-equiv` a browser ignores it and this page falls back to the default.
+         X-Frame-Options and X-Content-Type-Options are response headers with NO meta form:
+         written as tags they make this page, the anonymous bearer-token surface and the one
+         most worth framing, READ as clickjacking-protected while it is not. The
+         frame-ancestors directive in the CSP above is inert for the same reason and stays
+         only because the policy is one string. Real framing protection needs the front
+         proxy. -->
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
 

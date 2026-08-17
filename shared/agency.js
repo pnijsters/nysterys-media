@@ -1,28 +1,19 @@
 /**
- * agency.js - Nysterys Agency Dashboard. Vanilla JS IIFE, no framework, no
- * Supabase SDK. Served UNMINIFIED at nysterys.com/shared/, so these comments
- * ship to viewers; keep them proportionate.
+ * agency.js - Nysterys Agency Dashboard. Vanilla JS IIFE, no framework, no Supabase SDK.
+ * Served UNMINIFIED at nysterys.com/shared/, so these comments ship to viewers.
  *
- * Fetches one campaign/payment payload from the agency-dashboard edge function
- * and renders it read-only for a brand or music agency. Three scopes drive the
- * layout: 'campaigns_only', 'payments_only', or 'campaigns_and_payments' (tabs).
+ * Fetches one campaign/payment payload from the agency-dashboard edge function and renders it
+ * read-only for a brand or music agency. Three scopes drive the layout: 'campaigns_only',
+ * 'payments_only', or 'campaigns_and_payments' (tabs).
  *
- * @security The access token lives in the URL fragment (#t=...), so the browser
- *           never sends it to any server in the request line, access logs, or
- *           Referer headers. It reaches the edge function only as an
- *           Authorization: Bearer header on the one fetch (see init).
- * @security All user-supplied content is written via textContent, never
- *           innerHTML. Every outbound link runs through safeLink (http/https
- *           only) so a stored javascript: URL cannot execute.
- * @invariant every field this file reads off the payload is declared in
- *            supabase/functions/agency-dashboard/payload.schema.json. There is no
- *            import between the two (a static IIFE cannot reach a Deno module), so
- *            scripts/tests/payload-contract.spec.js is what holds them together,
- *            along with the Playwright fixture that stands in for the payload.
- *            Reading a field the schema does not declare means the fixture does not
- *            carry it either, and no test on any browser project has ever rendered
- *            that code.
- * @see docs/CODEBASE.md, CLAUDE.md "Agency Dashboard"
+ * @security The access token lives in the URL fragment (#t=...), so the browser never sends it
+ *           in the request line, access logs or Referer headers. It reaches the edge function
+ *           only as an Authorization: Bearer header on the one fetch (see init).
+ * @security All user-supplied content is written via textContent, never innerHTML, and every
+ *           outbound link runs through safeLink (http/https only).
+ * @invariant every field read off the payload is declared in
+ *            supabase/functions/agency-dashboard/payload.schema.json, and
+ *            scripts/tests/payload-contract.spec.js is what holds the two together.
  */
 (function () {
   'use strict';
@@ -40,7 +31,7 @@
 
   // Nothing about a creator is hard-coded here. handle, follower_count,
   // avatar_url and the bio all arrive on the API payload. The bio was a
-  // two-key object keyed by creator_name until 2026-08-10, which meant renaming
+  // two-key object keyed by creator_name until which meant renaming
   // a creator in the hub, or onboarding a third, blanked the hero bio silently;
   // it is now profiles.agency_bio, authored in Creator Setup and emitted as
   // dashboard.creator_bio.
@@ -223,22 +214,17 @@
   /**
    * True when a deliverable's brief and its live audio are the same sound.
    *
-   * The single home for that question. Five call sites (the Sounds Checked KPI,
-   * the Sound Check panel, the mobile card, the campaign-row flag and the
-   * expanded music sub-row) each used to inline the same urlMatch||trackMatch
-   * pair, and one of them had already drifted to its own copy of normTrack.
+   * The single home for that question: five call sites ask it, and an inlined
+   * urlMatch||trackMatch pair at each one drifts.
    *
-   * @gotcha "original sound" is TikTok's label for ANY creator-uploaded audio,
-   *   so it is a category and not a title. Two unrelated posts both carry it,
-   *   which made the track-name comparison report a match on a label collision
-   *   and rendered a real deviation as "Confirmed". When either side is an
-   *   original sound the track name proves nothing and only the music ID can
-   *   decide, so the name test is skipped entirely rather than trusted.
-   * @gotcha This reads the `*_is_original` FLAGS and never inspects a track name
-   *   for the label itself. The label is localised across at least 8 languages,
-   *   and that list has exactly one home (supabase/functions/_shared/originalSound.ts,
-   *   applied by the edge function); a copy of it here would be a second home
-   *   free to drift. @see CLAUDE.md (the label is localised)
+   * @gotcha "original sound" is TikTok's label for ANY creator-uploaded audio, so it is a
+   *   category and not a title. Two unrelated posts both carry it, which makes a track-name
+   *   comparison report a match on a label collision and render a real deviation as
+   *   "Confirmed". When either side is an original sound only the music ID can decide, so the
+   *   name test is skipped entirely.
+   * @gotcha This reads the `*_is_original` FLAGS and never inspects a track name for the label
+   *   itself. The label is localised across at least 8 languages and that list has exactly one
+   *   home (supabase/functions/_shared/originalSound.ts, applied by the edge function).
    * @param {object} m - the deliverable's `music` object from the edge function
    * @returns {boolean} true only when brief and actual are genuinely the same sound
    */
@@ -352,7 +338,7 @@
    *         Requested / Approved / Scheduled / Posted, and the edge function
    *         already drops cancelled campaigns before the payload is built. So
    *         there is deliberately no per-deliverable Cancelled guard here; one
-   *         existed until 2026-08-10 and could never fire.
+   *         existed until and could never fire.
    * @gotcha 'Posted' must stay exact title-case; a casing change in the payload
    *         silently drops the row from postsDelivered. @see the payment-bucket
    *         title-case rule in renderPayments.
@@ -527,11 +513,11 @@
    *
    * @gotcha The music-compliance cell appears only when the payload's
    *         `music_brief_required` flag is true, which comes from
-   *         `agency_types.requires_music_brief`. It used to sniff the agency
-   *         type NAME for 'music', which worked only by accident of one type
-   *         being called "Music Promo": renaming it would have switched the
-   *         compliance KPI off without a word. CPM appears only when non-in-kind
-   *         invoice amounts and views are both present.
+   *         `agency_types.requires_music_brief`. Never sniff the agency type
+   *         NAME for 'music': that works only by accident of one type being
+   *         called "Music Promo", and renaming it switches the compliance KPI
+   *         off without a word. CPM appears only when non-in-kind invoice
+   *         amounts and views are both present.
    */
   function renderKpiStrip(campaigns, summary, dash) {
     var kpiEl = document.getElementById('kpi-strip');
@@ -598,11 +584,10 @@
     // states that denominator against the delivered total. Reporting a bare
     // 'All Confirmed' beside '23/23 Posts Delivered' read as all 23 posts
     // verified when only 2 carried a brief, which overclaims to the agency.
-    // Gated on the agency TYPE's own flag, never on its name. This used to test
-    // whether the type name contained "music", which worked by accident of one
-    // type being called "Music Promo": renaming it would have switched the
-    // compliance KPI off without a word, and a new music type called anything
-    // else would never have shown one.
+    // Gated on the agency TYPE's own flag, never on its name. Testing whether the type
+    // name contains "music" works by accident of one type being called "Music Promo":
+    // renaming it switches the compliance KPI off without a word, and a new music type
+    // called anything else never shows one.
     if (dash && dash.music_brief_required === true) {
       var scConfirmed = 0, scMismatched = 0, scTotal = 0, scDelivered = 0, scNoBrief = 0;
       campaigns.forEach(function (c) {
@@ -800,16 +785,15 @@
    * Aggregate engagement rate: interactions as a percent of views, over TOTALS.
    *
    * This is the ratio the KPI's own tooltip prints ("likes, comments and shares
-   * as a percent of views"), and until 2026-08-10 the dashboard did not compute
+   * as a percent of views"), and until the dashboard did not compute
    * it: computeSummary averaged the per-post rates and sumStats averaged a
    * DIFFERENT subset of them (only posts with a non-zero rate), so a post with
    * no engagement lowered the headline and not the campaign total. An unweighted
    * mean of ratios equals a ratio of sums only when every post has the same view
    * count, so all seven live dashboards understated, by 0.59 to 7.66 points.
    *
-   * @gotcha The PER-POST rate keeps its own home in SQL (video_stats), and this
-   *         must not be used to recompute it. Only the aggregate was ever in
-   *         dispute.
+   * @gotcha The PER-POST rate keeps its own home in SQL (video_stats). This function
+   *         computes the AGGREGATE only and must never recompute the per-post figure.
    * @param {object} t totals carrying views, likes, comments and shares.
    * @returns {?number} the percentage, or null when there are no views to divide by.
    */
@@ -915,10 +899,10 @@
       var musicRow = el('div', 'mobile-deliv-music');
       musicRow.appendChild(icon('music', 12, 'mobile-deliv-music-note'));
 
-      // Name the sound that was USED once the post is live, and fall back to the
-      // brief only before it is. A deviation used to name the contracted track
-      // beside "Different", which told the agency what it asked for and not what
-      // it got. Mirrors the desktop Sound cell. @see soundCell
+      // Name the sound that was USED once the post is live, and fall back to the brief
+      // only before it is. Naming the contracted track beside "Different" tells the agency
+      // what it asked for and not what it got. Mirrors the desktop Sound cell.
+      // @see soundCell
       var showTrack  = hasActual ? m.actual_track  : m.contracted_track;
       var showArtist = hasActual ? m.actual_artist : m.contracted_artist;
       if (showTrack) {
@@ -957,7 +941,7 @@
    *         eight such campaigns read as eight distinct artists rather than
    *         eight copies of the same non-title. A post with no artist either
    *         is skipped: there is nothing to call it.
-   * @gotcha Distinctness is measured on normTrack, the same normalisation the
+   * @gotcha Distinctness uses normTrack, the same normalisation the
    *         per-deliverable mismatch check uses, so 'purple-rain' and
    *         'Purple Rain' are one sound rather than two.
    */
@@ -1012,26 +996,20 @@
   /**
    * Build the campaign identity block: the campaign's name over a metadata line.
    *
-   * The single home for what a campaign is CALLED here, used by both the
-   * campaigns list and the payments table. Naming a campaign one way on one tab
-   * and another way on the next made the same deal look like two different
-   * things, so neither tab may build this itself.
+   * The single home for what a campaign is CALLED here, used by both the campaigns list and the
+   * payments table, so the same deal cannot look like two different things across tabs.
    *
    * @param {object} campaign - the campaign, with its deliverables.
-   * @returns {object} `{cell, title, sub, sound, dateStr, setSub}` where `cell`
-   *          is the ready-to-mount element, `title` is exposed so a caller can
-   *          append tab-specific chips, and `setSub(parts)` writes the
-   *          metadata line from an array joined with the standard separator.
-   * @invariant The headline is `campaign.name` VERBATIM: the display name the
-   *            database built (`campaign_display_name()`), the same string the
-   *            hub shows. It already reads "Agency x Creator - Artist - Song",
-   *            so the sound, the artist and the "Original sound" qualifier are
-   *            NOT re-appended here; doing so would print each of them twice.
-   * @gotcha campaignSound survives for the one thing the display name cannot
-   *         express: a campaign that used SEVERAL sounds. Those are the
-   *         multi-deliverable campaigns, whose name is just "Agency x Creator",
-   *         so the sound summary moves to the metadata line rather than being
-   *         lost. It no longer decides what the campaign is CALLED.
+   * @returns {object} `{cell, title, sub, sound, dateStr, setSub}` where `cell` is the
+   *          ready-to-mount element, `title` is exposed so a caller can append tab-specific
+   *          chips, and `setSub(parts)` writes the metadata line from an array.
+   * @invariant The headline is `campaign.name` VERBATIM, the display name the database built,
+   *            the same string the hub shows. It already reads "Agency x Creator - Artist -
+   *            Song", so the sound, the artist and the "Original sound" qualifier are NOT
+   *            re-appended here; doing so prints each of them twice.
+   * @gotcha campaignSound survives for the one thing the display name cannot express: a
+   *         campaign that used SEVERAL sounds. Its name is just "Agency x Creator", so the
+   *         sound summary moves to the metadata line rather than being lost.
    */
   function buildCampaignLabel(campaign) {
     var delivs   = campaign.deliverables || [];
@@ -1106,7 +1084,7 @@
    * @param {object[]} delivs - the campaign's deliverables (never empty).
    * @param {number} cardIdx - the campaign's list index, used only to keep the
    *        engagement sub-row ids unique across the page.
-   * @returns {HTMLElement} the .table-wrap element.
+   * @returns {HTMLElement} the.table-wrap element.
    */
   function buildDeliverablesTable(delivs, cardIdx) {
       var tableWrap = el('div', 'table-wrap');
@@ -1257,11 +1235,10 @@
           });
         }
 
-        // Music sub-row - ONLY for a genuine deviation, where showing the brief
-        // beside what was used is the whole point. It used to also cover the
-        // not-yet-posted and no-brief cases, but the Sound cell now states both
-        // of those, so rendering it there reprinted the cell verbatim one line
-        // lower. @see soundCell
+        // Music sub-row - ONLY for a genuine deviation, where showing the brief beside
+        // what was used is the whole point. The Sound cell already states the
+        // not-yet-posted and no-brief cases, so rendering this there reprints that cell
+        // verbatim one line lower. @see soundCell
         var m = d.music;
         var hasBrief  = m && (m.contracted_url || m.contracted_track);
         var hasActual = m && (m.actual_url     || m.actual_track);
@@ -1615,7 +1592,7 @@
         var addr    = m.address || '';
         var href    = null;
 
-        // Detect link type - all URLs go through safeLink(); mailto: only on valid email pattern
+        // Detect link type - all URLs go through safeLink; mailto: only on valid email pattern
         if (/^https?:\/\//i.test(addr)) {
           href = safeLink(addr);
         } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
@@ -1653,16 +1630,6 @@
 
   // ── Render: payments panel ─────────────────────────────────────────────────────
 
-  /**
-   * Render the payments panel: outstanding-amount hero, a Total/Paid/Outstanding
-   * breakdown, where-to-send addresses, and a per-campaign payments table.
-   * In-kind payments are excluded from every money total.
-   *
-   * @gotcha Bucketing keys off exact title-case status strings: 'Paid' is paid;
-   *         'Pending' / 'Invoiced' / 'Overdue' are pending; anything else (incl.
-   *         not-yet-invoiced) is notInvoiced. A casing drift in the payload
-   *         would silently misbucket an amount. @see computeSummary.
-   */
   /**
    * Build the Invoice cell for one payment row.
    *
@@ -1705,20 +1672,16 @@
   /**
    * Exchange an invoice number for a short-lived URL, then go to the PDF.
    *
-   * @security The page never holds a link to a stored file. The edge function
-   *           re-validates this dashboard's token on every click and returns a
-   *           URL that expires in 60 seconds, so revoking a shared link revokes
-   *           document access immediately and nothing long-lived can be copied
-   *           out of the page or a screenshot of it.
-   * @security The new tab is opened blank and has its `opener` severed before
-   *           it is ever navigated, so the invoice document can never reach
-   *           back into this page through window.opener.
-   * @gotcha The tab is opened SYNCHRONOUSLY, before the fetch, and pointed at
-   *         the URL once it arrives. A window.open() issued after an await is
-   *         swallowed by popup blockers, since it no longer counts as part of
-   *         the click.
-   * @gotcha Replacing the current tab instead would strand the reader: the hub
-   *         previews this dashboard in a popup window with no back button.
+   * @security The page never holds a link to a stored file. The edge function re-validates this
+   *           dashboard's token on every click and returns a URL that expires in 60 seconds, so
+   *           revoking a shared link revokes document access immediately and nothing
+   *           long-lived can be copied out of the page or a screenshot of it.
+   * @security The new tab is opened blank and has its `opener` severed before it is ever
+   *           navigated, so the invoice document can never reach back through window.opener.
+   * @gotcha The tab is opened SYNCHRONOUSLY, before the fetch, and pointed at the URL once it
+   *         arrives. A window.open issued after an await is swallowed by popup blockers.
+   * @gotcha Replacing the current tab instead would strand the reader: the hub previews this
+   *         dashboard in a popup window with no back button.
    */
   function openInvoice(number, btn, label) {
     if (btn.disabled) return;
@@ -1726,7 +1689,7 @@
     var original = label.textContent;
     btn.disabled = true;
 
-    // Must happen inside the click, not in the .then below.
+    // Must happen inside the click, not in the.then below.
     var tab = window.open('', '_blank');
     if (tab) tab.opener = null;
 
@@ -1796,7 +1759,7 @@
      * restraint is the design. The Amount column sits one cell away on the same
      * row, so a figure on the button repeats what the reader has just read and
      * spends weight on a control that is meant to stay quiet. All six live links
-     * agree with their invoice today (verified 2026-08-11).
+     * agree with their invoice today.
      *
      * It is printed when it DISAGREES, which is the case worth a person's
      * attention: a Stripe Price is immutable, so changing an amount means
@@ -1976,6 +1939,16 @@
     return subRow;
   }
 
+  /**
+   * Render the payments panel: outstanding-amount hero, a Total/Paid/Outstanding
+   * breakdown, where-to-send addresses, and a per-campaign payments table.
+   * In-kind payments are excluded from every money total.
+   *
+   * @gotcha Bucketing keys off exact title-case status strings: 'Paid' is paid;
+   *         'Pending' / 'Invoiced' / 'Overdue' are pending; anything else (incl.
+   *         not-yet-invoiced) is notInvoiced. A casing drift in the payload
+   *         would silently misbucket an amount. @see computeSummary.
+   */
   function renderPayments(campaigns, container, paymentAddresses) {
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
@@ -2113,10 +2086,9 @@
       /* On an in-kind row the Amount column carries WHAT arrived, not the words
        * "In Kind" again: the status badge one cell to the left already says that,
        * so repeating it spent the only column with room for a fact on a word the
-       * reader has just read. The description used to be a `title` attribute here,
-       * which is hover-only on a desktop and unreachable on a phone, so the one
-       * thing an agency wants from an in-kind row was the one thing it could not
-       * read. */
+       * reader has just read. The description is a real row, not a `title` attribute:
+       * that is hover-only on a desktop and unreachable on a phone, which hides the one
+       * thing an agency wants from an in-kind row. */
       var amountTd = el('td', p.is_in_kind ? 'inkind-cell' : null);
       var descRow = null;
       if (p.is_in_kind) {
@@ -2434,14 +2406,10 @@
    *           shared links stop leaking the token going forward.
    */
   function init() {
-    // Token lives in the URL fragment (#t=...) so it is never sent to any
-    // server in access logs or Referer headers. Fall back to query param for
-    // backwards compatibility with previously shared links (?t=...).
-    //
-    // If the token arrived as a query param (?t=... or ?token=...), migrate it
-    // to the hash immediately so it never appears in server access logs or
-    // Referer headers going forward. replaceState removes it from browser
-    // history as well.
+    // Token lives in the URL fragment (#t=...) so it is never sent to any server in
+    // access logs or Referer headers. A query param (?t=... or ?token=...) is accepted,
+    // because links carrying one are already out there, and is migrated to the hash
+    // immediately. replaceState removes it from browser history too.
     var queryParams = new URLSearchParams(window.location.search);
     var queryToken  = queryParams.get('t') || queryParams.get('token') || '';
     if (queryToken) {
