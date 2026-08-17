@@ -1,25 +1,19 @@
 /**
  * site/config.js - static public-site data that does not come from Supabase.
  *
- * Loaded before supabase-data.js, which reads `creators[id]` to know which feed
- * rows belong to whom: `tiktokHandle` keys the tiktok_* views,
- * `youtubeAccountId` keys yt_channel_stats_view.account__account_id, and
- * `instagramAccount` keys the ig_* views on `instagram_username`.
+ * Loaded before supabase-data.js, which reads `creators[id]` to know which feed rows belong to
+ * whom: `tiktokHandle` keys the tiktok_* views, `youtubeAccountId` keys
+ * yt_channel_stats_view.account__account_id, and `instagramAccount` keys the ig_* views.
  *
- * @gotcha An account key may name a feed that does not exist yet. Kym's
- *         Instagram importers have not been run, so her `instagramAccount`
- *         matches no rows and buildInstagram returns an empty platform. That is
- *         the designed behaviour: the key goes in once, and her figures appear
- *         the day the importer runs, with no code change.
- *
- * @gotcha `socials` doubles as the source for the About "Platforms" tile and the
- *         `{platforms}` bio placeholder, so a platform listed here is named and
- *         counted whether or not its stats feed exists.
- * @gotcha Bios must NEVER hard-code a figure. Use the placeholders
- *         `{followers}` `{likes}` `{views}` `{engagementRate}` `{platforms}`,
- *         filled from live data by fillBio() in site/supabase-data.js. A typed
- *         number goes stale silently and ends up contradicting the stats
- *         rendered inches away on the same card.
+ * @gotcha An account key may name a feed that does not exist yet, in which case the platform
+ *         builds empty. That is designed: the key goes in once, and the figures appear the day
+ *         the importer runs, with no code change.
+ * @gotcha `socials` doubles as the source for the About "Platforms" tile and the `{platforms}`
+ *         bio placeholder, so a platform listed here is counted whether or not its feed exists.
+ * @gotcha Bios must NEVER hard-code a figure. Use `{followers}` `{likes}` `{views}`
+ *         `{engagementRate}` `{platforms}`, filled from live data by fillBio() in
+ *         site/supabase-data.js, or the number goes stale and contradicts the stats rendered
+ *         inches away on the same card.
  */
 var SITE_CONFIG = {
   /* Homepage roster card. A platform earns its own stats row only once its

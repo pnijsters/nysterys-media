@@ -3,14 +3,13 @@
    No shared imports with hub-src. Uses same brand variables.
    ============================================================ */
 
-/* ─── Fonts ──────────────────────────────────────────────────
-   security/11-plan.md T3-3 (08 S-11), the dashboard half. This page used to pull both
-   families from a Google origin, which meant an agency opening a shared link handed Google
-   its IP address and the Referer before it had rendered a single number. The dashboard is
-   reached by an unauthenticated bearer token, so that Referer is the token's own URL.
-   The woff2 files are vendored from @fontsource into shared/fonts/, and style-src and
-   font-src in index.html are 'self', so a re-added <link> is refused by the browser.
-   No italic face: the dashboard has no italic text.
+/* ─── Fonts ───────────────────────────────────────────────────
+   Vendored, never fetched. Pulling either family from a Google origin means an agency
+   opening a shared link hands Google its IP address and the Referer before a single number
+   has rendered, and because the dashboard is reached by an unauthenticated bearer token
+   that Referer IS the token's own URL. The woff2 files come from @fontsource into
+   shared/fonts/, and style-src and font-src in index.html are 'self', so a re-added <link>
+   is refused by the browser. No italic face: the dashboard has no italic text.
    ============================================================ */
 
 @font-face {

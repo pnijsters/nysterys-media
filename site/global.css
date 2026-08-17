@@ -5,11 +5,9 @@
    ============================================================= */
 
 /* ─── Fonts ──────────────────────────────────────────────────── */
-/*
-   security/11-plan.md T3-3 (08 S-11), the public-site half. All five pages used to load
-   Bebas Neue and DM Sans from a Google origin, so opening nysterys.com was an
-   unavoidable request to a Google origin carrying the visitor's IP address and Referer,
-   with no consent step in front of it. The hub closed the same thing by importing
+/* Vendored, never fetched. Loading Bebas Neue and DM Sans from a Google origin makes
+   opening nysterys.com an unavoidable request carrying the visitor's IP address and
+   Referer, with no consent step in front of it. The hub closes the same thing by importing
    @fontsource in src/index.js; there is no build step here, so the same @fontsource files
    are vendored into site/fonts/ and declared below. 152 KB for six woff2 files.
 
