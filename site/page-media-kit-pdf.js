@@ -30,7 +30,7 @@
 
     function downloadPDF() {
       var btn = document.getElementById('download-btn');
-      btn.textContent = 'Generating...';
+      btn.textContent = 'Generating…';
       btn.disabled = true;
       loadSiteData()
         .then(function(data) { generatePDF(data, btn); })
