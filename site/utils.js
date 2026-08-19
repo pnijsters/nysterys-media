@@ -111,7 +111,7 @@ function buildDonut(svgId, data) {
 
   var bg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   bg.setAttribute('cx', cx); bg.setAttribute('cy', cy); bg.setAttribute('r', r);
-  bg.setAttribute('fill', 'none'); bg.setAttribute('stroke', '#1e1e1e');
+  bg.setAttribute('fill', 'none'); bg.style.stroke = 'var(--border)';
   bg.setAttribute('stroke-width', '3.5');
   svg.appendChild(bg);
 
