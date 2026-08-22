@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/hub/static/css/main.dea8388d.css",
-    "main.js": "/hub/static/js/main.db85ebb2.js",
-    "static/js/66.f5435cc7.chunk.js": "/hub/static/js/66.f5435cc7.chunk.js",
-    "static/js/498.c4932883.chunk.js": "/hub/static/js/498.c4932883.chunk.js",
-    "static/js/943.1db968a9.chunk.js": "/hub/static/js/943.1db968a9.chunk.js",
+    "main.js": "/hub/static/js/main.4e4efa61.js",
+    "static/js/66.d02e11e4.chunk.js": "/hub/static/js/66.d02e11e4.chunk.js",
+    "static/js/498.3d0c878e.chunk.js": "/hub/static/js/498.3d0c878e.chunk.js",
+    "static/js/943.2e76371e.chunk.js": "/hub/static/js/943.2e76371e.chunk.js",
     "static/js/954.0f0e6223.chunk.js": "/hub/static/js/954.0f0e6223.chunk.js",
     "static/js/695.e42ba3dd.chunk.js": "/hub/static/js/695.e42ba3dd.chunk.js",
-    "static/js/86.cccc4114.chunk.js": "/hub/static/js/86.cccc4114.chunk.js",
+    "static/js/86.af1c4d4e.chunk.js": "/hub/static/js/86.af1c4d4e.chunk.js",
     "static/js/861.d4a28e44.chunk.js": "/hub/static/js/861.d4a28e44.chunk.js",
     "static/js/78.3e29594c.chunk.js": "/hub/static/js/78.3e29594c.chunk.js",
     "static/js/380.236becb9.chunk.js": "/hub/static/js/380.236becb9.chunk.js",
@@ -17,8 +17,8 @@
     "static/js/718.96a9ea68.chunk.js": "/hub/static/js/718.96a9ea68.chunk.js",
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/442.d7828891.chunk.js": "/hub/static/js/442.d7828891.chunk.js",
-    "static/js/245.1ae35a5c.chunk.js": "/hub/static/js/245.1ae35a5c.chunk.js",
-    "static/js/335.c51fbd63.chunk.js": "/hub/static/js/335.c51fbd63.chunk.js",
+    "static/js/366.7d8e9f31.chunk.js": "/hub/static/js/366.7d8e9f31.chunk.js",
+    "static/js/335.1b172b4d.chunk.js": "/hub/static/js/335.1b172b4d.chunk.js",
     "static/media/dm-sans-latin-wght-italic.woff2": "/hub/static/media/dm-sans-latin-wght-italic.2dd40fb940cdfa124ce3.woff2",
     "static/media/dm-sans-latin-wght-normal.woff2": "/hub/static/media/dm-sans-latin-wght-normal.09cead2724b8d8c7e453.woff2",
     "static/media/dm-sans-latin-ext-wght-italic.woff2": "/hub/static/media/dm-sans-latin-ext-wght-italic.4ab7351a85c7b8ec6e89.woff2",
@@ -31,6 +31,6 @@
   },
   "entrypoints": [
     "static/css/main.dea8388d.css",
-    "static/js/main.db85ebb2.js"
+    "static/js/main.4e4efa61.js"
   ]
 }
