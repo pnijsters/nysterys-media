@@ -827,6 +827,11 @@
    * @returns {HTMLElement} the card element (thumb, platform/status, date,
    *          stats line, optional music-check row).
    */
+  /** What a thumbnail link opens, for the two layouts that draw one. */
+  function postLinkLabel(platform) {
+    return 'Open post on ' + (platform || 'the platform');
+  }
+
   function renderDeliverableMobileCard(d) {
     var card = el('div', 'mobile-deliv-card');
     var top  = el('div', 'mobile-deliv-top');
@@ -835,7 +840,10 @@
     var imgUrl   = safeLink(d.cover_image_url);
     var postHref = safeLink(d.post_url);
     var thumb    = postHref ? el('a', 'mobile-deliv-thumb') : el('div', 'mobile-deliv-thumb');
-    if (postHref) { thumb.href = postHref; thumb.target = '_blank'; thumb.rel = 'noopener noreferrer'; }
+    if (postHref) {
+      thumb.href = postHref; thumb.target = '_blank'; thumb.rel = 'noopener noreferrer';
+      thumb.setAttribute('aria-label', postLinkLabel(d.platform));
+    }
     if (imgUrl) {
       var img = el('img');
       img.src = imgUrl; img.alt = ''; img.loading = 'lazy';
@@ -1135,6 +1143,10 @@
           thumbWrap.href   = postUrl;
           thumbWrap.target = '_blank';
           thumbWrap.rel    = 'noopener noreferrer';
+          // The image is decorative (alt=""), so without this the link's only accessible
+          // name is its href, which a screen reader reads out as a video id. This is the
+          // control the agency opens the post with to confirm delivery.
+          thumbWrap.setAttribute('aria-label', postLinkLabel(d.platform));
         }
         if (imgUrl) {
           var img = el('img');
