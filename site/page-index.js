@@ -106,17 +106,28 @@ function buildPlatformRows(rows) {
   '</div>';
 }
 
+/**
+ * One roster card.
+ *
+ * The creator's NAME is the link, stretched over the whole card by
+ * `.talent-name-link::after` (index.html). It cannot be an `<a>` around the card itself: the
+ * social pills are anchors too, and the parser closes an outer `<a>` the moment it meets an
+ * inner one, so the markup that reads best would not survive `innerHTML`.
+ *
+ * @gotcha the pills need `z-index` above that overlay or the card link swallows them.
+ */
 function buildTalentCard(creator) {
   var socials = Object.entries(creator.socials)
     .map(function(entry) { return buildSocialLink(entry[0], entry[1]); })
     .join('');
-  return '<div class="talent-card" data-creator-id="' + escapeHtml(encodeURIComponent(creator.id)) + '">' +
+  var href = 'creator.html?id=' + escapeHtml(encodeURIComponent(creator.id));
+  return '<div class="talent-card">' +
     '<div class="talent-photo">' +
       '<img src="' + escapeHtml(creator.photo) + '" loading="lazy" decoding="async" alt="' + escapeHtml(creator.name) + '" />' +
     '</div>' +
     '<div class="talent-body">' +
       '<p class="talent-tag">' + escapeHtml(creator.tag) + '</p>' +
-      '<h3 class="talent-name">' + escapeHtml(creator.name) + ' <span class="talent-handle">@' + escapeHtml(creator.socials.tiktok.split('@').pop()) + '</span></h3>' +
+      '<h3 class="talent-name"><a class="talent-name-link" href="' + href + '">' + escapeHtml(creator.name) + '</a> <span class="talent-handle">@' + escapeHtml(creator.socials.tiktok.split('@').pop()) + '</span></h3>' +
       '<div class="talent-stats">' +
         '<div class="talent-stat"><span class="stat-val">' + escapeHtml(creator.followers) + '</span><span class="stat-lbl">Followers</span></div>' +
         '<div class="talent-stat"><span class="stat-val">' + escapeHtml(creator.likes) + '</span><span class="stat-lbl">Likes</span></div>' +
@@ -146,19 +157,6 @@ loadSiteData()
     var grid = document.getElementById('roster-grid');
     if (grid) {
       grid.innerHTML = data.roster.map(buildTalentCard).join('');
-
-      /* The card opens its creator page. ONE delegated listener rather than an
-         `onclick=` attribute on each card: index.html's script-src is 'self' with no
-         'unsafe-inline', and an inline handler needs exactly that directive, so an
-         attribute here does nothing at all and the card is dead with no error anywhere.
-         @see the @security note at the top of this file. */
-      grid.addEventListener('click', function(ev) {
-        // A social link is its own destination. Without this it opens the platform AND
-        // navigates the page underneath it, because the click bubbles to the card.
-        if (ev.target.closest('a')) return;
-        var card = ev.target.closest('.talent-card[data-creator-id]');
-        if (card) window.location = 'creator.html?id=' + card.dataset.creatorId;
-      });
 
       grid.querySelectorAll('.talent-card').forEach(function(el) {
         el.style.opacity = '0';

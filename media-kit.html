@@ -412,7 +412,9 @@
     }
 
     /* ─── Social links ────────────────────────────────────── */
-    .creator-socials { display: flex; gap: 0.75rem; }
+    /* flex-wrap, or the row's min-content is 482px inside a 272px column and the page
+       scrolls sideways at 320 and 375. @see ux/06-responsive.md */
+    .creator-socials { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 
     .creator-social {
       display: inline-flex;

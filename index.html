@@ -560,11 +560,28 @@
   overflow: hidden;
   position: relative;
   transition: border-color .3s;
-  cursor: pointer;
+  /* No cursor here. The whole card IS the creator link, drawn by
+     .talent-name-link::after below, and a pointer cursor on a div nobody can focus is
+     a promise of a click a keyboard cannot make. */
   /* Query container for the platform rows below. Safe alongside the hover
      flex-expand: the card's width comes from the flex parent, never from its
      own contents, so inline-size containment changes nothing here. */
   container-type: inline-size;
+}
+
+/* The creator link, stretched over the card. An <a> around the card itself is not
+   available: the social pills are anchors, and the parser closes an outer <a> at the
+   first inner one. @see site/page-index.js buildTalentCard */
+.talent-name-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.talent-name-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 .talent-card:hover {
@@ -574,6 +591,7 @@
 .talent-card::before {
   content: '';
   position: absolute;
+  pointer-events: none;
   top: 0;
   left: 0;
   right: 0;
@@ -691,7 +709,11 @@
 
 .talent-socials {
   display: flex;
+  flex-wrap: wrap;
   gap: .75rem;
+  /* Above .talent-name-link::after, or the card link swallows every pill. */
+  position: relative;
+  z-index: 2;
 }
 
 .talent-social {

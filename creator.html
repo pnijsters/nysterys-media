@@ -223,6 +223,10 @@
 
     .hero-socials {
       display: flex;
+      /* Without this the row's min-content is 418px, and .hero-info is a grid item whose
+         default min-width: auto refuses to shrink below it, so the whole page scrolls
+         sideways on a phone. @see ux/06-responsive.md */
+      flex-wrap: wrap;
       gap: 0.75rem;
       opacity: 0;
       animation: fadeUp 0.7s 0.95s forwards;
