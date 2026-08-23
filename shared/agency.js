@@ -686,7 +686,9 @@
 
       var labelEl = el('div', 'chart-label');
       labelEl.textContent = item.label;
-      if (item.title) labelEl.title = item.title;
+      // Clipped by .chart-label, so the full label is always behind it, not only when the
+      // caller supplied a longer one. @see ux/10-plan.md P29
+      labelEl.title = item.title || item.label;
 
       var track = el('div', 'chart-track');
       var fill  = el('div', 'chart-fill');
@@ -916,6 +918,7 @@
       if (showTrack) {
         var trackEl = el('span', 'mobile-deliv-music-track');
         trackEl.textContent = fmtTrack(showTrack) + (showArtist ? ' — ' + showArtist : '');
+        trackEl.title = trackEl.textContent;
         musicRow.appendChild(trackEl);
       }
 
@@ -1031,6 +1034,7 @@
     if (sound) title.appendChild(icon('music', 13, 'camp-title-note'));
     var nameEl = el('span');
     nameEl.textContent = campaign.name || dateStr || 'Campaign';
+    nameEl.title = nameEl.textContent;
     title.appendChild(nameEl);
     // The only sound fact the name cannot carry: this campaign used more than one.
     if (sound && sound.more > 0) {
@@ -1047,6 +1051,7 @@
       cell: cell, title: title, sub: sub, sound: sound, dateStr: dateStr,
       setSub: function (parts) {
         sub.textContent = (parts || []).filter(Boolean).join(' · ');
+        sub.title = sub.textContent;
       },
     };
   }
@@ -1271,6 +1276,7 @@
             if (track) {
               var trackEl = el('span', 'music-track');
               trackEl.textContent = fmtTrack(track);
+              trackEl.title = trackEl.textContent;
               block.appendChild(trackEl);
             }
             if (artist) {

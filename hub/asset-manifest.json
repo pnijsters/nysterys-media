@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/hub/static/css/main.a7ef9fc6.css",
-    "main.js": "/hub/static/js/main.f1b9a30b.js",
-    "static/js/66.5f00c31c.chunk.js": "/hub/static/js/66.5f00c31c.chunk.js",
-    "static/js/498.405cdcf2.chunk.js": "/hub/static/js/498.405cdcf2.chunk.js",
-    "static/js/943.d095ed54.chunk.js": "/hub/static/js/943.d095ed54.chunk.js",
+    "main.css": "/hub/static/css/main.7da33ace.css",
+    "main.js": "/hub/static/js/main.ee80d808.js",
+    "static/js/66.b4bac7f5.chunk.js": "/hub/static/js/66.b4bac7f5.chunk.js",
+    "static/js/498.e5bc44e2.chunk.js": "/hub/static/js/498.e5bc44e2.chunk.js",
+    "static/js/943.36fdafae.chunk.js": "/hub/static/js/943.36fdafae.chunk.js",
     "static/js/954.0f0e6223.chunk.js": "/hub/static/js/954.0f0e6223.chunk.js",
     "static/js/695.e42ba3dd.chunk.js": "/hub/static/js/695.e42ba3dd.chunk.js",
-    "static/js/86.afe0d5b5.chunk.js": "/hub/static/js/86.afe0d5b5.chunk.js",
+    "static/js/86.812daf4b.chunk.js": "/hub/static/js/86.812daf4b.chunk.js",
     "static/js/861.d4a28e44.chunk.js": "/hub/static/js/861.d4a28e44.chunk.js",
     "static/js/78.3e29594c.chunk.js": "/hub/static/js/78.3e29594c.chunk.js",
     "static/js/380.236becb9.chunk.js": "/hub/static/js/380.236becb9.chunk.js",
@@ -18,7 +18,7 @@
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/442.d7828891.chunk.js": "/hub/static/js/442.d7828891.chunk.js",
     "static/js/112.518fe531.chunk.js": "/hub/static/js/112.518fe531.chunk.js",
-    "static/js/335.78663b35.chunk.js": "/hub/static/js/335.78663b35.chunk.js",
+    "static/js/335.ea53be3b.chunk.js": "/hub/static/js/335.ea53be3b.chunk.js",
     "static/media/dm-sans-latin-wght-italic.woff2": "/hub/static/media/dm-sans-latin-wght-italic.2dd40fb940cdfa124ce3.woff2",
     "static/media/dm-sans-latin-wght-normal.woff2": "/hub/static/media/dm-sans-latin-wght-normal.09cead2724b8d8c7e453.woff2",
     "static/media/dm-sans-latin-ext-wght-italic.woff2": "/hub/static/media/dm-sans-latin-ext-wght-italic.4ab7351a85c7b8ec6e89.woff2",
@@ -30,7 +30,7 @@
     "index.html": "/hub/index.html"
   },
   "entrypoints": [
-    "static/css/main.a7ef9fc6.css",
-    "static/js/main.f1b9a30b.js"
+    "static/css/main.7da33ace.css",
+    "static/js/main.ee80d808.js"
   ]
 }

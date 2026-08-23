@@ -210,6 +210,26 @@ footer {
   color: var(--muted);
 }
 
+/* ─── Reduced motion ─────────────────────────────────────────── */
+
+/* Every page but 404.html loads this file, and 404.html carries its own block, so this is the
+   whole public site. Matches App.css: an entrance animation with `forwards` snaps to its final
+   state rather than being cancelled, which is why the duration is 0.01ms and not `none`.
+
+   This does NOT satisfy WCAG 2.2.2 on its own. The marquee below moves for 35 seconds and its
+   only pause is `:hover`, which a phone does not have and a keyboard cannot reach; a visitor
+   who never set the OS preference still gets it. A real pause control is filed. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ─── Marquee ticker ─────────────────────────────────────────── */
 
 .marquee-wrap {
@@ -240,11 +260,13 @@ footer {
   letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--orange);
-  opacity: 0.7;
+  /* 0.7 put --orange on --surface2 at 3.42:1, and this is 9.6px uppercase with 0.25em
+     tracking, so it is normal text and wants 4.5:1. 0.9 is 4.91:1. @see ux/10-plan.md P24 */
+  opacity: 0.9;
   gap: 1rem;
 }
 .marquee-dot {
-  opacity: 0.4;
+  opacity: 0.6;
   font-size: 1rem;
   font-weight: 300;
 }
