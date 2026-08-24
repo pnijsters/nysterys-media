@@ -502,6 +502,68 @@ body::before {
   max-width: 30ch;
 }
 
+/* The KPI definition mark and the text it reveals. `title=` was unreachable on a phone and
+   by a keyboard, on the one surface with no login and nobody to ask. A real button, so it
+   takes focus, a tap and Enter; 24px is the smallest square that is still a comfortable
+   target beside 9px label text, and it grows to the full 44px on coarse pointers below.
+   @see ux/10-plan.md P43 */
+.kpi-def {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 5px;
+  padding: 0;
+  vertical-align: -2px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+}
+
+.kpi-def:hover,
+.kpi-def[aria-expanded="true"] { color: var(--orange); border-color: var(--orange); }
+.kpi-def:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+/* A 14px circle is a legible mark and an unhittable target. On a coarse pointer the HIT AREA
+   grows to 44px through a pseudo-element, so the tile's layout and the 9px label line stay
+   exactly where they were: resizing the button itself would push the label around on the one
+   viewport where the strip is already two columns wide. */
+.kpi-def { position: relative; }
+
+@media (pointer: coarse) {
+  .kpi-def::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Sentence case and dim, matching .kpi-note: a definition is prose about the figure, never
+   a second figure. */
+.kpi-def-text {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--dim);
+  max-width: 34ch;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
 /* ── Performance chart section ────────────────────────────── */
 
 .perf-charts-grid {

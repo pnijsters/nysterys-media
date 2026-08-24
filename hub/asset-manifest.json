@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.css": "/hub/static/css/main.6c142e40.css",
-    "main.js": "/hub/static/js/main.6646dadd.js",
-    "static/js/66.6a7cca62.chunk.js": "/hub/static/js/66.6a7cca62.chunk.js",
-    "static/js/498.e5bc44e2.chunk.js": "/hub/static/js/498.e5bc44e2.chunk.js",
-    "static/js/943.2db4ede2.chunk.js": "/hub/static/js/943.2db4ede2.chunk.js",
+    "main.css": "/hub/static/css/main.54663427.css",
+    "main.js": "/hub/static/js/main.61c857b9.js",
+    "static/js/66.d656e800.chunk.js": "/hub/static/js/66.d656e800.chunk.js",
+    "static/js/498.7d9649cf.chunk.js": "/hub/static/js/498.7d9649cf.chunk.js",
+    "static/js/943.d8d78374.chunk.js": "/hub/static/js/943.d8d78374.chunk.js",
     "static/js/954.0f0e6223.chunk.js": "/hub/static/js/954.0f0e6223.chunk.js",
     "static/js/695.2382a474.chunk.js": "/hub/static/js/695.2382a474.chunk.js",
     "static/js/86.d7877949.chunk.js": "/hub/static/js/86.d7877949.chunk.js",
@@ -17,8 +17,8 @@
     "static/js/718.96a9ea68.chunk.js": "/hub/static/js/718.96a9ea68.chunk.js",
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/442.d7828891.chunk.js": "/hub/static/js/442.d7828891.chunk.js",
-    "static/js/11.63cecf59.chunk.js": "/hub/static/js/11.63cecf59.chunk.js",
-    "static/js/335.fbf51d91.chunk.js": "/hub/static/js/335.fbf51d91.chunk.js",
+    "static/js/11.ecbc6e86.chunk.js": "/hub/static/js/11.ecbc6e86.chunk.js",
+    "static/js/335.d9317d5d.chunk.js": "/hub/static/js/335.d9317d5d.chunk.js",
     "static/media/dm-sans-latin-wght-italic.woff2": "/hub/static/media/dm-sans-latin-wght-italic.2dd40fb940cdfa124ce3.woff2",
     "static/media/dm-sans-latin-wght-normal.woff2": "/hub/static/media/dm-sans-latin-wght-normal.09cead2724b8d8c7e453.woff2",
     "static/media/dm-sans-latin-ext-wght-italic.woff2": "/hub/static/media/dm-sans-latin-ext-wght-italic.4ab7351a85c7b8ec6e89.woff2",
@@ -30,7 +30,7 @@
     "index.html": "/hub/index.html"
   },
   "entrypoints": [
-    "static/css/main.6c142e40.css",
-    "static/js/main.6646dadd.js"
+    "static/css/main.54663427.css",
+    "static/js/main.61c857b9.js"
   ]
 }

@@ -182,13 +182,31 @@
     return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  /**
+   * Compact a count: 171912 -> "172K", 1500000 -> "1.50M".
+   *
+   * A HAND COPY of `hub-src/src/utils/format.js` fmtCompact, because this file is a vanilla
+   * IIFE served from the pages repo and can import nothing from the hub bundle. The two are
+   * pinned together by `hub-src/src/utils/__tests__/compactNumber.test.js`, which reads this
+   * source and runs the same table through it. Change one and that test fails until you
+   * change the other. @see ux/10-plan.md P42
+   */
   function fmtNum(n) {
     if (n == null || n === '') return '—';
-    var v = Number(n);
-    if (isNaN(v)) return '—';
-    if (v >= 1000000) return (v / 1000000).toFixed(1) + 'M';
-    if (v >= 1000)    return (v / 1000).toFixed(1) + 'K';
-    return String(v);
+    var num = Number(n);
+    if (!isFinite(num)) return '—';
+    if (Math.abs(num) < 10000) return num.toLocaleString('en-US');
+    var UNITS = [[1e3, 'K'], [1e6, 'M'], [1e9, 'B']];
+    var tier = 0;
+    while (tier < UNITS.length - 1 && Math.abs(num) >= UNITS[tier + 1][0]) tier++;
+    for (;;) {
+      var v = num / UNITS[tier][0];
+      var abs = Math.abs(v);
+      var decimals = abs >= 100 ? 0 : abs >= 10 ? 1 : 2;
+      // Promote before printing, so the mantissa never carries a fourth figure.
+      if (Math.abs(Number(v.toFixed(decimals))) >= 1000 && tier < UNITS.length - 1) { tier++; continue; }
+      return v.toFixed(decimals) + UNITS[tier][1];
+    }
   }
 
   function fmtRate(r) {
@@ -372,6 +390,35 @@
       postsDelivered: postsDelivered,
       totalPosts:     totalPosts,
     };
+  }
+
+  /**
+   * Cost per 1,000 views, over the campaigns the agency actually PAID for.
+   *
+   * @param {object[]} campaigns the payload's campaigns, gifted and paid mixed
+   * @returns {number|null} dollars per 1,000 views, or null when there is no paid work with
+   *          views in yet, in which case the tile is not rendered at all
+   *
+   * @invariant both halves come from the SAME campaigns. Never divide by
+   *            `summary.totalViews`: that total spans every campaign including the in-kind
+   *            ones, so a gifted campaign contributes nothing to the numerator and all of its
+   *            views to the denominator, and the more product-only work a creator does the
+   *            cheaper her paid work reads. Understating a rate to the party who negotiates
+   *            against it is not a harmless rounding. @see ux/10-plan.md P43
+   * @gotcha `is_in_kind` is the only thing that says gifted. A campaign with no `payment` row
+   *         at all is not gifted, it is unbilled, and it belongs in neither half either.
+   */
+  function cpmFor(campaigns) {
+    var spend = 0, views = 0;
+    (campaigns || []).forEach(function (c) {
+      if (!c.payment || c.payment.is_in_kind || !c.payment.amount) return;
+      spend += Number(c.payment.amount) || 0;
+      (c.deliverables || []).forEach(function (d) {
+        if (d.stats) views += d.stats.views || 0;
+      });
+    });
+    if (spend <= 0 || views <= 0) return null;
+    return (spend / views) * 1000;
   }
 
   // ── Error screen ──────────────────────────────────────────────────────────────
@@ -560,19 +607,13 @@
       });
     }
 
-    // CPM - only when invoice data exists and views are known
-    var totalInvoiced = 0;
-    campaigns.forEach(function (c) {
-      if (c.payment && !c.payment.is_in_kind && c.payment.amount) {
-        totalInvoiced += Number(c.payment.amount) || 0;
-      }
-    });
-    if (totalInvoiced > 0 && summary.totalViews > 0) {
-      var cpm = (totalInvoiced / summary.totalViews) * 1000;
+    // CPM - only when paid campaigns exist and their views are known.
+    var cpm = cpmFor(campaigns);
+    if (cpm != null) {
       items.push({
         val:   '$' + cpm.toFixed(2),
         label: 'Cost Per 1K Views',
-        tip:   'CPM: campaign spend per 1,000 views delivered.',
+        tip:   'What the agency paid, per 1,000 views those paid campaigns delivered. Gifted campaigns are left out of both halves.',
       });
     }
 
@@ -639,15 +680,43 @@
       }
     }
 
-    items.forEach(function (item) {
+    items.forEach(function (item, idx) {
       var cell  = el('div', 'kpi-cell');
       var valEl = el('div', 'kpi-value');
       valEl.textContent = item.val;
       if (item.color) valEl.style.color = item.color;
       var lblEl = el('div', 'kpi-label');
       lblEl.textContent = item.label;
-      if (item.tip) lblEl.title = item.tip;
       append(cell, valEl, lblEl);
+
+      // A definition NEVER goes in a `title` attribute. A title needs a pointing device that
+      // hovers: on the phone half of this dashboard's readers it does not exist, and a
+      // keyboard cannot reach it either. This is the surface with no login, no help view and
+      // nobody to ask, so a definition the reader cannot open is a definition we did not
+      // write. A small focusable mark beside the label, revealing the text on tap or focus,
+      // rather than a permanent third line on every tile. @see ux/10-plan.md P43
+      if (item.tip) {
+        var defId  = 'kpi-def-' + idx;
+        var defBtn = el('button', 'kpi-def');
+        defBtn.type = 'button';
+        defBtn.textContent = 'i';
+        defBtn.setAttribute('aria-expanded', 'false');
+        defBtn.setAttribute('aria-controls', defId);
+        // The name says what the press DOES and names the tile, because a row of identical
+        // "More info" buttons tells a screen reader user nothing about which one they are on.
+        defBtn.setAttribute('aria-label', 'What ' + item.label + ' means');
+        var defEl = el('div', 'kpi-def-text');
+        defEl.id = defId;
+        defEl.textContent = item.tip;
+        defEl.hidden = true;
+        defBtn.addEventListener('click', function () {
+          var open = defBtn.getAttribute('aria-expanded') === 'true';
+          defBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
+          defEl.hidden = open;
+        });
+        lblEl.appendChild(defBtn);
+        cell.appendChild(defEl);
+      }
       if (item.note) {
         var noteEl = el('div', 'kpi-note');
         noteEl.textContent = item.note;
