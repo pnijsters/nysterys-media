@@ -232,7 +232,17 @@ footer {
 
 /* ─── Marquee ticker ─────────────────────────────────────────── */
 
+/* The strip IS the pause control (WCAG 2.2.2). A separate button would be a permanent piece
+   of chrome on the landing page for a thing most visitors never need; the strip is already
+   full-width and already pauses on hover, so it only had to become reachable and say so.
+   `all: unset` first, because a <button> brings a font, a border and a text-align that the
+   strip must not inherit. @see site/page-index.js, ux/10-plan.md P132 */
 .marquee-wrap {
+  all: unset;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
   overflow: hidden;
   background: var(--surface2);
   border-top: 1px solid var(--border);
@@ -241,8 +251,64 @@ footer {
   position: relative;
   z-index: 10;
 }
-.marquee-wrap:hover .marquee-track {
+.marquee-wrap:hover .marquee-track,
+.marquee-wrap.is-paused .marquee-track {
   animation-play-state: paused;
+}
+.marquee-wrap:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: -2px;
+}
+
+/* The affordance, absent until it is wanted: two bars while the ticker runs, a triangle once
+   it is paused.
+
+   The box is a FADE, not just an icon. The glyph sits over a track that never stops moving,
+   and drawn bare it collided with whatever item happened to be under it; the gradient gives
+   the text a clean edge to slide beneath. The shape is one element and two clip-paths rather
+   than a glyph font, an image, or the thick-border trick, which is a banned pattern in this
+   codebase whatever it happens to be drawing. */
+.marquee-pause-glyph {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4.5rem;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 1rem;
+  background: linear-gradient(to right, transparent, var(--surface2) 60%);
+  transition: opacity 0.15s ease;
+}
+/* Two bars from a gradient, not a clip-path: one polygon cannot describe two disjoint
+   rectangles, and joining them draws the diagonal between as a bowtie. */
+.marquee-pause-glyph::after {
+  content: '';
+  width: 11px;
+  height: 12px;
+  background: linear-gradient(
+    to right,
+    var(--orange) 0 4px,
+    transparent 4px 7px,
+    var(--orange) 7px 11px
+  );
+}
+.marquee-wrap:hover .marquee-pause-glyph,
+.marquee-wrap:focus-visible .marquee-pause-glyph,
+.marquee-wrap.is-paused .marquee-pause-glyph { opacity: 1; }
+/* A touch device never hovers, so the reveal that makes this discoverable on a desktop never
+   happens there. Show it outright instead: a phone is exactly where a moving strip is hardest
+   to ignore, and the control has to be findable without a pointer. */
+@media (hover: none) {
+  .marquee-pause-glyph { opacity: 1; }
+}
+.marquee-wrap.is-paused .marquee-pause-glyph::after {
+  background: var(--orange);
+  clip-path: polygon(0 0, 11px 6px, 0 12px);
 }
 .marquee-track {
   display: flex;

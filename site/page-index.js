@@ -197,4 +197,19 @@ loadSiteData()
     if (aboutStats) aboutStats.style.display = 'none';
   });
 
+  /* ── Ticker pause (WCAG 2.2.2) ──
+     The strip IS the control, so there is no separate button to wire and nothing to add to
+     the page when the visitor never needs it. Outside the loadSiteData promise on purpose:
+     a dead feed leaves the static fallback ticker running, and that one has to be stoppable
+     too. @see site/global.css .marquee-wrap, ux/10-plan.md P132 */
+  var marquee = document.getElementById('marquee-wrap');
+  if (marquee) {
+    marquee.addEventListener('click', function() {
+      var paused = marquee.classList.toggle('is-paused');
+      marquee.setAttribute('aria-pressed', paused ? 'true' : 'false');
+      // The NAME says what the control does next, which is what a screen reader reads out.
+      marquee.setAttribute('aria-label', paused ? 'Play the ticker' : 'Pause the ticker');
+    });
+  }
+
     initEmail('#contact-email-link');
