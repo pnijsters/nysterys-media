@@ -105,6 +105,36 @@
     /* ── Stat counter animation ── */
     // animateCounter lives in site/utils.js (shared by every page).
 
+    /**
+     * Put a failure where the profile would have been, and leave the rest of the page standing.
+     *
+     * The logo, the route back to the roster and the footer owe nothing to the feed, so a dead
+     * feed may not take them with it. Same shape as site/page-index.js's .catch: swap the block
+     * that would have carried the data, hide what would otherwise render as empty furniture.
+     * @see ux/10-plan.md P51
+     *
+     * @security the message is written with textContent, so nothing here can build markup out
+     *           of a string. The rest of this file interpolates into innerHTML and pays for
+     *           that with escapeHtml on every value; a paragraph of prose needs neither.
+     */
+    function showProfileError(message) {
+      var info = document.querySelector('.hero-info');
+      if (info) {
+        var p = document.createElement('p');
+        p.className = 'rc-error';
+        p.textContent = message;
+        info.innerHTML = '';
+        info.appendChild(p);
+      }
+
+      // Three chart cards with no data are furniture, not information, and the divider that
+      // introduces them would otherwise stack against the footer's with nothing between them.
+      var audience = document.querySelector('.audience');
+      if (audience) audience.style.display = 'none';
+      var rule = audience && audience.previousElementSibling;
+      if (rule && rule.classList.contains('divider')) rule.style.display = 'none';
+    }
+
     // Read creator id from the URL query string (e.g. creator.html?id=mys)
     var params = new URLSearchParams(window.location.search);
     var creatorId = params.get('id');
@@ -114,7 +144,7 @@
         var creator = data.roster.find(function (c) { return c.id === creatorId; });
 
         if (!creator) {
-          document.body.innerHTML = '<p class="rc-error">Creator not found.</p>';
+          showProfileError('Creator not found.');
           return;
         }
 
@@ -203,5 +233,5 @@
       .catch(function (err) {
         console.error('Could not load site data:', err);
         // Don't leave the profile half-empty: show a quiet, in-theme message.
-        document.body.innerHTML = '<p class="rc-error">Couldn\'t load this profile right now. Please refresh the page.</p>';
+        showProfileError('Couldn\'t load this profile right now. Please refresh the page.');
       });

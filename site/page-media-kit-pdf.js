@@ -46,12 +46,22 @@
       var W = 210, H = 297, M = 18;
       var y = M;
 
+      /* The brand orange as it is PRINTED, restated from `PRINT.orange` (#E8743B) in
+         hub-src/src/utils/printPalette.js, the source of truth for every document this
+         business sends a client. site/ ships as plain script tags with no build step, so it
+         cannot import that module and has to carry the value instead. Keep the two equal: a
+         brand can receive this deck and an invoice in the same week, and the two must not
+         disagree about the brand's own colour. The screen orange (#FF5C00) is tuned for a
+         black background and goes muddy on paper, so it belongs nowhere in this file.
+         @see scripts/tests/site.spec.js, which fails when the two drift. ux/10-plan.md P49 */
+      var PRINT_ORANGE = [232, 116, 59];
+
       // ── Print-friendly colours: white bg, dark text, orange accents ──
       function bg()       { doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F'); }
       function dark()     { doc.setTextColor(30,30,30); }
       function subtext()  { doc.setTextColor(100,100,100); }
-      function orange_t() { doc.setTextColor(255,92,0); }
-      function orange_f() { doc.setFillColor(255,92,0); }
+      function orange_t() { doc.setTextColor(PRINT_ORANGE[0], PRINT_ORANGE[1], PRINT_ORANGE[2]); }
+      function orange_f() { doc.setFillColor(PRINT_ORANGE[0], PRINT_ORANGE[1], PRINT_ORANGE[2]); }
       function lightFill(){ doc.setFillColor(245,245,245); }
       function sz(n,bold) { doc.setFontSize(n); doc.setFont('helvetica', bold ? 'bold' : 'normal'); }
       function divL(yy)   { orange_f(); doc.rect(M, yy, W-M*2, 0.4, 'F'); }
@@ -191,7 +201,9 @@
         // Gender
         subtext(); sz(5.5); doc.text('GENDER SPLIT', c1, rowY);
         var gy = rowY + 7;
-        var gColors = [[255,92,0],[255,140,66],[180,180,180]];
+        // The first swatch is the brand orange and takes the print value with the rest of the
+        // deck. The second is the screen `--orange2` and has no print counterpart to point at.
+        var gColors = [PRINT_ORANGE,[255,140,66],[180,180,180]];
         creator.audience.gender.forEach(function(seg, i) {
           var rgb = gColors[i] || [180,180,180];
           doc.setFillColor(rgb[0],rgb[1],rgb[2]);

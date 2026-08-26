@@ -1390,35 +1390,33 @@ tbody tr:hover td { background: var(--surface2); }
   overflow: hidden;
 }
 
-/* ── Badges ───────────────────────────────────────────────── */
+/* ── Badges ───────────────────────────────────────────────────
+   THE COLOURS ARE NOT HERE. A status pill is painted inline from the `status_options` row the
+   payload carries, exactly as the hub's Badge.js paints from the same row. Never add a
+   `.badge-{Status}` rule: a second palette drifts from the table, and a status it has no rule
+   for renders unpainted. Recolour the row in Admin > Config > Workflow Setup instead, and
+   both surfaces move.
+   @see shared/agency.js badge(), scripts/tests/payload-contract.spec.js, ux/10-plan.md P44
+
+   The geometry below is the hub's `.badge` (App.css), value for value, so one status reads
+   the same size and weight on either surface.
+   ============================================================ */
 
 .badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  padding: 3px 8px;
-  border-radius: 3px;
   white-space: nowrap;
 }
 
-.badge-Active               { background: rgba(61,220,132,.15);  color: var(--green); }
-.badge-Completed            { background: rgba(74,158,255,.12);  color: var(--blue); }
-.badge-Confirmed            { background: rgba(61,220,132,.1);   color: var(--green); }
-.badge-Negotiating          { background: rgba(255,92,0,.12);    color: var(--orange2); }
-.badge-Posted               { background: rgba(61,220,132,.15);  color: var(--green); }
-.badge-Approved             { background: rgba(74,158,255,.12);  color: var(--blue); }
-.badge-Draft-Submitted      { background: rgba(255,92,0,.12);    color: var(--orange2); }
-.badge-Revisions-Requested  { background: rgba(255,140,66,.15);  color: var(--orange2); }
-.badge-Not-Started          { background: rgba(136,136,136,.12); color: var(--muted); }
-.badge-Paid                 { background: rgba(61,220,132,.15);  color: var(--green); }
-.badge-Invoiced             { background: rgba(74,158,255,.12);  color: var(--blue); }
-.badge-Pending              { background: rgba(255,92,0,.12);    color: var(--orange2); }
-.badge-Overdue              { background: rgba(255,68,68,.15);   color: var(--red); }
-.badge-Disputed             { background: rgba(255,68,68,.15);   color: var(--red); }
-.badge-Not-Invoiced         { background: rgba(136,136,136,.12); color: var(--muted); }
-.badge-In-Kind              { background: rgba(155,89,245,.15);  color: var(--purple); }
+/* The one surviving class, and it is not a status: the neutral a status the payload sent no
+   colours for falls back to. Reachable only from an edge function older than the payload's
+   `statuses` key, or from a status added to the database while a page was open. */
 .badge-default              { background: rgba(136,136,136,.12); color: var(--muted); }
 
 /* ── Music sub-rows ───────────────────────────────────────── */

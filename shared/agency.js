@@ -317,9 +317,53 @@
 
   // ── Badge ────────────────────────────────────────────────────────────────────
 
-  function badge(status) {
-    var b = el('span', 'badge badge-' + (status || 'default').replace(/\s+/g, '-'));
+  /**
+   * group_key to status value to that `status_options` row, filled from the payload each load.
+   *
+   * @see setStatusPalette, the only thing that writes it.
+   */
+  var STATUS_COLORS = {};
+
+  /**
+   * Take the badge palette off the payload.
+   *
+   * The colours are the live `status_options` rows, the same ones the hub's Badge.js paints
+   * from, so a status recoloured in Admin > Config > Workflow Setup moves both surfaces at
+   * once. agency.css holds no status colour and must not grow one: a second palette drifts
+   * from this one, and a status missing from it renders unpainted. @see ux/10-plan.md P44
+   *
+   * @gotcha nested by GROUP rather than flat by value. One string is a live status value in
+   *         more than one group, so a flat map would answer for whichever group's row landed
+   *         last and paint the other group's badge in a colour nobody chose for it.
+   */
+  function setStatusPalette(statuses) {
+    STATUS_COLORS = {};
+    (statuses || []).forEach(function (s) {
+      if (!s || !s.group_key || !s.value || !s.bg_color || !s.text_color) return;
+      if (!STATUS_COLORS[s.group_key]) STATUS_COLORS[s.group_key] = {};
+      STATUS_COLORS[s.group_key][s.value] = s;
+    });
+  }
+
+  /**
+   * A status pill, painted from the payload's `status_options` row for that status.
+   *
+   * `group` is the status_options group_key the value belongs to: 'campaign', 'deliverable'
+   * or 'payment'. It is not optional, and it is what makes the lookup unambiguous.
+   *
+   * A status the payload did not colour keeps `.badge-default`, the neutral grey: an
+   * unrecognised status is still a fact worth printing, and the alternative is a word with no
+   * pill around it. Never re-add a per-status rule to agency.css to cover one; the row is
+   * where a colour is decided.
+   */
+  function badge(status, group) {
+    var colors = (STATUS_COLORS[group] || {})[status];
+    var b = el('span', 'badge' + (colors ? '' : ' badge-default'));
     b.textContent = status || '';
+    if (colors) {
+      b.style.background = colors.bg_color;
+      b.style.color      = colors.text_color;
+    }
     return b;
   }
 
@@ -936,7 +980,7 @@
     var platEl  = el('span', 'mobile-deliv-platform');
     platEl.textContent = d.platform || '—';
     metaRow.appendChild(platEl);
-    metaRow.appendChild(badge(d.status));
+    metaRow.appendChild(badge(d.status, 'deliverable'));
     info.appendChild(metaRow);
 
     var dateEl = el('div', 'mobile-deliv-date');
@@ -1249,7 +1293,7 @@
         row.appendChild(tdTxt(d.platform));
 
         var statusTd = el('td');
-        statusTd.appendChild(badge(d.status));
+        statusTd.appendChild(badge(d.status, 'deliverable'));
         row.appendChild(statusTd);
 
         row.appendChild(tdTxt(fmtDate(d.due_date), 'muted-cell'));
@@ -1494,10 +1538,13 @@
 
       // Badges
       var badgesWrap = el('span', 'camp-badges');
-      badgesWrap.appendChild(badge(campaign.status));
+      badgesWrap.appendChild(badge(campaign.status, 'campaign'));
       if (campaign.payment) {
-        var payStatus = campaign.payment.is_in_kind ? 'In-Kind' : (campaign.payment.status || 'Not-Invoiced');
-        badgesWrap.appendChild(badge(payStatus));
+        /* The status_options value verbatim, spaces and all. A hyphenated "In-Kind" or
+         * "Not-Invoiced" matches no row, so the pill loses its colour, and it says a word
+         * the payments tab, printing the raw status, never uses. @see ux/10-plan.md P44 */
+        var payStatus = campaign.payment.is_in_kind ? 'In Kind' : (campaign.payment.status || 'Not Invoiced');
+        badgesWrap.appendChild(badge(payStatus, 'payment'));
       }
       row.appendChild(badgesWrap);
 
@@ -2165,7 +2212,7 @@
       row.appendChild(campTd);
 
       var statusTd = el('td');
-      statusTd.appendChild(badge(p.status));
+      statusTd.appendChild(badge(p.status, 'payment'));
       var payBtn = payNowControl(p);
       if (payBtn) statusTd.appendChild(payBtn);
       row.appendChild(statusTd);
@@ -2426,6 +2473,12 @@
     var campaigns = data.campaigns || [];
     var scope     = dash.scope;
     var summary   = computeSummary(campaigns);
+
+    // Before anything paints: every badge below reads this. An older deploy of the edge
+    // function sends no `statuses`, and then every pill falls to the neutral grey rather
+    // than to a stale colour, which is the right way round on a surface where the colour
+    // is a claim about somebody's money.
+    setStatusPalette(data.statuses);
 
     document.getElementById('loading-state').hidden = true;
 
