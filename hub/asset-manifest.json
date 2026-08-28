@@ -1,14 +1,14 @@
 {
   "files": {
-    "main.css": "/hub/static/css/main.150fff2e.css",
-    "main.js": "/hub/static/js/main.a9f59ff1.js",
-    "static/js/559.110856e8.chunk.js": "/hub/static/js/559.110856e8.chunk.js",
+    "main.css": "/hub/static/css/main.1480de10.css",
+    "main.js": "/hub/static/js/main.dd83db30.js",
+    "static/js/559.86eede8c.chunk.js": "/hub/static/js/559.86eede8c.chunk.js",
     "static/js/498.2159564a.chunk.js": "/hub/static/js/498.2159564a.chunk.js",
-    "static/js/943.1704b249.chunk.js": "/hub/static/js/943.1704b249.chunk.js",
+    "static/js/943.0857dfe1.chunk.js": "/hub/static/js/943.0857dfe1.chunk.js",
     "static/js/954.0f0e6223.chunk.js": "/hub/static/js/954.0f0e6223.chunk.js",
     "static/js/695.2382a474.chunk.js": "/hub/static/js/695.2382a474.chunk.js",
     "static/js/86.e92d0719.chunk.js": "/hub/static/js/86.e92d0719.chunk.js",
-    "static/js/861.a41f84a6.chunk.js": "/hub/static/js/861.a41f84a6.chunk.js",
+    "static/js/861.b27989ed.chunk.js": "/hub/static/js/861.b27989ed.chunk.js",
     "static/js/78.c2d6e3a5.chunk.js": "/hub/static/js/78.c2d6e3a5.chunk.js",
     "static/js/380.b3a9a76a.chunk.js": "/hub/static/js/380.b3a9a76a.chunk.js",
     "static/js/242.5d9c019a.chunk.js": "/hub/static/js/242.5d9c019a.chunk.js",
@@ -17,8 +17,8 @@
     "static/js/718.96a9ea68.chunk.js": "/hub/static/js/718.96a9ea68.chunk.js",
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/442.d7828891.chunk.js": "/hub/static/js/442.d7828891.chunk.js",
-    "static/js/687.46d102a5.chunk.js": "/hub/static/js/687.46d102a5.chunk.js",
-    "static/js/335.6afc9754.chunk.js": "/hub/static/js/335.6afc9754.chunk.js",
+    "static/js/610.9353dbc5.chunk.js": "/hub/static/js/610.9353dbc5.chunk.js",
+    "static/js/335.5c6ef428.chunk.js": "/hub/static/js/335.5c6ef428.chunk.js",
     "static/media/dm-sans-latin-wght-italic.woff2": "/hub/static/media/dm-sans-latin-wght-italic.2dd40fb940cdfa124ce3.woff2",
     "static/media/dm-sans-latin-wght-normal.woff2": "/hub/static/media/dm-sans-latin-wght-normal.09cead2724b8d8c7e453.woff2",
     "static/media/dm-sans-latin-ext-wght-italic.woff2": "/hub/static/media/dm-sans-latin-ext-wght-italic.4ab7351a85c7b8ec6e89.woff2",
@@ -30,7 +30,7 @@
     "index.html": "/hub/index.html"
   },
   "entrypoints": [
-    "static/css/main.150fff2e.css",
-    "static/js/main.a9f59ff1.js"
+    "static/css/main.1480de10.css",
+    "static/js/main.dd83db30.js"
   ]
 }
