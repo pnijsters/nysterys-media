@@ -280,9 +280,12 @@
 
     if (!hasBrief && !hasActual) { td.className = 'sound-cell sound-none'; td.textContent = '—'; return td; }
 
-    // Not posted yet: the brief is all there is, and nothing is claimed about it.
+    // Not posted yet: the brief is all there is, and nothing is claimed about it. Unless
+    // the read that WOULD have carried the actual side was refused, in which case every row
+    // looks unposted and pending is a claim about the post that nothing supports.
     if (!hasActual) {
-      td.className = 'sound-cell sound-pending';
+      td.className = SOUND_CHECK_OK ? 'sound-cell sound-pending' : 'sound-cell sound-none';
+      if (!SOUND_CHECK_OK) td.title = 'The sound comparison could not run.';
       td.appendChild(soundText(m.contracted_track, m.contracted_artist));
       return td;
     }
@@ -323,6 +326,17 @@
    * @see setStatusPalette, the only thing that writes it.
    */
   var STATUS_COLORS = {};
+
+  /**
+   * Whether the edge tier could read `yt_dlp_metadata`, which is the ACTUAL side of every
+   * sound comparison. False means the comparison could not be MADE: the contracted side
+   * survives a refusal and the actual side does not, so every briefed post silently leaves
+   * the confirmed count while staying in the denominator.
+   *
+   * `!== false` on read, so an older deploy that sends nothing keeps today's behaviour
+   * rather than declaring the check broken everywhere. @see ux/10-plan.md P101
+   */
+  var SOUND_CHECK_OK = true;
 
   /**
    * Take the badge palette off the payload.
@@ -691,7 +705,19 @@
           else if (hasActual) scMismatched++;
         });
       });
-      if (scTotal > 0) {
+      // The denominator is intact, because it comes off the contracted side, which survives
+      // the refusal. It is the NUMERATOR that is unknown, so the tile says so rather than
+      // letting a value imply zero confirmed. Never green.
+      if (scTotal > 0 && !SOUND_CHECK_OK) {
+        items.push({
+          val:   'Unavailable',
+          label: 'Sounds Checked',
+          color: 'var(--orange2)',
+          tip:   'Posts where the audio used was compared against the contracted track.',
+          note:  'The audio used could not be read, so none of the ' + scTotal
+                 + (scTotal === 1 ? ' briefed post was' : ' briefed posts were') + ' compared',
+        });
+      } else if (scTotal > 0) {
         var scVal, scColor;
         if (scMismatched > 0) {
           scVal   = scMismatched + (scMismatched === 1 ? ' Mismatch' : ' Mismatches');
@@ -1036,7 +1062,11 @@
       }
 
       var scEl = el('span', isMatch ? 'music-match' : (hasActual ? 'music-diff' : 'mobile-deliv-music-pending'));
-      scEl.textContent = !hasActual ? 'Pending' : (isMatch ? '✓ Confirmed' : '≠ Different');
+      // Same rule as soundCell: with no actual side and no read behind it, Pending would be
+      // a claim about the post rather than about the check.
+      scEl.textContent = !hasActual
+        ? (SOUND_CHECK_OK ? 'Pending' : 'Not checked')
+        : (isMatch ? '✓ Confirmed' : '≠ Different');
       musicRow.appendChild(scEl);
 
       card.appendChild(musicRow);
@@ -2479,6 +2509,7 @@
     // than to a stale colour, which is the right way round on a surface where the colour
     // is a claim about somebody's money.
     setStatusPalette(data.statuses);
+    SOUND_CHECK_OK = dash.sound_check_available !== false;
 
     document.getElementById('loading-state').hidden = true;
 
