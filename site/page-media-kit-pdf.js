@@ -46,23 +46,32 @@
       var W = 210, H = 297, M = 18;
       var y = M;
 
-      /* The brand orange as it is PRINTED, restated from `PRINT.orange` (#E8743B) in
-         hub-src/src/utils/printPalette.js, the source of truth for every document this
-         business sends a client. site/ ships as plain script tags with no build step, so it
-         cannot import that module and has to carry the value instead. Keep the two equal: a
-         brand can receive this deck and an invoice in the same week, and the two must not
-         disagree about the brand's own colour. The screen orange (#FF5C00) is tuned for a
-         black background and goes muddy on paper, so it belongs nowhere in this file.
-         @see scripts/tests/site.spec.js, which fails when the two drift. ux/10-plan.md P49 */
-      var PRINT_ORANGE = [232, 116, 59];
+      /* The print palette, restated from `PRINT` in hub-src/src/utils/printPalette.js, the
+         source of truth for every document this business sends a client. site/ ships as plain
+         script tags with no build step, so it cannot import that module and has to carry the
+         values instead. Keep the two equal, key for key: a brand can receive this deck and an
+         invoice in the same week, and the two must not disagree about the brand's colours.
+         The screen palette in site/global.css is tuned for a black background and goes muddy
+         on paper, so none of it belongs in this file.
+         @see scripts/tests/site.spec.js, which fails when the two drift. ux/10-plan.md P140 */
+      var PRINT = {
+        orange:    [232, 116, 59],   // #E8743B
+        warmWhite: [250, 246, 240],  // #FAF6F0
+        nearBlack: [26, 26, 26],     // #1A1A1A
+        muted:     [85, 85, 85],     // #555555
+        lightRule: [229, 223, 214],  // #E5DFD6
+        rule:      [136, 136, 136],  // #888888
+      };
+      function setFill(c) { doc.setFillColor(c[0], c[1], c[2]); }
+      function setInk(c)  { doc.setTextColor(c[0], c[1], c[2]); }
 
-      // ── Print-friendly colours: white bg, dark text, orange accents ──
-      function bg()       { doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F'); }
-      function dark()     { doc.setTextColor(30,30,30); }
-      function subtext()  { doc.setTextColor(100,100,100); }
-      function orange_t() { doc.setTextColor(PRINT_ORANGE[0], PRINT_ORANGE[1], PRINT_ORANGE[2]); }
-      function orange_f() { doc.setFillColor(PRINT_ORANGE[0], PRINT_ORANGE[1], PRINT_ORANGE[2]); }
-      function lightFill(){ doc.setFillColor(245,245,245); }
+      // ── Print-friendly colours: warm-white page, dark text, orange accents ──
+      function bg()       { setFill(PRINT.warmWhite); doc.rect(0,0,W,H,'F'); }
+      function dark()     { setInk(PRINT.nearBlack); }
+      function subtext()  { setInk(PRINT.muted); }
+      function orange_t() { setInk(PRINT.orange); }
+      function orange_f() { setFill(PRINT.orange); }
+      function lightFill(){ setFill(PRINT.lightRule); }
       function sz(n,bold) { doc.setFontSize(n); doc.setFont('helvetica', bold ? 'bold' : 'normal'); }
       function divL(yy)   { orange_f(); doc.rect(M, yy, W-M*2, 0.4, 'F'); }
       function pageFooter() {
@@ -203,7 +212,7 @@
         var gy = rowY + 7;
         // The first swatch is the brand orange and takes the print value with the rest of the
         // deck. The second is the screen `--orange2` and has no print counterpart to point at.
-        var gColors = [PRINT_ORANGE,[255,140,66],[180,180,180]];
+        var gColors = [PRINT.orange,[255,140,66],[180,180,180]];
         creator.audience.gender.forEach(function(seg, i) {
           var rgb = gColors[i] || [180,180,180];
           doc.setFillColor(rgb[0],rgb[1],rgb[2]);
@@ -225,7 +234,7 @@
         countries.forEach(function(country) {
           subtext(); sz(6.5); doc.text(country.label, c3, cy3);
           orange_t(); doc.text(country.value + '%', c3 + colW3 - doc.getTextWidth(country.value + '%'), cy3);
-          doc.setFillColor(220,220,220); doc.rect(c3, cy3 + 1, colW3, 2, 'F');
+          setFill(PRINT.lightRule); doc.rect(c3, cy3 + 1, colW3, 2, 'F');
           orange_f(); doc.rect(c3, cy3 + 1, colW3 * (country.value / maxCo), 2, 'F');
           cy3 += 7;
         });
@@ -248,7 +257,8 @@
         var cx2 = M + (i % catCols) * (catColW + 4);
         var cy4 = y + Math.floor(i / catCols) * 16;
         lightFill(); doc.rect(cx2, cy4 - 5, catColW, 12, 'F');
-        doc.setDrawColor(210,210,210); doc.setLineWidth(0.2); doc.rect(cx2, cy4 - 5, catColW, 12);
+        doc.setDrawColor(PRINT.rule[0], PRINT.rule[1], PRINT.rule[2]);
+        doc.setLineWidth(0.2); doc.rect(cx2, cy4 - 5, catColW, 12);
         orange_f(); doc.rect(cx2, cy4 - 5, 2, 12, 'F');
         subtext(); sz(7.5, false); doc.text(cat.toUpperCase(), cx2 + 6, cy4 + 2);
       });
