@@ -1036,6 +1036,9 @@
   <script src="site/utils.js"></script>
 </head>
  <body>
+  <!-- WCAG SC 2.4.1. The fixed nav renders first, so this is the way past it.
+       @see site/global.css .skip-link -->
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <nav>
    <a class="nav-logo" href="/">
     NYS<span>T</span>ERYS
@@ -1049,6 +1052,8 @@
     </a>
    </div>
   </nav>
+
+  <main id="main-content">
   <section class="hero">
    <svg class="logo-mark" fill="none" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
     <circle cx="100" cy="100" r="90" stroke="currentColor" stroke-width="1">
@@ -1398,6 +1403,8 @@
     </a>
    </div>
   </section>
+  </main>
+
   <footer>
    <div class="footer-logo">
     NYS<span>T</span>ERYS MEDIA LLC

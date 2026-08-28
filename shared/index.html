@@ -43,17 +43,23 @@
         <p class="loading-text">Loading dashboard</p>
       </div>
 
-      <!-- Error -->
-      <div id="error-state" class="fullpage-state" hidden>
+      <!-- Error. A landmark of its own, because the dashboard's is inside #dashboard and a
+           reader who lands here gets no main at all otherwise. Never visible at the same
+           time as that one: the shell unhides exactly one of the three states. -->
+      <main id="error-state" class="fullpage-state" hidden>
         <div class="loading-logo">NYS<span>T</span>ERYS</div>
         <div id="error-icon" class="error-icon"></div>
         <h2 id="error-title" class="error-title"></h2>
         <p id="error-body" class="error-body"></p>
         <a href="https://nysterys.com" class="back-home-link" target="_blank" rel="noopener noreferrer">Visit nysterys.com ↗</a>
-      </div>
+      </main>
 
       <!-- Dashboard -->
       <div id="dashboard" hidden>
+
+        <!-- WCAG SC 2.4.1, and inside #dashboard on purpose: this is the only state with a
+             header and a hero in front of the content. @see agency.css .skip-link -->
+        <a class="skip-link" href="#main-content">Skip to main content</a>
 
         <!-- Top nav bar -->
         <header class="agency-header">
@@ -90,7 +96,7 @@
         </div>
 
         <!-- Main content -->
-        <div class="container main-content">
+        <main class="container main-content" id="main-content">
 
           <!-- KPI strip: campaign-scoped numbers, filled by JS -->
           <div id="kpi-strip" class="kpi-strip" hidden></div>
@@ -120,7 +126,7 @@
           <div id="payments-panel" hidden></div>
           <div id="rates-panel" hidden></div>
 
-        </div>
+        </main>
 
         <!-- Footer -->
         <footer class="agency-footer">

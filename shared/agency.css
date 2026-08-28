@@ -301,6 +301,27 @@ body::before {
   margin-top: -8px;
 }
 
+/* WCAG SC 2.4.1. The header and the hero render before the content, so without this a
+   keyboard reader crossed both before reaching a single number. Off-screen rather than
+   `display: none`: that would take the link out of the tab order too, so it would exist and
+   reach nobody. Same rule as `hub-src/src/App.css` `.skip-link`, verbatim, because this
+   stylesheet does carry `--transition`. */
+.skip-link {
+  position: fixed;
+  left: 8px;
+  top: -60px;
+  z-index: 10000;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
+  color: var(--white);
+  font-size: 13px;
+  text-decoration: none;
+  transition: top var(--transition);
+}
+.skip-link:focus { top: 8px; }
+
 /* ── Top navigation bar ───────────────────────────────────── */
 
 .agency-header {
@@ -1537,6 +1558,10 @@ tbody tr:hover td { background: var(--surface2); }
 }
 
 .music-link {
+  /* inline-flex, because the affordance is an SVG that strokes with currentColor and would
+     otherwise sit off the track's baseline. */
+  display: inline-flex;
+  align-items: center;
   font-size: 11px;
   color: var(--dim);
   text-decoration: none;

@@ -1411,7 +1411,15 @@
 
           detail.appendChild(icon('music', 13, 'music-note'));
 
-          function musicBlock(roleLabel, track, artist, url) {
+          /**
+           * One side of a sound comparison: the role, the track, the artist and a link out.
+           *
+           * @param {string} roleLabel  the visible word, "Brief" or "Used"
+           * @param {string} roleWord   the same role inside a sentence, for the link's name.
+           *        The two sit side by side, so a link called only "sound" would be two links
+           *        with the same name on the surface whose whole subject is which sound.
+           */
+          function musicBlock(roleLabel, roleWord, track, artist, url) {
             var block = el('div', 'music-block');
             var role  = el('span', 'music-role');
             role.textContent = roleLabel;
@@ -1438,20 +1446,22 @@
                 link.href   = safeMusicHref;
                 link.target = '_blank';
                 link.rel    = 'noopener noreferrer';
-                link.textContent = '↗';
+                link.setAttribute('aria-label',
+                  'Open the ' + roleWord + ' sound' + (track ? ', ' + fmtTrack(track) : ''));
+                link.appendChild(icon('arrow-out', 11));
                 block.appendChild(link);
               }
             }
             return block;
           }
 
-          detail.appendChild(musicBlock('Brief', m.contracted_track, m.contracted_artist, m.contracted_url));
+          detail.appendChild(musicBlock('Brief', 'briefed', m.contracted_track, m.contracted_artist, m.contracted_url));
 
           var sep = el('span', 'music-sep');
           sep.textContent = '·';
           detail.appendChild(sep);
 
-          detail.appendChild(musicBlock('Used', m.actual_track, m.actual_artist, m.actual_url));
+          detail.appendChild(musicBlock('Used', 'used', m.actual_track, m.actual_artist, m.actual_url));
 
           // No trailing "Different" marker. The row only exists on a deviation,
           // and the campaign headline chip plus the orange Sound cell directly

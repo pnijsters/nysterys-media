@@ -589,6 +589,9 @@
   <script src="site/utils.js"></script>
 </head>
 <body>
+  <!-- WCAG SC 2.4.1. The fixed nav renders first, so this is the way past it.
+       @see site/global.css .skip-link -->
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <!-- ─── Navigation ──────────────────────────────────────── -->
   <nav>
@@ -600,6 +603,8 @@
       All Creators
     </a>
   </nav>
+
+  <main id="main-content">
 
   <!-- ─── Creator hero ─────────────────────────────────────── -->
   <section class="creator-hero">
@@ -661,6 +666,8 @@
   <div class="divider" role="separator"></div>
 
   <!-- ─── Footer ────────────────────────────────────────────── -->
+  </main>
+
   <footer>
     <div class="footer-logo">NYS<span>T</span>ERYS MEDIA LLC</div>
     <div class="footer-copy">&copy; 2026 Nysterys Media LLC. All rights reserved.</div>

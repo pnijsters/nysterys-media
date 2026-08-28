@@ -820,6 +820,9 @@
   <script src="site/utils.js"></script>
 </head>
 <body>
+  <!-- WCAG SC 2.4.1. The fixed nav renders first, so this is the way past it.
+       @see site/global.css .skip-link -->
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <!-- ─── Nav ──────────────────────────────────────────── -->
   <nav>
@@ -831,6 +834,8 @@
       Download PDF
     </button>
   </nav>
+
+  <main id="main-content">
 
   <!-- ─── Hero ─────────────────────────────────────────── -->
   <section class="mk-hero">
@@ -967,6 +972,8 @@
   </section>
 
   <!-- ─── Footer ───────────────────────────────────────── -->
+  </main>
+
   <footer>
     <div class="footer-logo">NYS<span>T</span>ERYS MEDIA LLC</div>
     <div class="footer-copy">&copy; 2026 Nysterys Media LLC. Confidential. Not for redistribution.</div>

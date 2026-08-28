@@ -175,6 +175,27 @@ body::before {
   opacity: 0.35;
 }
 
+/* WCAG SC 2.4.1. The fixed nav renders before the content, so without this every keyboard
+   user crossed it on every page. Off-screen rather than `display: none`: that would take the
+   link out of the tab order too, so it would exist and reach nobody. The hub's own copy is
+   `hub-src/src/App.css` `.skip-link`; this one writes the transition literally because
+   `--transition` is one of the tokens the public site does not carry. */
+.skip-link {
+  position: fixed;
+  left: var(--space-8);
+  top: -60px;
+  z-index: var(--z-top);
+  padding: var(--space-10) var(--space-16);
+  background: var(--surface);
+  border: 1px solid var(--orange);
+  border-radius: var(--radius);
+  color: var(--white);
+  font-size: var(--font-size-13);
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: var(--space-8); }
+
 /* ─── Navigation ─────────────────────────────────────────────── */
 
 nav {
