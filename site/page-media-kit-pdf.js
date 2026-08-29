@@ -67,6 +67,10 @@
 
       // ── Print-friendly colours: warm-white page, dark text, orange accents ──
       function bg()       { setFill(PRINT.warmWhite); doc.rect(0,0,W,H,'F'); }
+      // The ink on every orange fill in this deck, not just body text on the page. White on
+      // the print orange is 3.00:1 and near-black is 5.80:1; docs/DESIGN.md section 5 bans
+      // the first by name and the invoice's balance-due bar already answered the same way
+      // on the same fill. @see hub-src/src/components/shared/pdf/InvoicePDF.js balDueBar
       function dark()     { setInk(PRINT.nearBlack); }
       function subtext()  { setInk(PRINT.muted); }
       function orange_t() { setInk(PRINT.orange); }
@@ -76,7 +80,7 @@
       function divL(yy)   { orange_f(); doc.rect(M, yy, W-M*2, 0.4, 'F'); }
       function pageFooter() {
         orange_f(); doc.rect(0, H - 8, W, 8, 'F');
-        doc.setTextColor(255,255,255); sz(6);
+        dark(); sz(6);
         doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, H - 3);
         doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), H - 3);
       }
@@ -84,7 +88,7 @@
         doc.addPage(); bg();
         orange_f(); doc.rect(0, 0, 4, H, 'F');
         orange_f(); doc.rect(0, 0, W, 8, 'F');
-        doc.setTextColor(255,255,255); sz(7);
+        dark(); sz(7);
         doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, 5.5);
         doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), 5.5);
         y = 22;
@@ -95,7 +99,7 @@
       // Left orange stripe + top bar with confidential label
       orange_f(); doc.rect(0, 0, 4, H, 'F');
       orange_f(); doc.rect(0, 0, W, 8, 'F');
-      doc.setTextColor(255,255,255); sz(7);
+      dark(); sz(7);
       doc.text('NYSTERYS MEDIA LLC · CONFIDENTIAL', M + 4, 5.5);
       doc.text('nysterys.com', W - M - doc.getTextWidth('nysterys.com'), 5.5);
 
@@ -183,7 +187,7 @@
         doc.text(bioLines, M, y);
         y += bioLines.length * 4.5 + 6;
 
-        // Content categories: filled orange tags with white text
+        // Content categories: filled orange tags, near-black ink like every other orange band
         orange_t(); sz(6); doc.text('CONTENT CATEGORIES', M, y);
         y += 5;
         var cx = M;
@@ -191,7 +195,7 @@
           var tw = doc.getTextWidth(cat.toUpperCase()) + 6;
           if (cx + tw > W - M) { cx = M; y += 7; }
           orange_f(); doc.rect(cx, y - 4, tw, 5.5, 'F');
-          doc.setTextColor(255,255,255); sz(6);
+          dark(); sz(6);
           doc.text(cat.toUpperCase(), cx + 3, y + 0.5);
           cx += tw + 3;
         });

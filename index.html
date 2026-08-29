@@ -782,6 +782,21 @@
 
 }
 
+/* One column on the narrowest phones. Two up, each tile floors at its longest label word
+   (FOLLOWERS, 84px at .2em tracking) plus 56px of padding, so the grid cannot shrink below
+   299px inside a 272px column and the page scrolls 3px sideways at 320. Its own breakpoint
+   and not the 768px block above: two up keeps 9px of slack at 375 and only 2px at 360,
+   inside the DM Sans rasterisation spread between macOS and the Linux runner, while four
+   full width tiles in a 720px column is the airy space this brand does not use. The label
+   is the content, so shaving its tracking or its padding to fit is not a route. */
+@media(max-width:374px) {
+
+  .about-stats {
+    grid-template-columns: 1fr;
+  }
+
+}
+
     .footer-copy a {
       color: var(--muted);
       text-decoration: none;
