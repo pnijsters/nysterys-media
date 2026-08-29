@@ -373,7 +373,10 @@
   function badge(status, group) {
     var colors = (STATUS_COLORS[group] || {})[status];
     var b = el('span', 'badge' + (colors ? '' : ' badge-default'));
-    b.textContent = status || '';
+    // The label is what the hub's Badge.js prints off the same row. `|| status` is not
+    // padding: it is what lets this file deploy before or after the edge function
+    // without every pill going blank, and it keeps the .badge-default path unchanged.
+    b.textContent = (colors && colors.label) || status || '';
     if (colors) {
       b.style.background = colors.bg_color;
       b.style.color      = colors.text_color;
