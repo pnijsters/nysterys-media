@@ -124,7 +124,11 @@
       ovStats.forEach(function(s, i) {
         var x = M + 4 + i * stW;
         orange_f(); doc.rect(x, y - 5, 2, 42, 'F');
-        orange_t(); sz(18, true); doc.text(s.value, x + 6, y + 8);
+        // The largest numbers on the page a brand takes away, so near black and not the
+        // deck's orange: orange on the light panel is 2.27:1, under even the 3:1 large text
+        // bar that 18pt bold earns. The orange keeps the accent bar beside each figure.
+        // @see hub-src/src/utils/__tests__/printContrast.test.js
+        dark(); sz(18, true); doc.text(s.value, x + 6, y + 8);
         subtext(); sz(6, false); doc.text(s.label.toUpperCase(), x + 6, y + 14);
       });
       pageFooter();

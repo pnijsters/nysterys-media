@@ -165,6 +165,22 @@
     } catch (e) { return s; }
   }
 
+  /**
+   * Format a stored INSTANT (timestamptz) as its calendar date in the reader's own zone.
+   *
+   * @gotcha never `iso.split('T')[0]`, which is the UTC day: west of UTC that prints
+   *         tomorrow's date all evening, so the expiry banner and the "expired" stamp
+   *         disagreed with the countdown sitting next to them, which is computed from the
+   *         instant. One clock for both, or the page contradicts itself.
+   * @see hub-src/src/components/shared/SharedDashboardsPage.js (expiryInstant)
+   */
+  function fmtInstantDate(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return String(iso);
+    return MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  }
+
   function fmtDateShort(s) {
     if (!s) return '—';
     try {
@@ -523,7 +539,7 @@
       var stamp = document.createElement('p');
       stamp.id = 'error-date-stamp';
       stamp.className = 'error-date-stamp';
-      stamp.textContent = 'Expired ' + fmtDate(expiresAt.split('T')[0]);
+      stamp.textContent = 'Expired ' + fmtInstantDate(expiresAt);
       document.getElementById('error-body').insertAdjacentElement('afterend', stamp);
     }
 
@@ -2316,7 +2332,7 @@
       text.textContent = 'This link expires today';
     } else {
       var daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-      text.textContent = 'This link expires ' + fmtDate(expiresAt.split('T')[0]) + ' — ' + daysLeft + ' days remaining';
+      text.textContent = 'This link expires ' + fmtInstantDate(expiresAt) + ' — ' + daysLeft + ' days remaining';
     }
 
     append(inner, text);

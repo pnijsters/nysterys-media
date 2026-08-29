@@ -87,7 +87,7 @@
   --orange:   #ff5c00;
   --orange2:  #ff8c42;
   --white:    #f5f5f5;
-  --muted:    #888888;
+  --muted:    #a8a8a8;
   /* ── Non-colour scales ─────────────────────────────────────────────────────────
      Kept BY HAND in three copies, the same way the palette is: the public site and the
      agency dashboard have no build step and cannot import (docs/DESIGN.md section 2).
