@@ -806,6 +806,10 @@
         lblEl.appendChild(defBtn);
         cell.appendChild(defEl);
       }
+      // The caveat is appended LAST, so an opened definition lands between the label and it
+      // rather than pushing it down: a note qualifies the number and belongs under the
+      // number, a definition is reference the reader asked for and is drawn as reference
+      // (`.kpi-def-text`). @see ux/10-plan.md P138
       if (item.note) {
         var noteEl = el('div', 'kpi-note');
         noteEl.textContent = item.note;

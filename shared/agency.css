@@ -69,6 +69,22 @@
   --radius:    4px;
   --radius-lg: 8px;
   --transition: 0.15s ease;
+  /* Three elevations, from eleven measured shadows over thirteen declarations. The ladder is
+     what a box is DOING, not how big it is: sm lifts a control off its own row, md floats a
+     menu, tooltip or toast over the page, lg is a modal. A fourth value is a fourth elevation
+     and needs a reason. The four `inset` accents and the keyframe endpoints are not
+     elevations and keep their literals. */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.35);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.40);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.55);
+  /* ONE focus ring, and it is orange. Nineteen rules had two colours, two widths and five
+     offsets; the six blue ones were all row-level affordances and read as a second meaning
+     that was never one. Orange is the brand's one moment of heat and a focus ring is the
+     clearest case for it. Offset OR inset, never a third: inset is for a control its own
+     container would clip. @see docs/DESIGN.md section 2 */
+  --focus-ring: 2px solid var(--orange);
+  --focus-ring-offset: 2px;
+  --focus-ring-inset: -2px;
   /* ── Non-colour scales ─────────────────────────────────────────────────────────
      Kept BY HAND in three copies, the same way the palette is: the public site and the
      agency dashboard have no build step and cannot import (docs/DESIGN.md section 2).
@@ -420,7 +436,7 @@ body::before {
   object-fit: cover;
   object-position: top center;
   border: 2px solid var(--orange);
-  box-shadow: 0 0 0 4px rgba(255,92,0,0.1), 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 0 0 4px rgba(255,92,0,0.1), var(--shadow-md);
   display: block;
 }
 
@@ -617,7 +633,7 @@ body::before {
 
 .kpi-def:hover,
 .kpi-def[aria-expanded="true"] { color: var(--orange); border-color: var(--orange); }
-.kpi-def:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+.kpi-def:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-ring-offset); }
 
 /* A 14px circle is a legible mark and an unhittable target. On a coarse pointer the HIT AREA
    grows to 44px through a pseudo-element, so the tile's layout and the 9px label line stay
@@ -637,10 +653,17 @@ body::before {
   }
 }
 
-/* Sentence case and dim, matching .kpi-note: a definition is prose about the figure, never
-   a second figure. */
+/* A definition is REFERENCE the reader chose to open. The caveat under it (.kpi-note)
+   qualifies the number and is always there. Two kinds of sentence, so two treatments: both
+   were 11px dim on a 6px top margin, and on a tile carrying both (Sounds Checked) opening
+   the definition laid a second dim line above the caveat and the pair read as one
+   paragraph. A hairline and a raised fill mark this one as material, not as a statistic.
+   No orange: nothing here is asking for attention. @see ux/10-plan.md P138 */
 .kpi-def-text {
-  margin-top: 6px;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--surface3);
   font-size: 11px;
   line-height: 1.4;
   color: var(--dim);
@@ -1257,8 +1280,8 @@ tbody tr:hover td { background: var(--surface2); }
 }
 .inkind-more:hover { color: var(--orange); }
 .inkind-more:focus-visible {
-  outline: 2px solid var(--orange);
-  outline-offset: 3px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   border-radius: 2px;
 }
 .inkind-more .row-expand-icon { flex: none; align-self: center; opacity: 0.7; }
@@ -2129,8 +2152,8 @@ a.mobile-deliv-thumb:hover { border-color: var(--orange); }
 a:focus-visible,
 button:focus-visible,
 .tab:focus-visible {
-  outline: 2px solid var(--orange);
-  outline-offset: 2px;
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
   border-radius: 2px;
 }
 

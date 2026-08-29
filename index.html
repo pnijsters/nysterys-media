@@ -813,9 +813,10 @@
       letter-spacing: 0.05em;
     }
 
-/* The three combined figures read as one row. Without this the .talent-stat
-   blocks stacked, costing six lines of vertical space and flattening the
-   hierarchy the orange hero figures are supposed to carry. */
+/* The three combined figures read as one row wherever the card is wide enough to hold
+   one: stacked, they cost six lines of vertical space and flatten the hierarchy the
+   orange figures are there to carry. A phone card is not wide enough, so the block
+   below .stat-lbl wraps them onto their own lines and tightens the label to fit. */
 .talent-stats {
   display: flex;
   gap: 2.25rem;
@@ -926,6 +927,28 @@
   text-transform: uppercase;
   color: var(--muted);
   margin-top: .1rem;
+}
+
+/* Two cards stay side by side on a phone, so a card is 135px wide at 320 and leaves its
+   stats 69px of it. The figures take a line each and the label tightens until the longest
+   of them, FOLLOWERS, fits that 69px: 8.8px at .15em draws 62.1px. The value keeps Bebas
+   at 1.6rem in orange, so it still outranks the label sitting under it.
+   Placed here rather than in the 768px block near the top of this sheet, because the base
+   .talent-stats and .stat-lbl rules come after that block and would overrule it. */
+@media(max-width:768px) {
+
+  .talent-stats {
+    flex-wrap: wrap;
+    /* Longhand, and after the @container rule that sets the gap shorthand: wrapped lines
+       want far less air between them than the columns want between each other. */
+    row-gap: .9rem;
+  }
+
+  .stat-lbl {
+    font-size: .55rem;
+    letter-spacing: .15em;
+  }
+
 }
 
 .partner {
