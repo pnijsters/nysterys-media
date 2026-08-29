@@ -705,6 +705,10 @@
   line-height: 1.75;
   color: #aaa;
   margin-bottom: 1.75rem;
+  /* Two cards side by side leave the bio 69px at 320, and "storytelling." is 81px of it.
+     A word longer than its own line is the one case where a break inside the word beats
+     the silent clip the card's overflow was taking. @see ux/10-plan.md P223 */
+  overflow-wrap: anywhere;
 }
 
 .talent-socials {
@@ -911,6 +915,33 @@
 
   .talent-platform-name {
     display: none;
+  }
+}
+
+/* The two widest atoms in the card body are the @handle (129px of Bebas at 16px for
+   @kymchi_n_crackers) and the INSTAGRAM pill (127px). Add the body's 4rem of padding and
+   either one wants a 193px card, which no phone reaches: two cards stay side by side, so
+   the widest card a 430px phone draws is 190px. Below that the handle truncates on its own
+   line and the pills fall back to the icon, the same yield .talent-platform-name already
+   makes one block up, for the same reason. The ellipsis is the point: a hard clip at the
+   card edge read as a broken page, and a phone has no tooltip to hold the rest.
+   @see ux/10-plan.md P223 */
+@container (max-width: 192px) {
+  .talent-handle {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The label is a bare text node next to the icon, so its size is the only handle CSS has
+     on it. The anchor's aria-label carries the name the eye now reads off the glyph, and
+     the pill stays 28px square, above the 24px target floor.
+     @see site/page-index.js buildSocialLink */
+  .talent-social {
+    font-size: 0;
+    gap: 0;
+    padding: .4rem;
   }
 }
 

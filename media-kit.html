@@ -209,9 +209,15 @@
       flex-wrap: wrap;
     }
 
+    /* The floor is the longest label that cannot wrap. FOLLOWERS is 72px at .6rem and .2em
+       and every other label here is two words, so it wraps and asks for less. Add the 3rem
+       of padding and the rule between two metrics and a metric wants 121px, rounded up for
+       the DM Sans rasterisation spread between macOS and the Linux runner. At 100px three
+       metrics shared a 360px phone and FOLLOWERS ran 18px over its neighbour, with nothing
+       above it clipping to make that visible. @see ux/10-plan.md P223 */
     .metric {
       flex: 1;
-      min-width: 100px;
+      min-width: 130px;
       padding: 1.25rem 1.5rem;
       border-right: 1px solid var(--border);
     }
@@ -803,12 +809,27 @@
       .creator-block { grid-template-columns: 1fr; }
       .creator-photo-wrap img { aspect-ratio: 4 / 3; }
       .creator-charts { grid-template-columns: 1fr; }
+      /* The class the page actually renders is -wide; .creator-charts is defined above and
+         no builder uses it, so this step had been passing over the only chart row there is.
+         Gender Split and Top Countries stayed two up on a phone, 124px of card each, and the
+         110px donut hung 18px out of one of them. @see ux/10-plan.md P223 */
+      .creator-charts-wide { grid-template-columns: 1fr; }
       .extra-stats { grid-template-columns: 1fr 1fr; }
       .process-steps { grid-template-columns: 1fr 1fr; }
       .process-terms { grid-template-columns: 1fr; }
       .philosophy-intro { grid-template-columns: 1fr; }
       .philosophy-cards { grid-template-columns: 1fr; }
       .collab-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* Under 335px the two overview tiles have 70px each for a label, and Followers is 78px
+       of it at the size the tile is drawn for. The label is tightened and the orange figure
+       above it keeps its size, since that ranking is the whole point of the tile. The same
+       step index.html takes for the roster card's stat labels, and the same numbers. Its own
+       breakpoint, and a tight one: at 360 the tile has 91px and the label needs none of this.
+       @see ux/10-plan.md P218, P223 */
+    @media (max-width: 334px) {
+      .overview-lbl { font-size: 0.55rem; letter-spacing: 0.15em; }
     }
   </style>
   <meta name="description" content="Nysterys Media confidential media kit." />
