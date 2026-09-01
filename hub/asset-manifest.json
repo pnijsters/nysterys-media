@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/hub/static/css/main.bf7b5e1f.css",
-    "main.js": "/hub/static/js/main.701be1de.js",
+    "main.js": "/hub/static/js/main.4d553e9c.js",
     "static/js/341.67878500.chunk.js": "/hub/static/js/341.67878500.chunk.js",
     "static/js/498.47eedd4d.chunk.js": "/hub/static/js/498.47eedd4d.chunk.js",
     "static/js/943.87311563.chunk.js": "/hub/static/js/943.87311563.chunk.js",
@@ -18,7 +18,7 @@
     "static/js/132.74fdf4ea.chunk.js": "/hub/static/js/132.74fdf4ea.chunk.js",
     "static/js/442.d7828891.chunk.js": "/hub/static/js/442.d7828891.chunk.js",
     "static/js/663.24b434a6.chunk.js": "/hub/static/js/663.24b434a6.chunk.js",
-    "static/js/470.5dc0ebb1.chunk.js": "/hub/static/js/470.5dc0ebb1.chunk.js",
+    "static/js/470.0f9aabf1.chunk.js": "/hub/static/js/470.0f9aabf1.chunk.js",
     "static/media/dm-sans-latin-wght-italic.woff2": "/hub/static/media/dm-sans-latin-wght-italic.2dd40fb940cdfa124ce3.woff2",
     "static/media/dm-sans-latin-wght-normal.woff2": "/hub/static/media/dm-sans-latin-wght-normal.09cead2724b8d8c7e453.woff2",
     "static/media/dm-sans-latin-ext-wght-italic.woff2": "/hub/static/media/dm-sans-latin-ext-wght-italic.4ab7351a85c7b8ec6e89.woff2",
@@ -31,6 +31,6 @@
   },
   "entrypoints": [
     "static/css/main.bf7b5e1f.css",
-    "static/js/main.701be1de.js"
+    "static/js/main.4d553e9c.js"
   ]
 }
