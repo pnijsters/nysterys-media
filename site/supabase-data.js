@@ -177,7 +177,7 @@
 
   function fetchVideos() {
     var cols = 'tiktok_username,total_play,total_like,total_comment,total_share,average_time_watched,'
-             + 'full_video_watched_rate,src_for_you,src_personal_profile,src_follow,src_search,src_sound';
+             + 'src_for_you,src_personal_profile,src_follow,src_search,src_sound';
     return getAll('tiktok_video_insights_view?select=' + cols);
   }
 
