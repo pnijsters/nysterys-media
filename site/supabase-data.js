@@ -196,8 +196,11 @@
     }).catch(function () { return []; });
   }
 
+  /* overview stopped after one row and insights is still importing, so insights comes FIRST
+   * and buildInstagram's find() takes it, overview the fallback. @see `.claude/rules/instagram.md` */
   function fetchInstagramProfiles() {
-    return safeGet('ig_profile_overview_view?select=instagram_username,followers_count');
+    var c = '?select=instagram_username,followers_count';
+    return Promise.all([safeGet('ig_profile_insights_view' + c), safeGet('ig_profile_overview_view' + c)]).then(function (r) { return r[0].concat(r[1]); });
   }
 
   function fetchInstagramPosts() {

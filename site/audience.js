@@ -10,11 +10,11 @@
  * extra feeds for it.
  *
  * @invariant every figure here is MEASURED, and the absences are as deliberate as the numbers.
- *            No YouTube gender or country data exists in any table. Instagram's two demographic
- *            snapshots disagree with each other (12,232 people against 19,497) and with her
- *            follower count (10,607), and its daily follower feed claims more new followers in
- *            two months than the account has. So Gender Split and Top Countries stay TikTok
- *            only, and growth stays TikTok and YouTube. @see `.claude/rules/public-site.md`
+ *            No YouTube gender or country data exists in any table. Instagram's demographic
+ *            snapshots are one-off imports taken when the account held a fraction of its
+ *            current following, so they describe an audience that has since been outgrown
+ *            rather than the one a brand would be buying. So Gender Split and Top Countries
+ *            stay TikTok only. @see `.claude/rules/public-site.md`
  * @gotcha every rate here is VIEW-WEIGHTED, never a mean of per-row averages. A creator's
  *         median video and her one 40M-view video are not one vote each: an unweighted mean of
  *         `average_time_watched` over 980 videos describes a video nobody watched.
@@ -189,10 +189,11 @@
    *
    * @param {number} days - the window, so the card's own label and this figure cannot drift.
    *
-   * @gotcha Instagram is excluded on purpose and it is the one exclusion that looks like a bug.
-   *         `ig_followers_daily` reports 68,177 new followers across 65 days for an account its
-   *         own profile feed puts at 10,607 followers. One of those two is wrong, nothing in the
-   *         data says which, and a follower count is exactly the figure a brand checks first.
+   * @gotcha Instagram is excluded because it can only answer a different question. Its daily
+   *         feed reports GROSS new followers and no feed anywhere carries an unfollow count, so
+   *         putting it in this card would compare a gross against the net beside it and flatter
+   *         Instagram by every unfollow the account ever had. The profile feed carries a
+   *         current TOTAL rather than a windowed delta, so it cannot close the gap either.
    * @gotcha TikTok's `net_followers` is already a net day-over-day delta, while YouTube reports
    *         gained and lost separately. Summing TikTok's gained against YouTube's gained would
    *         compare a net against a gross and flatter YouTube by every unfollow it ever had.
