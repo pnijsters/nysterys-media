@@ -56,6 +56,13 @@
    *         average view percentage beside it. Publish YouTube's number, never a recomputation
    *         of it: the watch-time column is not granted to the publishable key at all.
    *         @see `schemas/SCHEMA.sql`
+   * @gotcha There is deliberately no completion figure beside these seconds, and neither
+   *         column that looks like one is granted. YouTube's `average_view_percentage` passes
+   *         100 whenever a viewer loops a Short: true, and it reads as broken data on a page
+   *         selling brand deals. TikTok's `full_video_watched_rate` answers a different
+   *         question, the share of views reaching the end, so the two cannot share a column
+   *         even though both are called completion. Seconds held is the only figure of this
+   *         shape all three platforms define the same way, which is why it is the one shown.
    */
   function watchTime(ctx) {
     var out = [];
