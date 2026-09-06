@@ -329,7 +329,6 @@
                        .sort(function (a, b) { return b.percentage - a.percentage; })
                        .slice(0, 5);
     var countryData = cRows.map(function (r) { return { label: r.country, value: Math.round(r.percentage * 1000) / 10 }; });
-    var usPct       = (cRows.find(function (r) { return r.country === 'United States'; }) || {}).percentage || 0;
 
     /* Per-platform rollup. Everything downstream (hero figures, bio
      * placeholders, roster rows, About tiles) is derived from this map, so a
@@ -391,7 +390,6 @@
         avgWatchTimeSec:     Math.round(avgWatch * 100) / 100,
         engagementRate:      Math.round(engRate * 1000) / 10 / 100,
         femaleAudience:      femalePct,
-        usAudience:          usPct,
         dataAsOf:            latestDate,
         viewDistribution:    viewBuckets(plays),
       },
