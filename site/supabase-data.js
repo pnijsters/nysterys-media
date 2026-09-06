@@ -6,15 +6,15 @@
  *
  * Headline figures (followers, likes, engagement) and the About tiles are CROSS-PLATFORM totals
  * over TikTok, YouTube and Instagram. Per-platform detail stays in `platforms`, and the
- * TikTok-only deep dive stays in `tiktokStats` because two pages chart it. Pricing is NOT here:
- * rates live per agency in the token-gated dashboard.
+ * TikTok-only deep dive stays in `tiktokStats`. The per-platform Audience Insights cards live
+ * in `platformAudience`, built on request. Pricing is NOT here: it lives in the agency dashboard.
  *
  * @invariant a feed that errors must NEVER be averaged in as zero. Every headline is a
  *            cross-platform SUM, so one dead view does not blank the page, it quietly
  *            understates a creator to the brands the page exists to win. Showing nothing beats
  *            showing a five-figure creator as a zero.
  */
-/* global SITE_CONFIG */
+/* global SITE_CONFIG, PLATFORM_AUDIENCE */
 (function () {
   var URL  = 'https://rnntuxabccnphfvvvaks.supabase.co';
   var KEY  = 'sb_publishable_uTUIIpWaYYgke_5rtyhUnw_0lMfHI3c';
@@ -176,7 +176,8 @@
   }
 
   function fetchVideos() {
-    var cols = 'tiktok_username,total_play,total_like,total_comment,total_share,average_time_watched';
+    var cols = 'tiktok_username,total_play,total_like,total_comment,total_share,average_time_watched,'
+             + 'full_video_watched_rate,src_for_you,src_personal_profile,src_follow,src_search,src_sound';
     return getAll('tiktok_video_insights_view?select=' + cols);
   }
 
@@ -200,7 +201,7 @@
   }
 
   function fetchInstagramPosts() {
-    var cols = 'instagram_username,views,likes,comments,shares,reach';
+    var cols = 'instagram_username,views,likes,comments,shares,reach,reel_avg_view_time_ms';
     return safeGet('ig_post_performance_view?select=' + cols);
   }
 
@@ -247,7 +248,8 @@
 
   function fetchYouTube() {
     var cols = 'account__account_id,report__date,channel_totals__subscribers,channel_totals__views,'
-             + 'performance__views,interactions__likes,interactions__comments,interactions__shares';
+             + 'performance__views,performance__average_view_duration__seconds_,'
+             + 'interactions__likes,interactions__comments,interactions__shares';
     return getAll('yt_channel_stats_view?select=' + cols + '&order=report__date.desc');
   }
 
@@ -289,7 +291,7 @@
     };
   }
 
-  function buildCreator(cfg, profiles, videos, genders, countries, ytRows, igProfiles, igPosts) {
+  function buildCreator(cfg, profiles, videos, genders, countries, ytRows, igProfiles, igPosts, extra) {
     /* Profile: most recent row with a real follower count. Coupler stamps a
      * zero-follower row at the start of every sync day; falling through to the
      * next row prevents "0 followers" from rendering on the public site. */
@@ -409,6 +411,11 @@
         gender:       genderData,
         topCountries: countryData,
       },
+      /* The per-platform cards, absent unless the caller asked. @see `site/audience.js` */
+      platformAudience: extra ? PLATFORM_AUDIENCE.build(cfg, PLATFORM_LABELS, viewBuckets, {
+        videos: videos, profiles: profiles, yt: ytRows, igPosts: igPosts,
+        ytTraffic: extra.ytTraffic, ytSubs: extra.ytSubs
+      }) : null,
       contentCategories: cfg.contentCategories,
     };
   }
@@ -418,21 +425,23 @@
    *
    * @returns {Promise<{about:object, roster:Array, mediaKit:object}>}
    */
-  window.loadSiteData = function () {
-    var profileCols  = 'tiktok_username,date,followers_count';
+  window.loadSiteData = function (opts) {
+    var profileCols  = 'tiktok_username,date,followers_count,net_followers';
     var genderCols   = 'tiktok_username,date,gender,percentage';
     var countryCols  = 'tiktok_username,date,country,percentage';
 
     return Promise.all([
-      // limit=12 (was 4) gives each creator several days of buffer so the
-      // skip-zero-followers filter in buildCreator always finds a real row.
-      get('tiktok_profile_insights_view?select=' + profileCols + '&order=date.desc&limit=12'),
+      // limit=120 (was 12) so the 30-day growth card sees a full window for BOTH creators,
+      // and the skip-zero-followers filter in buildCreator still has days of buffer.
+      get('tiktok_profile_insights_view?select=' + profileCols + '&order=date.desc&limit=120'),
       fetchVideos(),
       get('tiktok_audience_gender_view?select='  + genderCols  + '&order=date.desc&limit=12'),
       get('tiktok_audience_country_view?select=' + countryCols + '&order=date.desc&limit=60'),
       fetchYouTube(),
       fetchInstagramProfiles(),
       fetchInstagramPosts(),
+      // Only creator.html draws the per-platform cards; the other two pages skip these feeds.
+      opts && opts.withPlatformAudience ? PLATFORM_AUDIENCE.feeds(get, getAll) : null,
     ]).then(function (res) {
       var profiles   = res[0];
       var videos     = res[1];
@@ -441,10 +450,12 @@
       var ytRows     = res[4];
       var igProfiles = res[5];
       var igPosts    = res[6];
+      var extra      = res[7];
 
       var roster = ['kym', 'mys'].map(function (id) {
         return buildCreator(
-          SITE_CONFIG.creators[id], profiles, videos, genders, countries, ytRows, igProfiles, igPosts
+          SITE_CONFIG.creators[id], profiles, videos, genders, countries, ytRows, igProfiles,
+          igPosts, extra
         );
       });
 

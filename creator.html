@@ -233,7 +233,7 @@
       display: flex;
       /* Without this the row's min-content is 418px, and .hero-info is a grid item whose
          default min-width: auto refuses to shrink below it, so the whole page scrolls
-         sideways on a phone. @see ux/06-responsive.md */
+         sideways on a phone. */
       flex-wrap: wrap;
       gap: 0.75rem;
       opacity: 0;
@@ -290,27 +290,10 @@
       letter-spacing: 0.04em;
     }
 
-    /* Source attribution, pushed to the far end of the header row so it states
-       provenance without crowding the title. */
-    .section-note {
-      margin-left: auto;
-      font-size: 0.6rem;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #5c5c5c;
-    }
-
-    @media (max-width: 700px) {
-      .section-note {
-        margin-left: 0;
-        flex-basis: 100%;
-      }
-    }
-
     /* ─── Charts grid ─────────────────────────────────────── */
     .charts-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 2rem;
     }
 
@@ -461,6 +444,92 @@
       transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    /* ─── Per-platform card rows ──────────────────────────── */
+
+    /* Provenance sits on the CARD now, not the section: each one covers a
+       different set of platforms, so one header note would be wrong for six of
+       the seven. */
+    .chart-note {
+      margin-left: 0.6rem;
+      color: #5c5c5c;
+    }
+
+    /* Mark, name, bar, figure. The bar absorbs the slack, so every figure on the
+       card lands on one right edge and the column can be read straight down. */
+    /* The item owns the padding and the rule; the row inside it is only the line
+       of mark, name, bar and figure. A secondary line sits under that row and
+       still inside the item, so the rule lands between platforms, never
+       through one. */
+    .pf-item + .pf-item {
+      border-top: 1px solid var(--border);
+      margin-top: 0.7rem;
+      padding-top: 0.7rem;
+    }
+
+    .pf-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* The mix, under the total it adds up to. Dim, because the total is the
+       comparison and this is the texture behind it. */
+    .pf-sub {
+      margin: 0.35rem 0 0 calc(14px + 0.75rem);
+      font-size: 0.68rem;
+      color: #5c5c5c;
+    }
+
+    .pf-icon, .pf-icon svg { width: 14px; height: 14px; }
+    .pf-icon { display: flex; flex: none; color: #8a8a8a; }
+
+    .pf-name { flex: none; width: 4.75rem; font-size: 0.75rem; color: var(--dim); }
+
+    .pf-bar { flex: 1 1 auto; min-width: 1.5rem; }
+
+    /* Bebas on the figure, so the number outranks the label beside it. */
+    .pf-val {
+      flex: none;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* The strongest platform on this metric, and nothing else, gets the orange.
+       An accent on every row is decoration; on one row it is information. */
+    .pf-val-lead { color: var(--orange); }
+
+    /* An absence is stated, never blank: a platform she is on that this metric
+       cannot measure must not read as an audience of zero. */
+    .pf-row-absent .pf-icon, .pf-row-absent .pf-name { opacity: 0.45; }
+
+    .pf-absent {
+      margin-left: auto;
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #5c5c5c;
+    }
+
+    /* Where the categories differ per platform (For You against Shorts Feed),
+       each platform keeps its own labelled panel rather than sharing a scale
+       that would imply the two axes are the same thing. */
+    .chart-card { grid-column: span 2; }
+    .chart-card-wide { grid-column: span 3; }
+
+    .pf-panel + .pf-panel { margin-top: 1.75rem; }
+
+    .pf-panel-head {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.9rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
     /* ─── Country bars ────────────────────────────────────── */
     .country-bars {
       display: flex;
@@ -487,8 +556,12 @@
     .country-pct {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 0.95rem;
-      color: var(--orange);
+      color: var(--white);
     }
+
+    /* One accent per panel, on the row that leads it. @see site/page-creator.js
+       buildCountryBars for why every row in orange is worse than one. */
+    .country-pct-lead { color: var(--orange); }
 
     /* ─── Footer ──────────────────────────────────────────── */
 
@@ -498,6 +571,14 @@
     }
 
     /* ─── Responsive ──────────────────────────────────────── */
+
+    /* Between the phone stack and the full three-up, two cards across. Three at
+       this width leaves each bar about 60px and wraps every secondary line, so
+       the comparison the card exists to make stops being readable. */
+    @media (min-width: 901px) and (max-width: 1150px) {
+      .chart-card { grid-column: span 3; }
+    }
+
     @media (max-width: 900px) {
 
       .creator-hero {
@@ -523,6 +604,8 @@
         grid-template-columns: 1fr;
         gap: 1.5rem;
       }
+
+      .chart-card, .chart-card-wide { grid-column: auto; }
 
       .audience {
         padding: 4rem 1.5rem 5rem;
@@ -585,6 +668,8 @@
   <link rel="stylesheet" href="site/global.css" />
   <script src="site/config.js"></script>
   <script src="site/supabase-data.js"></script>
+  <!-- Only this page renders the per-platform cards, so only this page loads them. -->
+  <script src="site/audience.js"></script>
   <script src="site/icons.js" defer></script>
   <script src="site/utils.js"></script>
 </head>
@@ -629,38 +714,13 @@
     <div class="section-header">
       <span class="section-label">Analytics</span>
       <h2 class="section-title">Audience Insights</h2>
-      <!-- All three charts read TikTok feeds. The hero above them is a
-           cross-platform total, so without this the section silently reads as
-           if it described every platform. -->
-      <span class="section-note">Measured on TikTok</span>
     </div>
 
-    <div class="charts-grid">
-
-      <!-- Gender split -->
-      <div class="chart-card" id="card-gender">
-        <p class="chart-title">Gender Split</p>
-        <div class="donut-wrap">
-          <svg class="donut-svg" viewBox="0 0 36 36" id="donut-svg" aria-label="Gender distribution donut chart" role="img"></svg>
-          <div class="donut-legend" id="gender-legend"></div>
-        </div>
-      </div>
-
-      <!-- View distribution: replaced an Age Distribution chart whose numbers
-           were hand-typed in config.js and identical for both creators. No age
-           demographic exists in any feed, so it could not be made real. -->
-      <div class="chart-card" id="card-dist">
-        <p class="chart-title">View Distribution</p>
-        <div class="dist-bars" id="dist-bars"></div>
-      </div>
-
-      <!-- Top countries -->
-      <div class="chart-card" id="card-geo">
-        <p class="chart-title">Top Countries</p>
-        <div class="country-bars" id="country-bars"></div>
-      </div>
-
-    </div>
+    <!-- Every card is built in site/page-creator.js, because each one compares a
+         DIFFERENT subset of her platforms and the subsets come from live feeds.
+         A card that names its platforms in static markup goes stale silently the
+         day an importer starts or stops. -->
+    <div class="charts-grid" id="audience-cards"></div>
   </section>
 
   <div class="divider" role="separator"></div>
