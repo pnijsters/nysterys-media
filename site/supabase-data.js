@@ -196,57 +196,9 @@
     }).catch(function () { return []; });
   }
 
-  /* overview stopped after one row and insights is still importing, so insights comes FIRST
-   * and buildInstagram's find() takes it, overview the fallback. @see `.claude/rules/instagram.md` */
-  function fetchInstagramProfiles() {
-    var c = '?select=instagram_username,followers_count';
-    return Promise.all([safeGet('ig_profile_insights_view' + c), safeGet('ig_profile_overview_view' + c)]).then(function (r) { return r[0].concat(r[1]); });
-  }
-
   function fetchInstagramPosts() {
     var cols = 'instagram_username,views,likes,comments,shares,reach,reel_avg_view_time_ms';
     return safeGet('ig_post_performance_view?select=' + cols);
-  }
-
-  /**
-   * Roll one creator's Instagram account into the shared platform shape.
-   *
-   * @param {object} cfg - SITE_CONFIG.creators[id]
-   * @param {Array}  profiles - ig_profile_overview_view rows
-   * @param {Array}  posts - ig_post_performance_view rows
-   * @returns {{followers:number,likes:number,views:number,interactions:number,engViews:number}}
-   *
-   * @gotcha Instagram post rows are per-post LIFETIME counters, like TikTok's
-   *         and unlike YouTube's daily deltas, so summing them is correct and
-   *         engagement pairs lifetime interactions with lifetime views.
-   * @gotcha Saves are deliberately NOT counted as an interaction. TikTok's rate
-   *         is likes + comments + shares, and adding a fourth term on one
-   *         platform only would inflate Instagram against the others inside a
-   *         single cross-platform figure.
-   */
-  function buildInstagram(cfg, profiles, posts) {
-    if (!cfg.instagramAccount) return emptyPlatform();
-
-    var profile = profiles.find(function (r) {
-      return r.instagram_username === cfg.instagramAccount;
-    });
-    var mine = posts.filter(function (r) {
-      return r.instagram_username === cfg.instagramAccount;
-    });
-    if (!profile && !mine.length) return emptyPlatform();
-
-    var likes  = sum(mine, 'likes');
-    var cmts   = sum(mine, 'comments');
-    var shares = sum(mine, 'shares');
-    var views  = sum(mine, 'views');
-
-    return {
-      followers:    num((profile || {}).followers_count),
-      likes:        likes,
-      views:        views,
-      interactions: likes + cmts + shares,
-      engViews:     views,
-    };
   }
 
   function fetchYouTube() {
@@ -256,45 +208,7 @@
     return getAll('yt_channel_stats_view?select=' + cols + '&order=report__date.desc');
   }
 
-  /**
-   * Roll one creator's YouTube channel into the shared platform shape.
-   *
-   * @param {object} cfg - SITE_CONFIG.creators[id]
-   * @param {Array}  rows - every yt_channel_stats_view row, newest date first
-   * @returns {{followers:number,likes:number,views:number,interactions:number,engViews:number,dataAsOf:string}}
-   *
-   * @gotcha `channel_totals__*` are cumulative lifetime snapshots (take the
-   *         latest row); `interactions__*` and `performance__views` are DAILY
-   *         deltas (sum them). Mixing the two bases understates any rate built
-   *         from them, so engagement pairs the daily interactions with the
-   *         daily views (engViews), never with lifetime views.
-   * @gotcha The daily feed starts so YouTube likes are a floor, not
-   *         a true lifetime count. It covers 98%+ of both channels' lifetime
-   *         views, so the gap is small, and the About tiles read "+".
-   */
-  function buildYouTube(cfg, rows) {
-    if (!cfg.youtubeAccountId) return emptyPlatform();
-    var mine = rows.filter(function (r) { return r.account__account_id === cfg.youtubeAccountId; });
-    if (!mine.length) return emptyPlatform();
-
-    /* Newest row carrying a real subscriber count. Mirrors the TikTok
-     * skip-the-zero-row guard: a sync that lands mid-write must never render
-     * "0 followers" on the public site. */
-    var latest = mine.find(function (r) { return num(r.channel_totals__subscribers) > 0; }) || {};
-
-    return {
-      followers:    num(latest.channel_totals__subscribers),
-      views:        num(latest.channel_totals__views),
-      likes:        sum(mine, 'interactions__likes'),
-      interactions: sum(mine, 'interactions__likes')
-                  + sum(mine, 'interactions__comments')
-                  + sum(mine, 'interactions__shares'),
-      engViews:     sum(mine, 'performance__views'),
-      dataAsOf:     latest.report__date || '',
-    };
-  }
-
-  function buildCreator(cfg, profiles, videos, genders, countries, ytRows, igProfiles, igPosts, extra) {
+  function buildCreator(cfg, profiles, videos, genders, countries, ytRows, stats, igPosts, extra) {
     /* Profile: most recent row with a real follower count. Coupler stamps a
      * zero-follower row at the start of every sync day; falling through to the
      * next row prevents "0 followers" from rendering on the public site. */
@@ -333,20 +247,23 @@
                        .slice(0, 5);
     var countryData = cRows.map(function (r) { return { label: r.country, value: Math.round(r.percentage * 1000) / 10 }; });
 
-    /* Per-platform rollup. Everything downstream (hero figures, bio
-     * placeholders, roster rows, About tiles) is derived from this map, so a
-     * fourth platform is one more entry here and one more PLATFORM_LABELS key. */
-    var platforms = {
-      tiktok: {
-        followers:    followers,
-        likes:        totalLikes,
-        views:        totalViews,
-        interactions: totalLikes + totalCmts + totalShares,
-        engViews:     totalViews,
-      },
-      youtube:   buildYouTube(cfg, ytRows),
-      instagram: buildInstagram(cfg, igProfiles, igPosts),
-    };
+    /* Per-platform rollup, computed ONCE by `creator_platform_stats_view`. The admin dashboard
+     * renders the same figures and site/ cannot share code with the hub bundle, so a second
+     * implementation here is how the two would start disagreeing. Everything downstream (hero
+     * figures, bio placeholders, roster rows, About tiles) reads this map, and a creator with
+     * no rows on a platform keeps emptyPlatform() rather than becoming NaN. */
+    var platforms = {};
+    Object.keys(PLATFORM_LABELS).forEach(function (k) { platforms[k] = emptyPlatform(); });
+    stats.forEach(function (r) {
+      if (r.display_name !== cfg.name || !platforms[r.platform]) return;
+      platforms[r.platform] = {
+        followers:    num(r.followers),
+        likes:        num(r.likes),
+        views:        num(r.views),
+        interactions: num(r.interactions),
+        engViews:     num(r.eng_views),
+      };
+    });
     var all = Object.keys(platforms).map(function (k) { return platforms[k]; });
     var xFollowers = all.reduce(function (s, p) { return s + p.followers;    }, 0);
     var xLikes     = all.reduce(function (s, p) { return s + p.likes;        }, 0);
@@ -439,7 +356,7 @@
       get('tiktok_audience_gender_view?select='  + genderCols  + '&order=date.desc&limit=12'),
       get('tiktok_audience_country_view?select=' + countryCols + '&order=date.desc&limit=60'),
       fetchYouTube(),
-      fetchInstagramProfiles(),
+      get('creator_platform_stats_view?select=display_name,platform,followers,views,likes,interactions,eng_views'),
       fetchInstagramPosts(),
       // Only creator.html draws the per-platform cards; the other two pages skip these feeds.
       opts && opts.withPlatformAudience ? PLATFORM_AUDIENCE.feeds(get, getAll) : null,
@@ -449,13 +366,13 @@
       var genders    = res[2];
       var countries  = res[3];
       var ytRows     = res[4];
-      var igProfiles = res[5];
+      var stats      = res[5];
       var igPosts    = res[6];
       var extra      = res[7];
 
       var roster = ['kym', 'mys'].map(function (id) {
         return buildCreator(
-          SITE_CONFIG.creators[id], profiles, videos, genders, countries, ytRows, igProfiles,
+          SITE_CONFIG.creators[id], profiles, videos, genders, countries, ytRows, stats,
           igPosts, extra
         );
       });
