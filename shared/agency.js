@@ -2142,9 +2142,9 @@
    * In-kind payments are excluded from every money total.
    *
    * @gotcha Bucketing keys off exact title-case status strings: 'Paid' is paid;
-   *         'Pending' / 'Invoiced' / 'Overdue' are pending; anything else (incl.
-   *         not-yet-invoiced) is notInvoiced. A casing drift in the payload
-   *         would silently misbucket an amount. @see computeSummary.
+   *         'Invoiced' is pending; anything else (incl. not-yet-invoiced) is
+   *         notInvoiced. A casing drift in the payload would silently misbucket
+   *         an amount. @see computeSummary.
    */
   function renderPayments(campaigns, container, paymentAddresses) {
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
@@ -2165,9 +2165,9 @@
       var amt = Number(p.amount) || 0;
       total += amt;
       var st = p.status || '';
-      if (st === 'Paid')                                                   paid        += amt;
-      else if (st === 'Pending' || st === 'Invoiced' || st === 'Overdue')  pendingAmt  += amt;
-      else                                                                 notInvoiced += amt;
+      if (st === 'Paid')            paid        += amt;
+      else if (st === 'Invoiced')   pendingAmt  += amt;
+      else                          notInvoiced += amt;
     });
 
     var outstanding = pendingAmt + notInvoiced;
