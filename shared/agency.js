@@ -205,7 +205,7 @@
    * IIFE served from the pages repo and can import nothing from the hub bundle. The two are
    * pinned together by `hub-src/src/utils/__tests__/compactNumber.test.js`, which reads this
    * source and runs the same table through it. Change one and that test fails until you
-   * change the other. @see ux/10-plan.md P42
+   * change the other.
    */
   function fmtNum(n) {
     if (n == null || n === '') return '—';
@@ -350,7 +350,7 @@
    * the confirmed count while staying in the denominator.
    *
    * `!== false` on read, so an older deploy that sends nothing keeps today's behaviour
-   * rather than declaring the check broken everywhere. @see ux/10-plan.md P101
+   * rather than declaring the check broken everywhere.
    */
   var SOUND_CHECK_OK = true;
 
@@ -360,7 +360,7 @@
    * The colours are the live `status_options` rows, the same ones the hub's Badge.js paints
    * from, so a status recoloured in Admin > Config > Workflow Setup moves both surfaces at
    * once. agency.css holds no status colour and must not grow one: a second palette drifts
-   * from this one, and a status missing from it renders unpainted. @see ux/10-plan.md P44
+   * from this one, and a status missing from it renders unpainted.
    *
    * @gotcha nested by GROUP rather than flat by value. One string is a live status value in
    *         more than one group, so a flat map would answer for whichever group's row landed
@@ -430,7 +430,7 @@
    *          no watch-time data), campaignCount, postsDelivered, totalPosts.
    * @gotcha Cancellation is a CAMPAIGN state, not a deliverable one: the
    *         deliverable vocabulary is Not Started / Draft Submitted / Revisions
-   *         Requested / Approved / Scheduled / Posted, and the edge function
+   *         Requested / Approved / Posted, and the edge function
    *         already drops cancelled campaigns before the payload is built. So
    *         there is deliberately no per-deliverable Cancelled guard here; one
    *         existed until and could never fire.
@@ -481,7 +481,7 @@
    *            ones, so a gifted campaign contributes nothing to the numerator and all of its
    *            views to the denominator, and the more product-only work a creator does the
    *            cheaper her paid work reads. Understating a rate to the party who negotiates
-   *            against it is not a harmless rounding. @see ux/10-plan.md P43
+   *            against it is not a harmless rounding.
    * @gotcha `is_in_kind` is the only thing that says gifted. A campaign with no `payment` row
    *         at all is not gifted, it is unbilled, and it belongs in neither half either.
    */
@@ -783,7 +783,7 @@
       // keyboard cannot reach it either. This is the surface with no login, no help view and
       // nobody to ask, so a definition the reader cannot open is a definition we did not
       // write. A small focusable mark beside the label, revealing the text on tap or focus,
-      // rather than a permanent third line on every tile. @see ux/10-plan.md P43
+      // rather than a permanent third line on every tile.
       if (item.tip) {
         var defId  = 'kpi-def-' + idx;
         var defBtn = el('button', 'kpi-def');
@@ -809,7 +809,7 @@
       // The caveat is appended LAST, so an opened definition lands between the label and it
       // rather than pushing it down: a note qualifies the number and belongs under the
       // number, a definition is reference the reader asked for and is drawn as reference
-      // (`.kpi-def-text`). @see ux/10-plan.md P138
+      // (`.kpi-def-text`).
       if (item.note) {
         var noteEl = el('div', 'kpi-note');
         noteEl.textContent = item.note;
@@ -849,7 +849,7 @@
       var labelEl = el('div', 'chart-label');
       labelEl.textContent = item.label;
       // Clipped by .chart-label, so the full label is always behind it, not only when the
-      // caller supplied a longer one. @see ux/10-plan.md P29
+      // caller supplied a longer one.
       labelEl.title = item.title || item.label;
 
       var track = el('div', 'chart-track');
@@ -1605,7 +1605,7 @@
       if (campaign.payment) {
         /* The status_options value verbatim, spaces and all. A hyphenated "In-Kind" or
          * "Not-Invoiced" matches no row, so the pill loses its colour, and it says a word
-         * the payments tab, printing the raw status, never uses. @see ux/10-plan.md P44 */
+         * the payments tab, printing the raw status, never uses. */
         var payStatus = campaign.payment.is_in_kind ? 'In Kind' : (campaign.payment.status || 'Not Invoiced');
         badgesWrap.appendChild(badge(payStatus, 'payment'));
       }

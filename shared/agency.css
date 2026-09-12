@@ -607,7 +607,7 @@ body::before {
    by a keyboard, on the one surface with no login and nobody to ask. A real button, so it
    takes focus, a tap and Enter; 24px is the smallest square that is still a comfortable
    target beside 9px label text, and it grows to the full 44px on coarse pointers below.
-   @see ux/10-plan.md P43 */
+ */
 .kpi-def {
   display: inline-flex;
   align-items: center;
@@ -658,7 +658,7 @@ body::before {
    were 11px dim on a 6px top margin, and on a tile carrying both (Sounds Checked) opening
    the definition laid a second dim line above the caveat and the pair read as one
    paragraph. A hairline and a raised fill mark this one as material, not as a statistic.
-   No orange: nothing here is asking for attention. @see ux/10-plan.md P138 */
+   No orange: nothing here is asking for attention. */
 .kpi-def-text {
   margin-top: 8px;
   padding: 8px 10px;
@@ -1504,7 +1504,7 @@ tbody tr:hover td { background: var(--surface2); }
    `.badge-{Status}` rule: a second palette drifts from the table, and a status it has no rule
    for renders unpainted. Recolour the row in Admin > Config > Workflow Setup instead, and
    both surfaces move.
-   @see shared/agency.js badge(), scripts/tests/payload-contract.spec.js, ux/10-plan.md P44
+   @see shared/agency.js badge(), scripts/tests/payload-contract.spec.js
 
    The geometry below is the hub's `.badge` (App.css), value for value, so one status reads
    the same size and weight on either surface.
