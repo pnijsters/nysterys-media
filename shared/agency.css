@@ -1502,7 +1502,7 @@ tbody tr:hover td { background: var(--surface2); }
    THE COLOURS ARE NOT HERE. A status pill is painted inline from the `status_options` row the
    payload carries, exactly as the hub's Badge.js paints from the same row. Never add a
    `.badge-{Status}` rule: a second palette drifts from the table, and a status it has no rule
-   for renders unpainted. Recolour the row in Admin > Config > Workflow Setup instead, and
+   for renders unpainted. Recolour the `status_options` row itself instead, by migration, and
    both surfaces move.
    @see shared/agency.js badge(), scripts/tests/payload-contract.spec.js
 

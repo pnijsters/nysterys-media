@@ -358,9 +358,9 @@
    * Take the badge palette off the payload.
    *
    * The colours are the live `status_options` rows, the same ones the hub's Badge.js paints
-   * from, so a status recoloured in Admin > Config > Workflow Setup moves both surfaces at
-   * once. agency.css holds no status colour and must not grow one: a second palette drifts
-   * from this one, and a status missing from it renders unpainted.
+   * from, so a migration that recolours a row moves both surfaces at once. agency.css holds
+   * no status colour and must not grow one: a second palette drifts from this one, and a
+   * status missing from it renders unpainted.
    *
    * @gotcha nested by GROUP rather than flat by value. One string is a live status value in
    *         more than one group, so a flat map would answer for whichever group's row landed
