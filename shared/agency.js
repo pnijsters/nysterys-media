@@ -429,9 +429,9 @@
    * @returns {object} totalViews, totalLikes, avgER, avgCompletion (null when
    *          no watch-time data), campaignCount, postsDelivered, totalPosts.
    * @gotcha Cancellation is a CAMPAIGN state, not a deliverable one: the
-   *         deliverable vocabulary is Not Started / Draft Submitted / Revisions
-   *         Requested / Approved / Posted, and the edge function
-   *         already drops cancelled campaigns before the payload is built. So
+   *         deliverable vocabulary is Not Started / Draft Submitted / Approved /
+   *         Posted, and the edge function already drops cancelled campaigns
+   *         before the payload is built. So
    *         there is deliberately no per-deliverable Cancelled guard here; one
    *         existed until and could never fire.
    * @gotcha 'Posted' must stay exact title-case; a casing change in the payload
