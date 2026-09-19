@@ -1847,7 +1847,6 @@ tbody tr:hover td { background: var(--surface2); }
   .agency-footer .container { gap: 6px; }
   .footer-tagline { display: none; }
 
-  .payment-addresses-cards { grid-template-columns: 1fr; }
 
   .kpi-strip > *:last-child:nth-child(odd) { grid-column: span 2; }
 }
@@ -1979,10 +1978,11 @@ a.mobile-deliv-thumb:hover { border-color: var(--orange); }
   margin-bottom: 12px;
 }
 
+/* One card, not one per social account: every payment reaches the same bank account, so
+   there is nothing per platform to tell apart. Capped rather than full width because a
+   four-row list stretched across a desktop reads as a table with one column. */
 .payment-addresses-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 12px;
+  max-width: 460px;
 }
 
 .payment-address-card {
@@ -1992,27 +1992,6 @@ a.mobile-deliv-thumb:hover { border-color: var(--orange); }
   overflow: hidden;
 }
 
-.pay-addr-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: var(--surface2);
-  border-bottom: 1px solid var(--border);
-}
-
-.pay-addr-platform {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--white);
-}
-
-.pay-addr-username {
-  font-size: 11px;
-  color: var(--muted);
-}
 
 .pay-addr-row {
   display: flex;

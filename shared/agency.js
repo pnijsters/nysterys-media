@@ -1735,21 +1735,84 @@
     return rest.concat(paypal);
   }
 
+  /** The LLC bank account as printed lines. Account number last, so the eye lands on it. */
+  function bankLines(bank) {
+    var out = [];
+    if (bank.name) out.push('Bank: ' + bank.name);
+    if (bank.routing_number) out.push('Routing: ' + bank.routing_number);
+    out.push('Account: ' + bank.account_number + (bank.account_type ? ' (' + bank.account_type + ')' : ''));
+    if (bank.swift) out.push('SWIFT: ' + bank.swift);
+    return out;
+  }
+
+  /**
+   * One "how to pay" row: a label, and a value that links itself when it can.
+   *
+   * @param {string} label   what to call this route
+   * @param {string} addr    its value; newlines become separate lines
+   * @param {boolean} lastResort tint it down, for the route we would rather they did not use
+   */
+  function buildAddressRow(label, addr, lastResort) {
+    var row = el('div', 'pay-addr-row' + (lastResort ? ' pay-addr-row--last-resort' : ''));
+
+    var methodEl = el('span', 'pay-addr-method');
+    methodEl.textContent = label;
+
+    var valueEl = el('div', 'pay-addr-value');
+    var href    = null;
+
+    // Detect link type - all URLs go through safeLink; mailto: only on valid email pattern
+    if (/^https?:\/\//i.test(addr)) {
+      href = safeLink(addr);
+    } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
+      href = 'mailto:' + addr;
+    }
+
+    if (href) {
+      var a = el('a', 'pay-addr-link');
+      a.href = href;
+      if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+      a.textContent = addr;
+      valueEl.appendChild(a);
+      if (/^https?:/.test(href)) {
+        var arrow = el('span', 'pay-addr-arrow');
+        arrow.textContent = ' \u2197';
+        valueEl.appendChild(arrow);
+      }
+    } else {
+      addr.split('\n').forEach(function (line, i) {
+        if (i > 0) valueEl.appendChild(document.createElement('br'));
+        valueEl.appendChild(document.createTextNode(line));
+      });
+    }
+
+    append(row, methodEl, valueEl);
+    return row;
+  }
+
   /**
    * "Send Payment To": the ranked list of ways this agency can settle an invoice.
    *
-   * Stripe leads because it reconciles itself, and it is the one method that is
-   * NOT an address: it lives on the per-campaign Pay now buttons in the table
-   * below, so this block points at them rather than repeating a link. That row
-   * is suppressed when no unpaid invoice actually carries a link, since telling
-   * an agency to use a button that is not on the page is worse than silence.
+   * ONE block, the same on every dashboard. Every payment reaches the same LLC bank account
+   * whatever door it came through, so there is nothing per platform to tell apart and nothing
+   * here may be narrowed by a campaign's platform: narrowing it is how a dashboard ends up
+   * showing a brand no way to pay at all.
    *
-   * @param {Array} paymentAddresses - accounts + methods from the edge function
+   * Stripe leads because it reconciles itself, and it is the one route that is NOT an address:
+   * it lives on the per-campaign Pay now buttons in the table below, so this block points at
+   * them rather than repeating a link. That row is suppressed when no unpaid invoice actually
+   * carries a link, since telling an agency to use a button that is not on the page is worse
+   * than silence. The bank comes next because it costs us nothing, and PayPal sinks to the
+   * bottom. @see rankMethods
+   *
+   * @param {?Object} remit - `{ bank, routes }` from the edge function, or null
    * @param {HTMLElement} container
    * @param {boolean} hasPayLinks - any unpaid campaign exposes a Stripe link
    */
-  function renderPaymentAddresses(paymentAddresses, container, hasPayLinks) {
-    if (!paymentAddresses || paymentAddresses.length === 0) return;
+  function renderRemitTo(remit, container, hasPayLinks) {
+    var bank   = remit && remit.bank;
+    var routes = (remit && remit.routes) || [];
+    if (!bank && routes.length === 0) return;
 
     var section = el('div', 'payment-addresses-section');
 
@@ -1758,68 +1821,15 @@
     section.appendChild(heading);
 
     var cards = el('div', 'payment-addresses-cards');
-    // The platform header only earns its space when there is more than one
-    // account to tell apart; with a single card it restates the dashboard.
-    var showPlatform = paymentAddresses.length > 1;
+    var card  = el('div', 'payment-address-card');
 
-    paymentAddresses.forEach(function (acct, acctIdx) {
-      var card = el('div', 'payment-address-card');
-
-      if (showPlatform) {
-        var header     = el('div', 'pay-addr-header');
-        var platformEl = el('span', 'pay-addr-platform');
-        platformEl.textContent = acct.platform.charAt(0).toUpperCase() + acct.platform.slice(1);
-        var usernameEl = el('span', 'pay-addr-username');
-        usernameEl.textContent = '@' + acct.username;
-        append(header, platformEl, usernameEl);
-        card.appendChild(header);
-      }
-
-      // Stripe heads the first card only, so the recommendation is made once.
-      if (hasPayLinks && acctIdx === 0) card.appendChild(buildStripeRow());
-
-      rankMethods(acct.methods).forEach(function (m) {
-        var row = el('div', 'pay-addr-row' + (isPaypal(m) ? ' pay-addr-row--last-resort' : ''));
-
-        var methodEl = el('span', 'pay-addr-method');
-        methodEl.textContent = m.label || m.method;
-
-        var valueEl = el('div', 'pay-addr-value');
-        var addr    = m.address || '';
-        var href    = null;
-
-        // Detect link type - all URLs go through safeLink; mailto: only on valid email pattern
-        if (/^https?:\/\//i.test(addr)) {
-          href = safeLink(addr);
-        } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addr)) {
-          href = 'mailto:' + addr;
-        }
-
-        if (href) {
-          var a = el('a', 'pay-addr-link');
-          a.href = href;
-          if (/^https?:/.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
-          a.textContent = addr;
-          valueEl.appendChild(a);
-          if (/^https?:/.test(href)) {
-            var arrow = el('span', 'pay-addr-arrow');
-            arrow.textContent = ' ↗';
-            valueEl.appendChild(arrow);
-          }
-        } else {
-          addr.split('\n').forEach(function (line, i) {
-            if (i > 0) valueEl.appendChild(document.createElement('br'));
-            valueEl.appendChild(document.createTextNode(line));
-          });
-        }
-
-        append(row, methodEl, valueEl);
-        card.appendChild(row);
-      });
-
-      cards.appendChild(card);
+    if (hasPayLinks) card.appendChild(buildStripeRow());
+    if (bank) card.appendChild(buildAddressRow('Bank transfer', bankLines(bank).join('\n'), false));
+    rankMethods(routes).forEach(function (m) {
+      card.appendChild(buildAddressRow(m.method, m.address || '', isPaypal(m)));
     });
 
+    cards.appendChild(card);
     section.appendChild(cards);
     container.appendChild(section);
   }
@@ -2145,11 +2155,11 @@
    *         notInvoiced. A casing drift in the payload would silently misbucket
    *         an amount. @see computeSummary.
    */
-  function renderPayments(campaigns, container, paymentAddresses) {
+  function renderPayments(campaigns, container, remit) {
     var withPayment = campaigns.filter(function (c) { return c.payment != null; });
 
     if (withPayment.length === 0) {
-      renderPaymentAddresses(paymentAddresses, container, false);
+      renderRemitTo(remit, container, false);
       var empty = el('div', 'empty-msg');
       empty.textContent = 'No payment information available for these campaigns.';
       container.appendChild(empty);
@@ -2228,8 +2238,8 @@
     heroEl.appendChild(breakdownEl);
     container.appendChild(heroEl);
 
-    // Payment addresses (where to send it)
-    renderPaymentAddresses(paymentAddresses, container, hasPayLinks);
+    // Where to send it
+    renderRemitTo(remit, container, hasPayLinks);
 
 
     // Per-campaign payments table
@@ -2553,7 +2563,7 @@
     var campPanel = document.getElementById('campaigns-panel');
     var payPanel  = document.getElementById('payments-panel');
     var dashboard = document.getElementById('dashboard');
-    var payAddrs  = dash.payment_addresses || [];
+    var payRemit  = dash.payment_remit || null;
 
     dashboard.removeAttribute('hidden');
 
@@ -2582,7 +2592,7 @@
       panels.push({ tab: document.getElementById('tab-campaigns'), panel: campPanel });
     }
     if (wantsPayments) {
-      renderPayments(campaigns, payPanel, payAddrs);
+      renderPayments(campaigns, payPanel, payRemit);
       panels.push({ tab: document.getElementById('tab-payments'), panel: payPanel });
     }
     if (dash.show_rates && data.rate_card) {
